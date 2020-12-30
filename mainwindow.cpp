@@ -11,15 +11,21 @@ void
 MainWindow::handleExpression ()
 {
   QString input = apl_expression->text ();
-  qInfo ("handling exp %s\n", input.toStdString ().c_str ());
+
+  fprintf (stderr, "handling exp %s\n", input.toStdString ().c_str ());
+  
   apl_exec(input.toStdString ().c_str ());
+
   APL_value a = get_var_value ("a", "something");
-  qInfo ("rank  = %d\n", get_rank (a));
-  uint64_t count = get_element_count (a);
-  qInfo ("a = [%d] ", (int)count);
-  for (uint64_t i = 0; i < count; i++)
-    qInfo (" %d ", (int)get_int (a, i));
-  qInfo ("\n");
+  if (a) {
+    lcl_chart->removeAllSeries();
+    QLineSeries *series = new QLineSeries ();
+    uint64_t count = get_element_count (a);
+    for (uint64_t i = 0; i < count; i++) 
+      series->append ((qreal)i, (qreal)get_real (a, i));
+    lcl_chart->addSeries (series);
+    lcl_chart->createDefaultAxes ();
+  }
 }
 
 void
