@@ -21,14 +21,14 @@ void MainWindow::setValue()
 
 MainWindow::MainWindow(QChartView *chartView, QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
-
     lcl_chart = chartView->chart();
 
     QGroupBox *formGroupBox = new QGroupBox("Depth of Field");
     QGridLayout *layout = new QGridLayout;
+
+
+    /*   compute button   */
 
     QString compute_button_style("background-color: yellow; color: red;");
     QFont   compute_button_font("bold");
@@ -43,8 +43,30 @@ MainWindow::MainWindow(QChartView *chartView, QWidget *parent)
                          this,
                          SLOT(setValue()));
 
+
+
+    /*   quit button   */
+
+    QString quit_button_style("background-color: red; color: yellow;");
+    QFont   quit_button_font("bold");
+    QPushButton *quit_button = new QPushButton(QObject::tr("Quit"));
+    quit_button->setStyleSheet (quit_button_style);
+    quit_button->setFont(quit_button_font);
+    quit_button->setToolTip ("Quit");
+    layout->addWidget(quit_button, 1, 1);
+
+    QObject::connect(quit_button,
+                     &QPushButton::clicked,
+                     this,
+                     &QCoreApplication::quit);
+
+
+
+    /*   end buttons  */
+
     formGroupBox->setLayout(layout);
     formGroupBox->show();
+
     QLineSeries *series = new QLineSeries();
 
     qreal x;
@@ -61,6 +83,6 @@ MainWindow::MainWindow(QChartView *chartView, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+
 }
 
