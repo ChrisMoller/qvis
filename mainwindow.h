@@ -29,6 +29,12 @@ private slots:
 private:
   int use_func;
   QChart *lcl_chart;
+  QLineEdit *x_var_name;
+  QLineEdit *x_var_min;
+  QLineEdit *x_var_max;
+  QLineEdit *z_var_name;
+  QLineEdit *z_var_min;
+  QLineEdit *z_var_max;
   QLineEdit *apl_expression;
 };
 #endif // MAINWINDOW_H

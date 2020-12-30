@@ -34,7 +34,7 @@ main (int argc, char *argv[])
 
   if (!ws.isEmpty ()) {
     std::string cmd = ")load " + ws.toStdString ();
-    const char *rc = apl_command (cmd.c_str ());
+    apl_command (cmd.c_str ());
   }
   
   QChart *chart = new QChart ();
