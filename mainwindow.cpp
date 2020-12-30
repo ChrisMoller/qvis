@@ -5,9 +5,6 @@
 QT_CHARTS_USE_NAMESPACE
 
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-
-// what gives
 
 void MainWindow::setValue()
 {
