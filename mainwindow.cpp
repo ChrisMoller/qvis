@@ -12,8 +12,6 @@ MainWindow::handleExpression ()
 {
   QString input = apl_expression->text ();
 
-  fprintf (stderr, "handling exp %s\n", input.toStdString ().c_str ());
-  
   apl_exec(input.toStdString ().c_str ());
 
   APL_value a = get_var_value ("a", "something");

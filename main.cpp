@@ -16,7 +16,27 @@ main (int argc, char *argv[])
   init_libapl ("apl", 0);
 
   QApplication app (argc, argv);
+  QCoreApplication::setApplicationName("APL Visualiser");
+  QCoreApplication::setApplicationVersion("1.0");
 
+  QCommandLineParser parser;
+  parser.setApplicationDescription("APL Visualiser");
+  parser.addHelpOption();
+  parser.addVersionOption();
+
+  QCommandLineOption
+    loadws(QStringList() << "L" << "workspace", "workspace", "<ws>");
+  parser.addOption(loadws);
+
+  parser.process(app);
+
+  QString ws = parser.value(loadws);
+
+  if (!ws.isEmpty ()) {
+    std::string cmd = ")load " + ws.toStdString ();
+    const char *rc = apl_command (cmd.c_str ());
+  }
+  
   QChart *chart = new QChart ();
 
   QChartView *chartView = new QChartView (chart);
