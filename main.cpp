@@ -6,30 +6,36 @@
 #include <QtCharts/QLineSeries>
 #include <QtMath>
 
+#include <apl/libapl.h>
+
 QT_CHARTS_USE_NAMESPACE
 
-
-int main(int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+  init_libapl ("apl", 0);
 
-    QLineSeries *series = new QLineSeries();
+#if 0
+  apl_exec("a←1 2 3 + 4 5 6");
+  APL_value a = get_var_value ("a", "something");
+  qInfo ("rank  = %d\n", get_rank (a));
+  uint64_t count = get_element_count (a);
+  qInfo ("a = [%d] ", (int)count);
+  for (uint64_t i = 0; i < count; i++)
+    qInfo (" %d ", (int)get_int (a, i));
+  qInfo ("\n");
+#endif
 
-    qreal x;
-    for (x = 0.0; x < 6.28; x += 0.1) series->append(x, qSin(x));
+  QApplication app (argc, argv);
 
-    QChart *chart = new QChart();
-    chart->legend()->hide();
-    chart->addSeries(series);
-    chart->createDefaultAxes();
-    chart->setTitle("Simple line chart example");
+  QChart *chart = new QChart ();
 
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+  QChartView *chartView = new QChartView (chart);
+  chartView->setRenderHint (QPainter::Antialiasing);
 
-    MainWindow window(chartView);
-    window.setCentralWidget(chartView);
-    window.resize(400, 300);
-    window.show();
-    return app.exec();
+  MainWindow window (chartView);
+  window.setCentralWidget (chartView);
+  window.resize (400, 300);
+  window.show ();
+  return app.exec ();
 }
