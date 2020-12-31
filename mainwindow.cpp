@@ -2,6 +2,7 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
+#include <values.h>
 #include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
@@ -75,11 +76,19 @@ MainWindow::handleExpression ()
 #else	// splines
       QSplineSeries *series = new QSplineSeries ();
 #endif
-      for (uint64_t i = 0; i < count; i++) 
-	series->append ((qreal)get_real (xvals, i), (qreal)get_real (res, i));
+      qreal y_max = -MAXDOUBLE;
+      qreal y_min =  MAXDOUBLE;
+      for (uint64_t i = 0; i < count; i++) {
+	qreal y_val = (qreal)get_real (res, i);
+	if (y_max < y_val) y_max = y_val;
+	if (y_min > y_val) y_min = y_val;
+	series->append ((qreal)get_real (xvals, i), y_val);
+      }
       series->setName("example curve");
       lcl_chart->addSeries (series);
       lcl_chart->createDefaultAxes ();
+      qreal dy = 0.075 * (y_max - y_min);
+      lcl_chart->axes (Qt::Vertical).first()->setRange(y_min-dy, y_max+dy);
       QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
       apl_command (cmd.toStdString ().c_str ());
       if (zset) {
