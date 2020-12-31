@@ -250,13 +250,21 @@ MainWindow::buildMenu (MainWindow *win)
 		    &MainWindow::handleExpression);
 
 
+  /*  toggles */
+
+  bool doit = settings.value (DO_SPLINE).toBool ();
+  do_spline = new QCheckBox ("Spline");
+  do_spline->setCheckState (doit ? Qt::Checked : Qt::Unchecked);
+
+
+  /*   buttons */
 
   /*   compute button   */
 
   row++;
   QString compute_button_style ("background-color: yellow; color: red;");
   QFont   compute_button_font ("bold");
-  QPushButton *compute_button = new QPushButton (QObject::tr ("Execute"));
+  QPushButton *compute_button = new QPushButton (QObject::tr ("Draw"));
   compute_button->setStyleSheet (compute_button_style);
   compute_button->setFont (compute_button_font);
   compute_button->setToolTip ("Switch curves");

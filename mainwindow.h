@@ -21,6 +21,7 @@ QT_CHARTS_USE_NAMESPACE
 #define Z_VAR_MAX  "z_var_max"
 #define FUNCTION   "function"
 #define FCN_LABEL  "function_label"
+#define DO_SPLINE  "do_spline"
 
 class MainWindow : public QMainWindow
 {
@@ -53,5 +54,6 @@ private:
   QLineEdit *apl_expression;
   QLineEdit *fcn_label;
   QSettings settings;
+  QCheckBox do_spline;
 };
 #endif // MAINWINDOW_H
