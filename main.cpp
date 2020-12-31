@@ -16,6 +16,7 @@ main (int argc, char *argv[])
   init_libapl ("apl", 0);
 
   QApplication app (argc, argv);
+  QCoreApplication::setOrganizationName("MSDS");
   QCoreApplication::setApplicationName("APL Visualiser");
   QCoreApplication::setApplicationVersion("1.0");
 

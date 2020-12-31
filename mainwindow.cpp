@@ -1,6 +1,7 @@
 #include <QtWidgets>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
+#include <QtCharts/QSplineSeries>
 #include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
@@ -8,6 +9,15 @@ QT_CHARTS_USE_NAMESPACE
 #include "mainwindow.h"
 
 #define expvar "expvarλ"
+
+// for settings
+#define X_VAR_NAME "x_var_name"
+#define X_VAR_MIN  "x_var_min"
+#define X_VAR_MAX  "x_var_max"
+#define Z_VAR_NAME "z_var_name"
+#define Z_VAR_MIN  "z_var_min"
+#define Z_VAR_MAX  "z_var_max"
+#define FUNCTION   "function"
 
 void
 MainWindow::handleExpression ()
@@ -25,6 +35,10 @@ MainWindow::handleExpression ()
 
   if (!xlbl.isEmpty () && !xmin.isEmpty () && !xmax.isEmpty () &&
       !input.isEmpty ()) {
+    settings.setValue (X_VAR_NAME, xlbl);
+    settings.setValue (X_VAR_MIN,  xmin);
+    settings.setValue (X_VAR_MAX,  xmax);
+    settings.setValue (FUNCTION,   input);
     /***
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
     ***/
@@ -33,8 +47,13 @@ MainWindow::handleExpression ()
       .arg(xlbl).arg(xmin).arg(incr).arg(xmax);
     apl_exec (range_x.toStdString ().c_str ());
 
+    //    https://doc.qt.io/qt-5/qtcharts-splinechart-example.html
+
     bool zset = false;
     if (!zlbl.isEmpty () && !zmin.isEmpty () && !zmax.isEmpty ()) {
+      settings.setValue (Z_VAR_NAME, zlbl);
+      settings.setValue (Z_VAR_MIN,  zmin);
+      settings.setValue (Z_VAR_MAX,  zmax);
       QString range_z =
 	QString ("%1 ← %2 + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
 	.arg(zlbl).arg(zmin).arg(incr).arg(zmax);
@@ -48,13 +67,19 @@ MainWindow::handleExpression ()
     APL_value res = get_var_value (expvar, "something");
     if (res) {
       lcl_chart->removeAllSeries();
-      QLineSeries *series = new QLineSeries ();
       uint64_t count = get_element_count (res);
+#ifdef POINTS
+      QLineSeries *series = new QLineSeries ();
       for (uint64_t i = 0; i < count; i++) 
 	series->append ((qreal)i, (qreal)get_real (res, i));
+#else	// splines
+      QSplineSeries *series = new QSplineSeries ();
+      for (uint64_t i = 0; i < count; i++) 
+	series->append ((qreal)i, (qreal)get_real (res, i));
+#endif
       lcl_chart->addSeries (series);
       lcl_chart->createDefaultAxes ();
-      QString cmd = QString (")erase %1").arg (expvar).arg (xlbl);
+      QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
       apl_command (cmd.toStdString ().c_str ());
       if (zset) {
 	cmd = QString (")erase %1").arg (zlbl);
@@ -93,6 +118,7 @@ MainWindow::buildMenu (MainWindow *win)
   QGroupBox *formGroupBox = new QGroupBox ("Visualisation");
   QGridLayout *layout = new QGridLayout;
 
+  QSettings settings;
 
 #if 0
   /*   compute button   */
@@ -113,36 +139,50 @@ MainWindow::buildMenu (MainWindow *win)
 
   /*  x indep vbl */
 
+  QString xlbl = settings.value (X_VAR_NAME).toString ();
   x_var_name = new  QLineEdit ();
   x_var_name->setPlaceholderText ("x variable name");
+  x_var_name->setText (xlbl);
   layout->addWidget (x_var_name, 0, 0);
   
+  QString xmin = settings.value (X_VAR_MIN).toString ();
   x_var_min = new  QLineEdit ();
   x_var_min->setPlaceholderText ("x minimum value");
+  x_var_min->setText (xmin);
   layout->addWidget (x_var_min, 0, 1);
 
+  QString xmax = settings.value (X_VAR_MAX).toString ();
   x_var_max = new  QLineEdit ();
   x_var_max->setPlaceholderText ("x maximum value");
+  x_var_max->setText (xmax);
   layout->addWidget (x_var_max, 0, 2);
 
   /*  z indep vbl */
 
+  QString zlbl = settings.value (Z_VAR_NAME).toString ();
   z_var_name = new  QLineEdit ();
   z_var_name->setPlaceholderText ("z variable name");
+  z_var_name->setText (zlbl);
   layout->addWidget (z_var_name, 1, 0);
 
+  QString zmin = settings.value (Z_VAR_MIN).toString ();
   z_var_min = new  QLineEdit ();
   z_var_min->setPlaceholderText ("z minimum value");
+  z_var_min->setText (zmin);
   layout->addWidget (z_var_min, 1, 1);
 
+  QString zmax = settings.value (Z_VAR_MAX).toString ();
   z_var_max = new  QLineEdit ();
   x_var_max->setPlaceholderText ("z maximum value");
-  layout->addWidget (z_var_max, 1, 1);
+  z_var_max->setText (zmax);
+  layout->addWidget (z_var_max, 1, 2);
 
 
   /*  APL expression */
 
+  QString fcn = settings.value (FUNCTION).toString ();
   apl_expression = new  QLineEdit ();
+  apl_expression->setText (fcn);
   layout->addWidget (apl_expression, 2, 0);
 
   QObject::connect (apl_expression,
@@ -180,6 +220,7 @@ MainWindow::MainWindow (QChartView *chartView, QWidget *parent)
 {
   use_func = USE_SIN;
   lcl_chart = chartView->chart ();
+  chartView->setRenderHint(QPainter::Antialiasing);
 
   buildMenu (this);
 
