@@ -7,36 +7,57 @@ QT_CHARTS_USE_NAMESPACE
 
 #include "mainwindow.h"
 
+#define expvar "expvarλ"
+
 void
 MainWindow::handleExpression ()
 {
   QString xlbl = x_var_name->text ();
   QString xmin = x_var_min->text ();
   QString xmax = x_var_max->text ();
-#if 0
+
   QString zlbl = z_var_name->text ();
   QString zmin = z_var_min->text ();
   QString zmax = z_var_max->text ();
-#endif
 
-  /***
-      lbl ← min + (⍳incr) * (max - min) / incr
-   ***/
-  QString cmd1 = xlbl + "←" + "(⍳16)" + "(" + xmax + "-" + xmin + ")" + "÷16";
-  apl_exec (cmd1.toStdString ().c_str ());
-  
   QString input = apl_expression->text ();
-  apl_exec(input.toStdString ().c_str ());
+  int incr = 16;
 
-  APL_value a = get_var_value ("a", "something");
-  if (a) {
-    lcl_chart->removeAllSeries();
-    QLineSeries *series = new QLineSeries ();
-    uint64_t count = get_element_count (a);
-    for (uint64_t i = 0; i < count; i++) 
-      series->append ((qreal)i, (qreal)get_real (a, i));
-    lcl_chart->addSeries (series);
-    lcl_chart->createDefaultAxes ();
+  if (!xlbl.isEmpty () && !input.isEmpty ()) {
+    /***
+	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
+    ***/
+    QString range_x =
+      QString ("%1 ← %2 + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
+      .arg(xlbl).arg(xmin).arg(incr).arg(xmax);
+    apl_exec (range_x.toStdString ().c_str ());
+
+    if (!zlbl.isEmpty ()) {
+      QString range_z =
+	QString ("%1 ← %2 + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
+	.arg(zlbl).arg(zmin).arg(incr).arg(zmax);
+      apl_exec (range_z.toStdString ().c_str ());
+    }
+  
+    QString fcn = QString ("%1  ← %2").arg (expvar).arg (input);
+    apl_exec (fcn.toStdString ().c_str ());
+
+    APL_value res = get_var_value (expvar, "something");
+    if (res) {
+      lcl_chart->removeAllSeries();
+      QLineSeries *series = new QLineSeries ();
+      uint64_t count = get_element_count (res);
+      for (uint64_t i = 0; i < count; i++) 
+	series->append ((qreal)i, (qreal)get_real (res, i));
+      lcl_chart->addSeries (series);
+      lcl_chart->createDefaultAxes ();
+      QString cmd = QString (")erase %1").arg (expvar).arg (xlbl);
+      apl_command (cmd.toStdString ().c_str ());
+      if (!zlbl.isEmpty ()) {
+	cmd = QString (")erase %1").arg (zlbl);
+	apl_command (cmd.toStdString ().c_str ());
+      }
+    }
   }
 }
 
