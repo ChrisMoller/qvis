@@ -80,6 +80,9 @@ MainWindow::handleExpression ()
       series->setName(flbl);
       lcl_chart->addSeries (series);
       lcl_chart->createDefaultAxes ();
+
+
+      // fixme -- make theme selectable
       /***
 	  QChart::ChartThemeLight
 	  QChart::ChartThemeBlueCerulean
@@ -91,9 +94,27 @@ MainWindow::handleExpression ()
 	  QChart::ChartThemeQt
        ***/
       lcl_chart->setTheme (QChart::ChartThemeBlueCerulean);
+
+      QString ttl = chart_title->text ();
+      settings.setValue (CHART_TITLE,  ttl);
+      lcl_chart->setTitle (ttl);
+      
+      QString x_ttl = x_title->text ();
+      settings.setValue (X_TITLE,  x_ttl);
+      lcl_chart->axes (Qt::Horizontal).first()->setTitleText(x_ttl);
+      
+      QString y_ttl = y_title->text ();
+      settings.setValue (Y_TITLE,  y_ttl);
+      lcl_chart->axes (Qt::Vertical).first()->setTitleText(y_ttl);
     
       qreal dy = 0.075 * (y_max - y_min);
       lcl_chart->axes (Qt::Vertical).first()->setRange(y_min-dy, y_max+dy);
+
+#if 0
+      QPixmap p = lcl_chartView->grab();
+      p.save("a.png", "PNG");
+#endif
+
       QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
       apl_command (cmd.toStdString ().c_str ());
       if (zset) {
@@ -112,59 +133,95 @@ MainWindow::buildMenu (MainWindow *win)
 
   QSettings settings;
 
+  int row = 0;
+  int col = 0;
+
+  QString ttl = settings.value (CHART_TITLE).toString ();
+  chart_title = new  QLineEdit ();
+  chart_title->setPlaceholderText ("chart title");
+  chart_title->setText (ttl);
+  layout->addWidget (chart_title, row, 0, 1, 3);
+  
+  QString y_text = settings.value (Y_TITLE).toString ();
+  y_title = new  QLineEdit ();
+  y_title->setPlaceholderText ("y axix label");
+  y_title->setText (y_text);
+  layout->addWidget (y_title, row, 3);
+  
   /*  x indep vbl */
 
+  row++;
+  col = 0;
+  
   QString xlbl = settings.value (X_VAR_NAME).toString ();
   x_var_name = new  QLineEdit ();
   x_var_name->setPlaceholderText ("x variable name");
   x_var_name->setText (xlbl);
-  layout->addWidget (x_var_name, 0, 0);
+  layout->addWidget (x_var_name, row, col++);
   
   QString xmin = settings.value (X_VAR_MIN).toString ();
   x_var_min = new  QLineEdit ();
   x_var_min->setPlaceholderText ("x minimum value");
   x_var_min->setText (xmin);
-  layout->addWidget (x_var_min, 0, 1);
+  layout->addWidget (x_var_min, row, col++);
 
   QString xmax = settings.value (X_VAR_MAX).toString ();
   x_var_max = new  QLineEdit ();
   x_var_max->setPlaceholderText ("x maximum value");
   x_var_max->setText (xmax);
-  layout->addWidget (x_var_max, 0, 2);
+  layout->addWidget (x_var_max, row, col++);
+  
+  QString x_text = settings.value (X_TITLE).toString ();
+  x_title = new  QLineEdit ();
+  x_title->setPlaceholderText ("x axix label");
+  x_title->setText (x_text);
+  layout->addWidget (x_title, row, col++);
 
   /*  z indep vbl */
+
+  row++;
+  col = 0;
 
   QString zlbl = settings.value (Z_VAR_NAME).toString ();
   z_var_name = new  QLineEdit ();
   z_var_name->setPlaceholderText ("z variable name");
   z_var_name->setText (zlbl);
-  layout->addWidget (z_var_name, 1, 0);
+  layout->addWidget (z_var_name, row, col++);
 
   QString zmin = settings.value (Z_VAR_MIN).toString ();
   z_var_min = new  QLineEdit ();
   z_var_min->setPlaceholderText ("z minimum value");
   z_var_min->setText (zmin);
-  layout->addWidget (z_var_min, 1, 1);
+  layout->addWidget (z_var_min, row, col++);
 
   QString zmax = settings.value (Z_VAR_MAX).toString ();
   z_var_max = new  QLineEdit ();
   z_var_max->setPlaceholderText ("z maximum value");
   z_var_max->setText (zmax);
-  layout->addWidget (z_var_max, 1, 2);
+  layout->addWidget (z_var_max, row, col++);
+  
+  QString z_text = settings.value (Z_TITLE).toString ();
+  z_title = new  QLineEdit ();
+  z_title->setPlaceholderText ("z axix label");
+  z_title->setText (z_text);
+  layout->addWidget (z_title, row, col++);
 
 
   /*  APL expression */
 
+  row++;
+  col = 0;
   QString flbl = settings.value (FCN_LABEL).toString ();
   fcn_label = new  QLineEdit ();
   fcn_label->setPlaceholderText ("curve label");
   fcn_label->setText (flbl);
-  layout->addWidget (fcn_label, 2, 0);
+  layout->addWidget (fcn_label, row, col++);
 
   QString fcn = settings.value (FUNCTION).toString ();
   apl_expression = new  QLineEdit ();
+  apl_expression->setPlaceholderText ("function");
   apl_expression->setText (fcn);
-  layout->addWidget (apl_expression, 2, 1, 1, 2);
+  layout->addWidget (apl_expression, row, col, 1, 3);
 
   QObject::connect (apl_expression,
 		    &QLineEdit::editingFinished,
@@ -175,13 +232,14 @@ MainWindow::buildMenu (MainWindow *win)
 
   /*   compute button   */
 
+  row++;
   QString compute_button_style ("background-color: yellow; color: red;");
   QFont   compute_button_font ("bold");
   QPushButton *compute_button = new QPushButton (QObject::tr ("Execute"));
   compute_button->setStyleSheet (compute_button_style);
   compute_button->setFont (compute_button_font);
   compute_button->setToolTip ("Switch curves");
-  layout->addWidget (compute_button, 3, 0);
+  layout->addWidget (compute_button, row, 0);
 
   QObject::connect (compute_button,
 		    SIGNAL (clicked ()),
@@ -196,7 +254,7 @@ MainWindow::buildMenu (MainWindow *win)
   quit_button->setStyleSheet (quit_button_style);
   quit_button->setFont (quit_button_font);
   quit_button->setToolTip ("Quit");
-  layout->addWidget (quit_button, 3, 2);
+  layout->addWidget (quit_button, row, 3);
 
   QObject::connect (quit_button,
 		    &QPushButton::clicked,
@@ -214,6 +272,7 @@ MainWindow::buildMenu (MainWindow *win)
 MainWindow::MainWindow (QChartView *chartView, QWidget *parent)
   : QMainWindow(parent)
 {
+  lcl_chartView = chartView;
   lcl_chart = chartView->chart ();
   chartView->setRenderHint(QPainter::Antialiasing);
 
