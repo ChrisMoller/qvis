@@ -37,7 +37,7 @@ MainWindow::handleExpression ()
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
     ***/
     QString range_x =
-      QString ("%1 ← %2 + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
+      QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
       .arg(xlbl).arg(xmin).arg(incr).arg(xmax);
     apl_exec (range_x.toStdString ().c_str ());
     APL_value xvals =
@@ -51,7 +51,7 @@ MainWindow::handleExpression ()
       settings.setValue (Z_VAR_MIN,  zmin);
       settings.setValue (Z_VAR_MAX,  zmax);
       QString range_z =
-	QString ("%1 ← %2 + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
+	QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
 	.arg(zlbl).arg(zmin).arg(incr).arg(zmax);
       zset = true;
       apl_exec (range_z.toStdString ().c_str ());
