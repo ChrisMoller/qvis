@@ -1,4 +1,5 @@
 #include <QtWidgets>
+#include <QDoubleSpinBox>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
@@ -15,19 +16,18 @@ void
 MainWindow::handleExpression ()
 {
   QString xlbl = x_var_name->text ();
-  QString xmin = x_var_min->text ();
-  QString xmax = x_var_max->text ();
+  double  xmin = x_var_min->value ();
+  double  xmax = x_var_max->value ();
 
   QString zlbl = z_var_name->text ();
-  QString zmin = z_var_min->text ();
-  QString zmax = z_var_max->text ();
+  double  zmin = z_var_min->value ();
+  double  zmax = z_var_max->value ();
 
   QString input = apl_expression->text ();
   QString flbl  = fcn_label->text ();
   int incr = 16;
 
-  if (!xlbl.isEmpty () && !xmin.isEmpty () && !xmax.isEmpty () &&
-      !input.isEmpty ()) {
+  if (!xlbl.isEmpty () && !input.isEmpty ()) {
     settings.setValue (X_VAR_NAME, xlbl);
     settings.setValue (X_VAR_MIN,  xmin);
     settings.setValue (X_VAR_MAX,  xmax);
@@ -46,7 +46,7 @@ MainWindow::handleExpression ()
     //    https://doc.qt.io/qt-5/qtcharts-splinechart-example.html
 
     bool zset = false;
-    if (!zlbl.isEmpty () && !zmin.isEmpty () && !zmax.isEmpty ()) {
+    if (!zlbl.isEmpty ()) {
       settings.setValue (Z_VAR_NAME, zlbl);
       settings.setValue (Z_VAR_MIN,  zmin);
       settings.setValue (Z_VAR_MAX,  zmax);
@@ -110,11 +110,6 @@ MainWindow::handleExpression ()
       qreal dy = 0.075 * (y_max - y_min);
       lcl_chart->axes (Qt::Vertical).first()->setRange(y_min-dy, y_max+dy);
 
-#if 0
-      QPixmap p = lcl_chartView->grab();
-      p.save("a.png", "PNG");
-#endif
-
       QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
       apl_command (cmd.toStdString ().c_str ());
       if (zset) {
@@ -123,6 +118,12 @@ MainWindow::handleExpression ()
       }
     }
   }
+}
+
+void
+MainWindow::valChanged (double d __attribute__((unused)))
+{
+  handleExpression ();
 }
 
 void
@@ -159,16 +160,26 @@ MainWindow::buildMenu (MainWindow *win)
   x_var_name->setText (xlbl);
   layout->addWidget (x_var_name, row, col++);
   
-  QString xmin = settings.value (X_VAR_MIN).toString ();
-  x_var_min = new  QLineEdit ();
-  x_var_min->setPlaceholderText ("x minimum value");
-  x_var_min->setText (xmin);
+  double xmin = settings.value (X_VAR_MIN).toDouble ();
+  x_var_min = new  QDoubleSpinBox ();
+  x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
+  x_var_min->setToolTip ("x minimum value");
+  x_var_min->setValue (xmin);
+  QObject::connect (x_var_min,
+		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		    this,
+		    &MainWindow::valChanged);
   layout->addWidget (x_var_min, row, col++);
 
-  QString xmax = settings.value (X_VAR_MAX).toString ();
-  x_var_max = new  QLineEdit ();
-  x_var_max->setPlaceholderText ("x maximum value");
-  x_var_max->setText (xmax);
+  double xmax = settings.value (X_VAR_MAX).toDouble ();
+  x_var_max = new  QDoubleSpinBox ();
+  x_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
+  x_var_max->setToolTip ("x maximum value");
+  x_var_max->setValue (xmax);
+  QObject::connect (x_var_max,
+		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		    this,
+		    &MainWindow::valChanged);
   layout->addWidget (x_var_max, row, col++);
   
   QString x_text = settings.value (X_TITLE).toString ();
@@ -188,16 +199,26 @@ MainWindow::buildMenu (MainWindow *win)
   z_var_name->setText (zlbl);
   layout->addWidget (z_var_name, row, col++);
 
-  QString zmin = settings.value (Z_VAR_MIN).toString ();
-  z_var_min = new  QLineEdit ();
-  z_var_min->setPlaceholderText ("z minimum value");
-  z_var_min->setText (zmin);
+  double zmin = settings.value (Z_VAR_MIN).toDouble ();
+  z_var_min = new  QDoubleSpinBox ();
+  z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
+  z_var_min->setToolTip ("z minimum value");
+  z_var_min->setValue (zmin);
+  QObject::connect (z_var_min,
+		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		    this,
+		    &MainWindow::valChanged);
   layout->addWidget (z_var_min, row, col++);
 
-  QString zmax = settings.value (Z_VAR_MAX).toString ();
-  z_var_max = new  QLineEdit ();
-  z_var_max->setPlaceholderText ("z maximum value");
-  z_var_max->setText (zmax);
+  double zmax = settings.value (Z_VAR_MAX).toDouble ();
+  z_var_max = new  QDoubleSpinBox ();
+  z_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
+  z_var_max->setToolTip ("z maximum value");
+  z_var_max->setValue (zmax);
+  QObject::connect (z_var_max,
+		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		    this,
+		    &MainWindow::valChanged);
   layout->addWidget (z_var_max, row, col++);
   
   QString z_text = settings.value (Z_TITLE).toString ();

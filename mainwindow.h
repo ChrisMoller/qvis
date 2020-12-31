@@ -35,6 +35,7 @@ public slots:
 
 private slots:
   void handleExpression ();
+  void valChanged(double d);
   
 private:
   QChartView *lcl_chartView;
@@ -43,12 +44,12 @@ private:
   QLineEdit *y_title;
   QLineEdit *x_title;
   QLineEdit *x_var_name;
-  QLineEdit *x_var_min;
-  QLineEdit *x_var_max;
+  QDoubleSpinBox *x_var_min;
+  QDoubleSpinBox *x_var_max;
   QLineEdit *z_title;
   QLineEdit *z_var_name;
-  QLineEdit *z_var_min;
-  QLineEdit *z_var_max;
+  QDoubleSpinBox *z_var_min;
+  QDoubleSpinBox *z_var_max;
   QLineEdit *apl_expression;
   QLineEdit *fcn_label;
   QSettings settings;
