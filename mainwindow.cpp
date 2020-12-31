@@ -23,7 +23,8 @@ MainWindow::handleExpression ()
   QString input = apl_expression->text ();
   int incr = 16;
 
-  if (!xlbl.isEmpty () && !input.isEmpty ()) {
+  if (!xlbl.isEmpty () && !xmin.isEmpty () && !xmax.isEmpty () &&
+      !input.isEmpty ()) {
     /***
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
     ***/
@@ -32,10 +33,12 @@ MainWindow::handleExpression ()
       .arg(xlbl).arg(xmin).arg(incr).arg(xmax);
     apl_exec (range_x.toStdString ().c_str ());
 
-    if (!zlbl.isEmpty ()) {
+    bool zset = false;
+    if (!zlbl.isEmpty () && !zmin.isEmpty () && !zmax.isEmpty ()) {
       QString range_z =
 	QString ("%1 ← %2 + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
 	.arg(zlbl).arg(zmin).arg(incr).arg(zmax);
+      zset = true;
       apl_exec (range_z.toStdString ().c_str ());
     }
   
@@ -53,7 +56,7 @@ MainWindow::handleExpression ()
       lcl_chart->createDefaultAxes ();
       QString cmd = QString (")erase %1").arg (expvar).arg (xlbl);
       apl_command (cmd.toStdString ().c_str ());
-      if (!zlbl.isEmpty ()) {
+      if (zset) {
 	cmd = QString (")erase %1").arg (zlbl);
 	apl_command (cmd.toStdString ().c_str ());
       }
