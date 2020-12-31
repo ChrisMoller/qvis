@@ -8,6 +8,7 @@
 QT_CHARTS_USE_NAMESPACE
 
 // for settings
+#define LOAD_WS    "load_ws"
 #define X_VAR_NAME "x_var_name"
 #define X_VAR_MIN  "x_var_min"
 #define X_VAR_MAX  "x_var_max"

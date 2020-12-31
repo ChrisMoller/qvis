@@ -112,23 +112,6 @@ MainWindow::buildMenu (MainWindow *win)
 
   QSettings settings;
 
-#if 0
-  /*   compute button   */
-
-  QString compute_button_style ("background-color: yellow; color: red;");
-  QFont   compute_button_font ("bold");
-  QPushButton *compute_button = new QPushButton (QObject::tr ("Switch curves"));
-  compute_button->setStyleSheet (compute_button_style);
-  compute_button->setFont (compute_button_font);
-  compute_button->setToolTip ("Switch curves");
-  layout->addWidget (compute_button, 0, 0);
-
-  QObject::connect (compute_button,
-		    SIGNAL (clicked ()),
-		    win,
-		    SLOT (setValue()));
-#endif
-
   /*  x indep vbl */
 
   QString xlbl = settings.value (X_VAR_NAME).toString ();
@@ -189,6 +172,21 @@ MainWindow::buildMenu (MainWindow *win)
 		    &MainWindow::handleExpression);
 
 
+
+  /*   compute button   */
+
+  QString compute_button_style ("background-color: yellow; color: red;");
+  QFont   compute_button_font ("bold");
+  QPushButton *compute_button = new QPushButton (QObject::tr ("Execute"));
+  compute_button->setStyleSheet (compute_button_style);
+  compute_button->setFont (compute_button_font);
+  compute_button->setToolTip ("Switch curves");
+  layout->addWidget (compute_button, 3, 0);
+
+  QObject::connect (compute_button,
+		    SIGNAL (clicked ()),
+		    win,
+		    SLOT (handleExpression()));
 
   /*   quit button   */
 
