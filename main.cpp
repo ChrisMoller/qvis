@@ -4,11 +4,35 @@
 #include <QtCharts/QLineSeries>
 #include <QtMath>
 
-#include "mainwindow.h"
-
 #include <apl/libapl.h>
 
+
+#include "mainwindow.h"
+
 QT_CHARTS_USE_NAMESPACE
+
+static QChartView *chartView = nullptr;
+
+void
+QGraphicsView::mousePressEvent(QMouseEvent *event)
+{
+  // https://doc.qt.io/qt-5/qgraphicsview.html#mousePressEvent
+  // https://doc.qt.io/qt-5/qmouseevent.html
+  if (event->button () == 2) {
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setNameFilter(tr("Images (*.png *.xpm *.jpg)"));
+    dialog.setViewMode(QFileDialog::Detail);
+    QStringList fileNames;
+    if (dialog.exec()) {
+      fileNames = dialog.selectedFiles();
+      QString fn = fileNames.first ();
+      QPixmap p = chartView->grab();
+      p.save(fn);
+    }
+  }
+}
 
 int
 main (int argc, char *argv[])
@@ -42,13 +66,14 @@ main (int argc, char *argv[])
 
   if (!ws.isEmpty ()) {
     std::string cmd = ")load " + ws.toStdString ();
-    apl_command (cmd.c_str ());
+    /*const char *rc =*/ apl_command (cmd.c_str ());
+    //    fprintf (stderr, "rc = \"%s\"\n", rc);
     settings.setValue (LOAD_WS, ws);
   }
   
   QChart *chart = new QChart ();
 
-  QChartView *chartView = new QChartView (chart);
+  chartView = new QChartView (chart);
   chartView->setRenderHint (QPainter::Antialiasing);
 
   MainWindow window (chartView);
