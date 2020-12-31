@@ -46,6 +46,8 @@ MainWindow::handleExpression ()
       QString ("%1 ← %2 + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
       .arg(xlbl).arg(xmin).arg(incr).arg(xmax);
     apl_exec (range_x.toStdString ().c_str ());
+    APL_value xvals =
+      get_var_value (xlbl.toStdString ().c_str (), "something");
 
     //    https://doc.qt.io/qt-5/qtcharts-splinechart-example.html
 
@@ -70,13 +72,12 @@ MainWindow::handleExpression ()
       uint64_t count = get_element_count (res);
 #ifdef POINTS
       QLineSeries *series = new QLineSeries ();
-      for (uint64_t i = 0; i < count; i++) 
-	series->append ((qreal)i, (qreal)get_real (res, i));
 #else	// splines
       QSplineSeries *series = new QSplineSeries ();
-      for (uint64_t i = 0; i < count; i++) 
-	series->append ((qreal)i, (qreal)get_real (res, i));
 #endif
+      for (uint64_t i = 0; i < count; i++) 
+	series->append ((qreal)get_real (xvals, i), (qreal)get_real (res, i));
+      series->setName("example curve");
       lcl_chart->addSeries (series);
       lcl_chart->createDefaultAxes ();
       QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
@@ -173,7 +174,7 @@ MainWindow::buildMenu (MainWindow *win)
 
   QString zmax = settings.value (Z_VAR_MAX).toString ();
   z_var_max = new  QLineEdit ();
-  x_var_max->setPlaceholderText ("z maximum value");
+  z_var_max->setPlaceholderText ("z maximum value");
   z_var_max->setText (zmax);
   layout->addWidget (z_var_max, 1, 2);
 
