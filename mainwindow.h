@@ -7,9 +7,15 @@
 
 QT_CHARTS_USE_NAMESPACE
 
-#define USE_SIN 0
-#define USE_COS 1
-#define USE_MAX 2
+// for settings
+#define X_VAR_NAME "x_var_name"
+#define X_VAR_MIN  "x_var_min"
+#define X_VAR_MAX  "x_var_max"
+#define Z_VAR_NAME "z_var_name"
+#define Z_VAR_MIN  "z_var_min"
+#define Z_VAR_MAX  "z_var_max"
+#define FUNCTION   "function"
+#define FCN_LABEL  "function_label"
 
 class MainWindow : public QMainWindow
 {
@@ -24,10 +30,8 @@ public slots:
 
 private slots:
   void handleExpression ();
-  void setValue ();
   
 private:
-  int use_func;
   QChart *lcl_chart;
   QLineEdit *x_var_name;
   QLineEdit *x_var_min;

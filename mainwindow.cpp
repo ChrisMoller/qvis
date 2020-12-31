@@ -11,16 +11,6 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
-// for settings
-#define X_VAR_NAME "x_var_name"
-#define X_VAR_MIN  "x_var_min"
-#define X_VAR_MAX  "x_var_max"
-#define Z_VAR_NAME "z_var_name"
-#define Z_VAR_MIN  "z_var_min"
-#define Z_VAR_MAX  "z_var_max"
-#define FUNCTION   "function"
-#define FCN_LABEL  "function_label"
-
 void
 MainWindow::handleExpression ()
 {
@@ -112,29 +102,6 @@ MainWindow::handleExpression ()
       }
     }
   }
-}
-
-void
-MainWindow::setValue ()
-{
-  lcl_chart->removeAllSeries();
-  QLineSeries *series = new QLineSeries ();
-
-  qreal x;
-  switch (use_func) {
-  case USE_COS:
-    for (x = 0.0; x < 6.28; x += 0.1) series->append (x, 2.0*qCos (x));
-    lcl_chart->setTitle ("Cosine curve");
-    break;
-  case USE_SIN:
-    for (x = 0.0; x < 6.28; x += 0.1) series->append (x, qSin (x));
-    lcl_chart->setTitle ("Sine curve");
-    break;
-  }
-  if (++use_func >= USE_MAX) use_func = 0;
-      
-  lcl_chart->addSeries (series);
-  lcl_chart->createDefaultAxes ();
 }
 
 void
@@ -249,13 +216,12 @@ MainWindow::buildMenu (MainWindow *win)
 MainWindow::MainWindow (QChartView *chartView, QWidget *parent)
   : QMainWindow(parent)
 {
-  use_func = USE_SIN;
   lcl_chart = chartView->chart ();
   chartView->setRenderHint(QPainter::Antialiasing);
 
   buildMenu (this);
 
-  setValue ();
+  handleExpression ();
 }
 
 MainWindow::~MainWindow()

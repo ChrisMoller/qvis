@@ -2,6 +2,8 @@ QT += core gui widgets charts
 
 CONFIG += c++11
 
+DEL_DIR = echo
+
 #LIBS += -L/usr/local/lib/apl -lapl
 LIBS += -L`apl --show_lib_dir` -lapl
 
@@ -22,4 +24,6 @@ FORMS +=
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /usr/local/bin
+
 !isEmpty(target.path): INSTALLS += target
+
