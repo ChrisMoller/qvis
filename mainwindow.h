@@ -36,6 +36,7 @@ private:
   QLineEdit *z_var_min;
   QLineEdit *z_var_max;
   QLineEdit *apl_expression;
+  QLineEdit *fcn_label;
   QSettings settings;
 };
 #endif // MAINWINDOW_H

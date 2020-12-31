@@ -19,6 +19,7 @@ QT_CHARTS_USE_NAMESPACE
 #define Z_VAR_MIN  "z_var_min"
 #define Z_VAR_MAX  "z_var_max"
 #define FUNCTION   "function"
+#define FCN_LABEL  "function_label"
 
 void
 MainWindow::handleExpression ()
@@ -32,6 +33,7 @@ MainWindow::handleExpression ()
   QString zmax = z_var_max->text ();
 
   QString input = apl_expression->text ();
+  QString flbl  = fcn_label->text ();
   int incr = 16;
 
   if (!xlbl.isEmpty () && !xmin.isEmpty () && !xmax.isEmpty () &&
@@ -40,6 +42,7 @@ MainWindow::handleExpression ()
     settings.setValue (X_VAR_MIN,  xmin);
     settings.setValue (X_VAR_MAX,  xmax);
     settings.setValue (FUNCTION,   input);
+    settings.setValue (FCN_LABEL,  flbl);
     /***
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
     ***/
@@ -84,9 +87,21 @@ MainWindow::handleExpression ()
 	if (y_min > y_val) y_min = y_val;
 	series->append ((qreal)get_real (xvals, i), y_val);
       }
-      series->setName("example curve");
+      series->setName(flbl);
       lcl_chart->addSeries (series);
       lcl_chart->createDefaultAxes ();
+      /***
+	  QChart::ChartThemeLight
+	  QChart::ChartThemeBlueCerulean
+	  QChart::ChartThemeDark
+	  QChart::ChartThemeBrownSand
+	  QChart::ChartThemeBlueNcs
+	  QChart::ChartThemeHighContrast
+	  QChart::ChartThemeBlueIcy
+	  QChart::ChartThemeQt
+       ***/
+      lcl_chart->setTheme (QChart::ChartThemeBlueCerulean);
+    
       qreal dy = 0.075 * (y_max - y_min);
       lcl_chart->axes (Qt::Vertical).first()->setRange(y_min-dy, y_max+dy);
       QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
@@ -190,10 +205,16 @@ MainWindow::buildMenu (MainWindow *win)
 
   /*  APL expression */
 
+  QString flbl = settings.value (FCN_LABEL).toString ();
+  fcn_label = new  QLineEdit ();
+  fcn_label->setPlaceholderText ("curve label");
+  fcn_label->setText (flbl);
+  layout->addWidget (fcn_label, 2, 0);
+
   QString fcn = settings.value (FUNCTION).toString ();
   apl_expression = new  QLineEdit ();
   apl_expression->setText (fcn);
-  layout->addWidget (apl_expression, 2, 0);
+  layout->addWidget (apl_expression, 2, 1, 1, 2);
 
   QObject::connect (apl_expression,
 		    &QLineEdit::editingFinished,
