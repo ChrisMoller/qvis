@@ -66,17 +66,18 @@ main (int argc, char *argv[])
 
   if (!ws.isEmpty ()) {
     std::string cmd = ")load " + ws.toStdString ();
-    /*const char *rc =*/ apl_command (cmd.c_str ());
-    //    fprintf (stderr, "rc = \"%s\"\n", rc);
+    const char *rc = apl_command (cmd.c_str ());
+    fprintf (stderr, "rc = \"%s\"\n", rc);
     settings.setValue (LOAD_WS, ws);
   }
   
-  QChart *chart = new QChart ();
+  QChart *chart      = new QChart ();
+  QPolarChart *polarchart = new QPolarChart ();
 
-  chartView = new QChartView (chart);
+  chartView = new QChartView ();
+  MainWindow window (chartView, chart, polarchart);
   chartView->setRenderHint (QPainter::Antialiasing);
 
-  MainWindow window (chartView);
   window.setCentralWidget (chartView);
   window.resize (400, 300);
   window.show ();

@@ -1,8 +1,10 @@
 #include <QtWidgets>
+#include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
+#include <QPolarChart>
 #include <values.h>
 #include <apl/libapl.h>
 
@@ -12,9 +14,29 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
+#if 0
+static void
+handle_polar ()
+{
+  fprintf (stderr, "handling polar\n");
+}
+#endif
+
 void
 MainWindow::handleExpression ()
 {
+  Qt::CheckState polar_checked = do_polar->checkState();
+  bool is_polar = (polar_checked == Qt::Checked) ? true : false;
+  settings.setValue (DO_POLAR, is_polar);
+  lcl_chartView->setChart (is_polar ? lcl_polarchart : lcl_chart);
+
+#if 0
+  if (is_polar) {
+    handle_polar ();
+    return;
+  }
+#endif
+		     
   QString xlbl = x_var_name->text ();
   double  xmin = x_var_min->value ();
   double  xmax = x_var_max->value ();
@@ -62,24 +84,36 @@ MainWindow::handleExpression ()
 
     APL_value res = get_var_value (expvar, "something");
     if (res) {
-      lcl_chart->removeAllSeries();
+      lcl_chartView->chart ()->removeAllSeries();
       uint64_t count = get_element_count (res);
-#ifdef POINTS
-      QLineSeries *series = new QLineSeries ();
-#else	// splines
-      QSplineSeries *series = new QSplineSeries ();
-#endif
       qreal y_max = -MAXDOUBLE;
       qreal y_min =  MAXDOUBLE;
+
+      QSplineSeries *sseries = nullptr;
+      QLineSeries   *pseries = nullptr;
+      Qt::CheckState spline_checked = do_spline->checkState();
+      settings.setValue (DO_SPLINE,  spline_checked);
+      if (spline_checked == Qt::Checked) 
+	sseries = new QSplineSeries ();
+      else 
+	pseries = new QLineSeries ();
       for (uint64_t i = 0; i < count; i++) {
 	qreal y_val = (qreal)get_real (res, i);
 	if (y_max < y_val) y_max = y_val;
 	if (y_min > y_val) y_min = y_val;
-	series->append ((qreal)get_real (xvals, i), y_val);
+	if (sseries) sseries->append ((qreal)get_real (xvals, i), y_val);
+	else pseries->append ((qreal)get_real (xvals, i), y_val);
       }
-      series->setName(flbl);
-      lcl_chart->addSeries (series);
-      lcl_chart->createDefaultAxes ();
+      if (sseries) {
+	sseries->setName(flbl);
+	lcl_chartView->chart ()->addSeries (sseries);
+      }
+      else {
+	pseries->setName(flbl);
+	lcl_chartView->chart ()->addSeries (pseries);
+      }
+
+      lcl_chartView->chart ()->createDefaultAxes ();
 
 
       // fixme -- make theme selectable
@@ -93,22 +127,25 @@ MainWindow::handleExpression ()
 	  QChart::ChartThemeBlueIcy
 	  QChart::ChartThemeQt
        ***/
-      lcl_chart->setTheme (QChart::ChartThemeBlueCerulean);
+      lcl_chartView->chart ()->setTheme (QChart::ChartThemeBlueCerulean);
 
       QString ttl = chart_title->text ();
       settings.setValue (CHART_TITLE,  ttl);
-      lcl_chart->setTitle (ttl);
+      lcl_chartView->chart ()->setTitle (ttl);
       
       QString x_ttl = x_title->text ();
       settings.setValue (X_TITLE,  x_ttl);
-      lcl_chart->axes (Qt::Horizontal).first()->setTitleText(x_ttl);
+      lcl_chartView->chart ()->axes (Qt::Horizontal).first()
+	->setTitleText(x_ttl);
       
       QString y_ttl = y_title->text ();
       settings.setValue (Y_TITLE,  y_ttl);
-      lcl_chart->axes (Qt::Vertical).first()->setTitleText(y_ttl);
+      lcl_chartView->chart ()->axes (Qt::Vertical).first()
+	->setTitleText(y_ttl);
     
       qreal dy = 0.075 * (y_max - y_min);
-      lcl_chart->axes (Qt::Vertical).first()->setRange(y_min-dy, y_max+dy);
+      lcl_chartView->chart ()->axes (Qt::Vertical).first()
+	->setRange(y_min-dy, y_max+dy);
 
       QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
       apl_command (cmd.toStdString ().c_str ());
@@ -121,13 +158,14 @@ MainWindow::handleExpression ()
 }
 
 void
-MainWindow::valChanged (double d __attribute__((unused)))
+MainWindow::valChanged (bool enabled __attribute__((unused)))
 {
   handleExpression ();
 }
 
 void
-MainWindow::buildMenu (MainWindow *win)
+MainWindow::buildMenu (MainWindow *win, QChart *chart,
+			QPolarChart *polarchart)
 {
   QGroupBox *formGroupBox = new QGroupBox ("Visualisation");
   QGridLayout *layout = new QGridLayout;
@@ -243,7 +281,6 @@ MainWindow::buildMenu (MainWindow *win)
   apl_expression->setPlaceholderText ("function");
   apl_expression->setText (fcn);
   layout->addWidget (apl_expression, row, col, 1, 3);
-
   QObject::connect (apl_expression,
 		    &QLineEdit::editingFinished,
 		    this,
@@ -251,10 +288,27 @@ MainWindow::buildMenu (MainWindow *win)
 
 
   /*  toggles */
-
-  bool doit = settings.value (DO_SPLINE).toBool ();
+  
+  row++;
+  col = 0;
+  
+  bool dospl = settings.value (DO_SPLINE).toBool ();
   do_spline = new QCheckBox ("Spline");
-  do_spline->setCheckState (doit ? Qt::Checked : Qt::Unchecked);
+  do_spline->setCheckState (dospl ? Qt::Checked : Qt::Unchecked);
+  layout->addWidget (do_spline, row, col++);
+  connect(do_spline,
+	  &QCheckBox::stateChanged,
+	  this,
+	  &MainWindow::valChanged);
+  
+  bool dopol = settings.value (DO_POLAR).toBool ();
+  do_polar = new QCheckBox ("Polar");
+  do_polar->setCheckState (dopol ? Qt::Checked : Qt::Unchecked);
+  layout->addWidget (do_polar, row, col++);
+  connect(do_polar,
+	  &QCheckBox::stateChanged,
+	  this,
+	  &MainWindow::valChanged);
 
 
   /*   buttons */
@@ -269,7 +323,6 @@ MainWindow::buildMenu (MainWindow *win)
   compute_button->setFont (compute_button_font);
   compute_button->setToolTip ("Switch curves");
   layout->addWidget (compute_button, row, 0);
-
   QObject::connect (compute_button,
 		    SIGNAL (clicked ()),
 		    win,
@@ -296,16 +349,24 @@ MainWindow::buildMenu (MainWindow *win)
 
   formGroupBox->setLayout (layout);
   formGroupBox->show ();
-}
 
-MainWindow::MainWindow (QChartView *chartView, QWidget *parent)
+  lcl_chartView->setChart (dopol ? polarchart : chart);
+}
+MainWindow::MainWindow (QChartView *chartView, QChart *chart,
+			QPolarChart *polarchart, QWidget *parent)
   : QMainWindow(parent)
 {
-  lcl_chartView = chartView;
-  lcl_chart = chartView->chart ();
+#if 0
+  Qt::CheckState polar_checked = do_polar->checkState();
+  settings.setValue (DO_POLAR,  polar_checked);
+  chartView->setChart ((polar_checked == Qt::Checked) ? polarchart : chart);
+#endif
+  lcl_chartView  = chartView;
+  lcl_chart      = chart;
+  lcl_polarchart = polarchart;
   chartView->setRenderHint(QPainter::Antialiasing);
 
-  buildMenu (this);
+  buildMenu (this, chart, polarchart);
 
   handleExpression ();
 }

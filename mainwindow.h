@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QMainWindow>
 #include <QtCharts/QChartView>
+#include <QPolarChart>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -22,28 +23,31 @@ QT_CHARTS_USE_NAMESPACE
 #define FUNCTION   "function"
 #define FCN_LABEL  "function_label"
 #define DO_SPLINE  "do_spline"
+#define DO_POLAR   "do_polar"
 
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
 
 public:
-  MainWindow(QChartView *chartView, QWidget *parent = nullptr);
+  MainWindow(QChartView *chartView, QChart *chart, QPolarChart *polarchart,
+	     QWidget *parent = nullptr);
   ~MainWindow();
-  void buildMenu (MainWindow *win);
+  void buildMenu (MainWindow *win, QChart *chart, QPolarChart *polarchart);
 
 public slots:
 
 private slots:
   void handleExpression ();
-  void valChanged(double d);
+  void valChanged(bool enabled);
   
 private:
-  QChartView *lcl_chartView;
-  QChart *lcl_chart;
-  QLineEdit *chart_title;
-  QLineEdit *y_title;
-  QLineEdit *x_title;
+  QChartView	*lcl_chartView;
+  QChart	*lcl_chart;
+  QPolarChart	*lcl_polarchart;
+  QLineEdit	*chart_title;
+  QLineEdit	*y_title;
+  QLineEdit	*x_title;
   QLineEdit *x_var_name;
   QDoubleSpinBox *x_var_min;
   QDoubleSpinBox *x_var_max;
@@ -54,6 +58,7 @@ private:
   QLineEdit *apl_expression;
   QLineEdit *fcn_label;
   QSettings settings;
-  QCheckBox do_spline;
+  QCheckBox *do_spline;
+  QCheckBox *do_polar;
 };
 #endif // MAINWINDOW_H
