@@ -14,14 +14,6 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
-#if 0
-static void
-handle_polar ()
-{
-  fprintf (stderr, "handling polar\n");
-}
-#endif
-
 void
 MainWindow::handleExpression ()
 {
@@ -29,13 +21,6 @@ MainWindow::handleExpression ()
   bool is_polar = (polar_checked == Qt::Checked) ? true : false;
   settings.setValue (DO_POLAR, is_polar);
   lcl_chartView->setChart (is_polar ? lcl_polarchart : lcl_chart);
-
-#if 0
-  if (is_polar) {
-    handle_polar ();
-    return;
-  }
-#endif
 		     
   QString xlbl = x_var_name->text ();
   double  xmin = x_var_min->value ();
@@ -356,11 +341,6 @@ MainWindow::MainWindow (QChartView *chartView, QChart *chart,
 			QPolarChart *polarchart, QWidget *parent)
   : QMainWindow(parent)
 {
-#if 0
-  Qt::CheckState polar_checked = do_polar->checkState();
-  settings.setValue (DO_POLAR,  polar_checked);
-  chartView->setChart ((polar_checked == Qt::Checked) ? polarchart : chart);
-#endif
   lcl_chartView  = chartView;
   lcl_chart      = chart;
   lcl_polarchart = polarchart;
