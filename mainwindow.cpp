@@ -1,3 +1,20 @@
+/***
+    qvis edif Copyright (C) 2021  Dr. C. H. L. Moller
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ***/
+
 #include <QtWidgets>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
@@ -13,6 +30,40 @@ QT_CHARTS_USE_NAMESPACE
 #include "mainwindow.h"
 
 #define expvar "expvarλ"
+
+void
+MainWindow::themeChanged (int newtheme __attribute__((unused)))
+{
+  theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
+}
+
+void
+MainWindow::handleSettings ()
+{
+  QGridLayout *layout = new QGridLayout;
+  
+  themebox = new QComboBox ();
+  themebox->addItem ("Light", QChart::ChartThemeLight);
+  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+  themebox->addItem ("Dark", QChart::ChartThemeDark);
+  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
+  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
+  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
+  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
+  themebox->addItem ("Qt", QChart::ChartThemeQt);
+
+  connect(themebox,
+	  QOverload<int>::of(&QComboBox::activated),
+	  this,
+	  &MainWindow::themeChanged);
+  
+  layout->addWidget(themebox, 0, 0);
+  
+  QDialog dialog;
+  dialog.setLayout (layout);
+  dialog.exec ();
+  handleExpression ();
+}
 
 void
 MainWindow::handleExpression ()
@@ -100,19 +151,7 @@ MainWindow::handleExpression ()
 
       lcl_chartView->chart ()->createDefaultAxes ();
 
-
-      // fixme -- make theme selectable
-      /***
-	  QChart::ChartThemeLight
-	  QChart::ChartThemeBlueCerulean
-	  QChart::ChartThemeDark
-	  QChart::ChartThemeBrownSand
-	  QChart::ChartThemeBlueNcs
-	  QChart::ChartThemeHighContrast
-	  QChart::ChartThemeBlueIcy
-	  QChart::ChartThemeQt
-       ***/
-      lcl_chartView->chart ()->setTheme (QChart::ChartThemeBlueCerulean);
+      lcl_chartView->chart ()->setTheme (theme);
 
       QString ttl = chart_title->text ();
       settings.setValue (CHART_TITLE,  ttl);
@@ -301,13 +340,27 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   /*   compute button   */
 
   row++;
+  QString settings_button_style ("background-color: yellow; color: green;");
+  QFont   settings_button_font ("bold");
+  QPushButton *settings_button = new QPushButton (QObject::tr ("Settings"));
+  settings_button->setStyleSheet (settings_button_style);
+  settings_button->setFont (settings_button_font);
+  settings_button->setToolTip ("Set parameters");
+  layout->addWidget (settings_button, row, 0);
+  QObject::connect (settings_button,
+		    SIGNAL (clicked ()),
+		    win,
+		    SLOT (handleSettings()));
+
+  /*   compute button   */
+
   QString compute_button_style ("background-color: yellow; color: red;");
   QFont   compute_button_font ("bold");
   QPushButton *compute_button = new QPushButton (QObject::tr ("Draw"));
   compute_button->setStyleSheet (compute_button_style);
   compute_button->setFont (compute_button_font);
-  compute_button->setToolTip ("Switch curves");
-  layout->addWidget (compute_button, row, 0);
+  compute_button->setToolTip ("Draw");
+  layout->addWidget (compute_button, row, 1);
   QObject::connect (compute_button,
 		    SIGNAL (clicked ()),
 		    win,
@@ -337,6 +390,7 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
 
   lcl_chartView->setChart (dopol ? polarchart : chart);
 }
+
 MainWindow::MainWindow (QChartView *chartView, QChart *chart,
 			QPolarChart *polarchart, QWidget *parent)
   : QMainWindow(parent)
@@ -345,6 +399,7 @@ MainWindow::MainWindow (QChartView *chartView, QChart *chart,
   lcl_chart      = chart;
   lcl_polarchart = polarchart;
   chartView->setRenderHint(QPainter::Antialiasing);
+  theme = QChart::ChartThemeBlueCerulean;
 
   buildMenu (this, chart, polarchart);
 
