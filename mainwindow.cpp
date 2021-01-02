@@ -53,6 +53,8 @@ MainWindow::handleSettings ()
   themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
   themebox->addItem ("Qt", QChart::ChartThemeQt);
 
+  themebox->setCurrentIndex (3);
+  
   connect(themebox,
 	  QOverload<int>::of(&QComboBox::activated),
 	  this,
@@ -149,6 +151,8 @@ MainWindow::handleExpression ()
 	lcl_chartView->chart ()->addSeries (pseries);
       }
 
+      settings.setValue (HEIGHT, lcl_chartView->height ());
+      settings.setValue (WIDTH, lcl_chartView->width ());
       lcl_chartView->chart ()->createDefaultAxes ();
 
       settings.setValue (THEME,  theme);
@@ -338,7 +342,7 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
 
   /*   buttons */
 
-  /*   compute button   */
+  /*   settings button   */
 
   row++;
   QString settings_button_style ("background-color: yellow; color: green;");
@@ -396,6 +400,12 @@ MainWindow::MainWindow (QChartView *chartView, QChart *chart,
 			QPolarChart *polarchart, QWidget *parent)
   : QMainWindow(parent)
 {
+
+  QVariant ww = settings.value (WIDTH);
+  QVariant hh = settings.value (HEIGHT);
+  if (ww.isValid () && hh.isValid ()) 
+    this->resize (ww.toInt (), hh.toInt ());
+  
   lcl_chartView  = chartView;
   lcl_chart      = chart;
   lcl_polarchart = polarchart;

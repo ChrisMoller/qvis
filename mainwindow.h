@@ -42,6 +42,8 @@ QT_CHARTS_USE_NAMESPACE
 #define DO_SPLINE  "do_spline"
 #define DO_POLAR   "do_polar"
 #define THEME      "theme"
+#define WIDTH      "width"
+#define HEIGHT     "height"
 
 class MainWindow : public QMainWindow
 {

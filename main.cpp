@@ -96,7 +96,6 @@ main (int argc, char *argv[])
   chartView->setRenderHint (QPainter::Antialiasing);
 
   window.setCentralWidget (chartView);
-  window.resize (400, 300);
   window.show ();
   return app.exec ();
 }
