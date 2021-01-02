@@ -35,6 +35,7 @@ void
 MainWindow::themeChanged (int newtheme __attribute__((unused)))
 {
   theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
+  handleExpression ();
 }
 
 void
@@ -62,7 +63,6 @@ MainWindow::handleSettings ()
   QDialog dialog;
   dialog.setLayout (layout);
   dialog.exec ();
-  handleExpression ();
 }
 
 void
@@ -151,6 +151,7 @@ MainWindow::handleExpression ()
 
       lcl_chartView->chart ()->createDefaultAxes ();
 
+      settings.setValue (THEME,  theme);
       lcl_chartView->chart ()->setTheme (theme);
 
       QString ttl = chart_title->text ();
@@ -399,7 +400,11 @@ MainWindow::MainWindow (QChartView *chartView, QChart *chart,
   lcl_chart      = chart;
   lcl_polarchart = polarchart;
   chartView->setRenderHint(QPainter::Antialiasing);
-  theme = QChart::ChartThemeBlueCerulean;
+
+  QVariant tt = settings.value (THEME);
+  theme = tt.isValid ()
+    ? (QChart::ChartTheme)tt.toInt ()
+    :  QChart::ChartThemeBlueCerulean;
 
   buildMenu (this, chart, polarchart);
 

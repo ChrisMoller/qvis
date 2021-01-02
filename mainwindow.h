@@ -41,6 +41,7 @@ QT_CHARTS_USE_NAMESPACE
 #define FCN_LABEL  "function_label"
 #define DO_SPLINE  "do_spline"
 #define DO_POLAR   "do_polar"
+#define THEME      "theme"
 
 class MainWindow : public QMainWindow
 {
