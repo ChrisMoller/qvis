@@ -32,6 +32,12 @@ QT_CHARTS_USE_NAMESPACE
 #define expvar "expvarλ"
 
 void
+MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
+{
+  fprintf (stderr, "byebye\n");
+}
+
+void
 MainWindow::themeChanged (int newtheme __attribute__((unused)))
 {
   theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
@@ -390,17 +396,10 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   quit_button->setToolTip ("Quit");
   layout->addWidget (quit_button, row, 3);
 
-#if 1
   QObject::connect (quit_button,
 		    SIGNAL (clicked ()),
 		    win,
 		    SLOT (byebye()));
-#else
-  QObject::connect (quit_button,
-		    &QPushButton::clicked,
-		    win,
-		    &QCoreApplication::quit);
-#endif
 
 
 
