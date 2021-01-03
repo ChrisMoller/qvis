@@ -38,6 +38,15 @@ MainWindow::themeChanged (int newtheme __attribute__((unused)))
   handleExpression ();
 }
 
+
+void
+MainWindow::byebye ()
+{
+  settings.setValue (HEIGHT, lcl_chartView->height ());
+  settings.setValue (WIDTH, lcl_chartView->width ());
+  QCoreApplication::quit ();
+}
+
 void
 MainWindow::handleSettings ()
 {
@@ -381,10 +390,17 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   quit_button->setToolTip ("Quit");
   layout->addWidget (quit_button, row, 3);
 
+#if 1
+  QObject::connect (quit_button,
+		    SIGNAL (clicked ()),
+		    win,
+		    SLOT (byebye()));
+#else
   QObject::connect (quit_button,
 		    &QPushButton::clicked,
 		    win,
 		    &QCoreApplication::quit);
+#endif
 
 
 

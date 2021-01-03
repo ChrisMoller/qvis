@@ -60,6 +60,7 @@ public slots:
 private slots:
   void handleExpression ();
   void handleSettings ();
+  void byebye ();
   void valChanged(bool enabled);
   void themeChanged(int newtheme);
   
