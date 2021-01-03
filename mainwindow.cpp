@@ -23,7 +23,9 @@
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <values.h>
+
 #include <apl/libapl.h>
+#include <apl/ErrorCode.hh>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -87,6 +89,52 @@ MainWindow::handleSettings ()
   dialog.exec ();
 }
 
+int
+MainWindow::handle_real_vector (APL_value res,
+				APL_value xvals,
+				QString flbl)
+{
+  int frc = 1;
+  
+  chartView->chart ()->removeAllSeries();
+  uint64_t count = get_element_count (res);
+  qreal y_max = -MAXDOUBLE;
+  qreal y_min =  MAXDOUBLE;
+
+  QSplineSeries *sseries = nullptr;
+  QLineSeries   *pseries = nullptr;
+  Qt::CheckState spline_checked = do_spline->checkState();
+  settings.setValue (DO_SPLINE,  spline_checked);
+  if (spline_checked == Qt::Checked) {
+    sseries = new QSplineSeries ();
+    sseries->setName(flbl);
+  }
+  else {
+    pseries = new QLineSeries ();
+    pseries->setName(flbl);
+  }
+  for (uint64_t i = 0; i < count; i++) {
+    qreal y_val = (qreal)get_real (res, i);
+    if (y_max < y_val) y_max = y_val;
+    if (y_min > y_val) y_min = y_val;
+    if (sseries) sseries->append ((qreal)get_real (xvals, i), y_val);
+    else pseries->append ((qreal)get_real (xvals, i), y_val);
+  }
+
+  if (sseries)
+    chartView->chart ()->addSeries (sseries);
+  else
+    chartView->chart ()->addSeries (pseries);
+
+  chartView->chart ()->createDefaultAxes ();
+    
+  qreal dy = 0.075 * (y_max - y_min);
+  chartView->chart ()->axes (Qt::Vertical).first()
+    ->setRange(y_min-dy, y_max+dy);
+
+  return frc;
+}
+
 void
 MainWindow::handleExpression ()
 {
@@ -103,16 +151,10 @@ MainWindow::handleExpression ()
   double  zmin = z_var_min->value ();
   double  zmax = z_var_max->value ();
 
-  QString input = apl_expression->text ();
   QString flbl  = fcn_label->text ();
   int incr = 16;
 
-  if (!xlbl.isEmpty () && !input.isEmpty ()) {
-    settings.setValue (X_VAR_NAME, xlbl);
-    settings.setValue (X_VAR_MIN,  xmin);
-    settings.setValue (X_VAR_MAX,  xmax);
-    settings.setValue (FUNCTION,   input);
-    settings.setValue (FCN_LABEL,  flbl);
+  if (!xlbl.isEmpty ()) {
     /***
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
     ***/
@@ -136,71 +178,51 @@ MainWindow::handleExpression ()
       zset = true;
       apl_exec (range_z.toStdString ().c_str ());
     }
-  
+
+    QString input = apl_expression->text ();
+    if (input.isEmpty ()) return;
     QString fcn = QString ("%1  ← %2").arg (expvar).arg (input);
-    apl_exec (fcn.toStdString ().c_str ());
+    int xrc = apl_exec (fcn.toStdString ().c_str ());
+    if (xrc != E_NO_ERROR) return;
 
     APL_value res = get_var_value (expvar, "something");
+
     if (res) {
-      chartView->chart ()->removeAllSeries();
-      uint64_t count = get_element_count (res);
-      qreal y_max = -MAXDOUBLE;
-      qreal y_min =  MAXDOUBLE;
+      int frc =  handle_real_vector (res, xvals, flbl);
 
-      QSplineSeries *sseries = nullptr;
-      QLineSeries   *pseries = nullptr;
-      Qt::CheckState spline_checked = do_spline->checkState();
-      settings.setValue (DO_SPLINE,  spline_checked);
-      if (spline_checked == Qt::Checked) 
-	sseries = new QSplineSeries ();
-      else 
-	pseries = new QLineSeries ();
-      for (uint64_t i = 0; i < count; i++) {
-	qreal y_val = (qreal)get_real (res, i);
-	if (y_max < y_val) y_max = y_val;
-	if (y_min > y_val) y_min = y_val;
-	if (sseries) sseries->append ((qreal)get_real (xvals, i), y_val);
-	else pseries->append ((qreal)get_real (xvals, i), y_val);
-      }
-      if (sseries) {
-	sseries->setName(flbl);
-	chartView->chart ()->addSeries (sseries);
-      }
-      else {
-	pseries->setName(flbl);
-	chartView->chart ()->addSeries (pseries);
-      }
+      if (frc) {
+	settings.setValue (X_VAR_NAME, xlbl);
+	settings.setValue (X_VAR_MIN,  xmin);
+	settings.setValue (X_VAR_MAX,  xmax);
+	settings.setValue (FCN_LABEL,  flbl);
+	settings.setValue (FUNCTION,   input);
 
-      settings.setValue (HEIGHT, chartView->height ());
-      settings.setValue (WIDTH, chartView->width ());
-      chartView->chart ()->createDefaultAxes ();
+	settings.setValue (HEIGHT, chartView->height ());
+	settings.setValue (WIDTH, chartView->width ());
 
-      settings.setValue (THEME,  theme);
-      chartView->chart ()->setTheme (theme);
+	settings.setValue (THEME,  theme);
+	chartView->chart ()->setTheme (theme);
 
-      QString ttl = chart_title->text ();
-      settings.setValue (CHART_TITLE,  ttl);
-      chartView->chart ()->setTitle (ttl);
+	QString ttl = chart_title->text ();
+	settings.setValue (CHART_TITLE,  ttl);
+	chartView->chart ()->setTitle (ttl);
       
-      QString x_ttl = x_title->text ();
-      settings.setValue (X_TITLE,  x_ttl);
-      chartView->chart ()->axes (Qt::Horizontal).first()
-	->setTitleText(x_ttl);
+	QString x_ttl = x_title->text ();
+	settings.setValue (X_TITLE,  x_ttl);
+	chartView->chart ()->axes (Qt::Horizontal).first()
+	  ->setTitleText(x_ttl);
       
-      QString y_ttl = y_title->text ();
-      settings.setValue (Y_TITLE,  y_ttl);
-      chartView->chart ()->axes (Qt::Vertical).first()
-	->setTitleText(y_ttl);
-    
-      qreal dy = 0.075 * (y_max - y_min);
-      chartView->chart ()->axes (Qt::Vertical).first()
-	->setRange(y_min-dy, y_max+dy);
+	QString y_ttl = y_title->text ();
+	settings.setValue (Y_TITLE,  y_ttl);
+	chartView->chart ()->axes (Qt::Vertical).first()
+	  ->setTitleText(y_ttl);
 
-      QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
-      apl_command (cmd.toStdString ().c_str ());
-      if (zset) {
-	cmd = QString (")erase %1").arg (zlbl);
+	QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
 	apl_command (cmd.toStdString ().c_str ());
+	if (zset) {
+	  cmd = QString (")erase %1").arg (zlbl);
+	  apl_command (cmd.toStdString ().c_str ());
+	}
       }
     }
   }

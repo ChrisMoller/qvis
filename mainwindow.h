@@ -25,6 +25,10 @@
 
 QT_CHARTS_USE_NAMESPACE
 
+
+#include <apl/libapl.h>
+#include <apl/ErrorCode.hh>
+
 // for settings
 #define LOAD_WS    "load_ws"
 #define CHART_TITLE "chart_title"
@@ -88,5 +92,8 @@ private:
   QCheckBox 	*do_polar;
   QChart::ChartTheme theme;
   QComboBox 	*themebox;
+  int	         handle_real_vector (APL_value res,
+				     APL_value xvals,
+				     QString flbl);
 };
 #endif // MAINWINDOW_H
