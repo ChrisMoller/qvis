@@ -34,7 +34,9 @@ QT_CHARTS_USE_NAMESPACE
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 {
-  fprintf (stderr, "byebye\n");
+  // chart x-ed out first
+  fprintf (stderr, "closeEvent\n");
+  byebye ();
 }
 
 void
@@ -48,8 +50,11 @@ MainWindow::themeChanged (int newtheme __attribute__((unused)))
 void
 MainWindow::byebye ()
 {
-  settings.setValue (HEIGHT, lcl_chartView->height ());
-  settings.setValue (WIDTH, lcl_chartView->width ());
+  // quit button pressed
+  // chart x-ed out second
+  fprintf (stderr, "byebye\n");
+  settings.setValue (HEIGHT, chartView->height ());
+  settings.setValue (WIDTH, chartView->width ());
   QCoreApplication::quit ();
 }
 
@@ -88,7 +93,7 @@ MainWindow::handleExpression ()
   Qt::CheckState polar_checked = do_polar->checkState();
   bool is_polar = (polar_checked == Qt::Checked) ? true : false;
   settings.setValue (DO_POLAR, is_polar);
-  lcl_chartView->setChart (is_polar ? lcl_polarchart : lcl_chart);
+  chartView->setChart (is_polar ? polarchart : chart);
 		     
   QString xlbl = x_var_name->text ();
   double  xmin = x_var_min->value ();
@@ -137,7 +142,7 @@ MainWindow::handleExpression ()
 
     APL_value res = get_var_value (expvar, "something");
     if (res) {
-      lcl_chartView->chart ()->removeAllSeries();
+      chartView->chart ()->removeAllSeries();
       uint64_t count = get_element_count (res);
       qreal y_max = -MAXDOUBLE;
       qreal y_min =  MAXDOUBLE;
@@ -159,36 +164,36 @@ MainWindow::handleExpression ()
       }
       if (sseries) {
 	sseries->setName(flbl);
-	lcl_chartView->chart ()->addSeries (sseries);
+	chartView->chart ()->addSeries (sseries);
       }
       else {
 	pseries->setName(flbl);
-	lcl_chartView->chart ()->addSeries (pseries);
+	chartView->chart ()->addSeries (pseries);
       }
 
-      settings.setValue (HEIGHT, lcl_chartView->height ());
-      settings.setValue (WIDTH, lcl_chartView->width ());
-      lcl_chartView->chart ()->createDefaultAxes ();
+      settings.setValue (HEIGHT, chartView->height ());
+      settings.setValue (WIDTH, chartView->width ());
+      chartView->chart ()->createDefaultAxes ();
 
       settings.setValue (THEME,  theme);
-      lcl_chartView->chart ()->setTheme (theme);
+      chartView->chart ()->setTheme (theme);
 
       QString ttl = chart_title->text ();
       settings.setValue (CHART_TITLE,  ttl);
-      lcl_chartView->chart ()->setTitle (ttl);
+      chartView->chart ()->setTitle (ttl);
       
       QString x_ttl = x_title->text ();
       settings.setValue (X_TITLE,  x_ttl);
-      lcl_chartView->chart ()->axes (Qt::Horizontal).first()
+      chartView->chart ()->axes (Qt::Horizontal).first()
 	->setTitleText(x_ttl);
       
       QString y_ttl = y_title->text ();
       settings.setValue (Y_TITLE,  y_ttl);
-      lcl_chartView->chart ()->axes (Qt::Vertical).first()
+      chartView->chart ()->axes (Qt::Vertical).first()
 	->setTitleText(y_ttl);
     
       qreal dy = 0.075 * (y_max - y_min);
-      lcl_chartView->chart ()->axes (Qt::Vertical).first()
+      chartView->chart ()->axes (Qt::Vertical).first()
 	->setRange(y_min-dy, y_max+dy);
 
       QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
@@ -408,30 +413,32 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   formGroupBox->setLayout (layout);
   formGroupBox->show ();
 
-  lcl_chartView->setChart (dopol ? polarchart : chart);
+  chartView->setChart (dopol ? polarchart : chart);
 }
 
-MainWindow::MainWindow (QChartView *chartView, QChart *chart,
-			QPolarChart *polarchart, QWidget *parent)
+MainWindow::MainWindow (QWidget *parent)
   : QMainWindow(parent)
 {
+  chart      = new QChart ();
+  polarchart = new QPolarChart ();
+  chartView = new QChartView ();
+  chartView->setRenderHint (QPainter::Antialiasing);
 
+  this->setCentralWidget (chartView);
+  
   QVariant ww = settings.value (WIDTH);
   QVariant hh = settings.value (HEIGHT);
   if (ww.isValid () && hh.isValid ()) 
     this->resize (ww.toInt (), hh.toInt ());
   
-  lcl_chartView  = chartView;
-  lcl_chart      = chart;
-  lcl_polarchart = polarchart;
-  chartView->setRenderHint(QPainter::Antialiasing);
-
   QVariant tt = settings.value (THEME);
   theme = tt.isValid ()
     ? (QChart::ChartTheme)tt.toInt ()
     :  QChart::ChartThemeBlueCerulean;
 
   buildMenu (this, chart, polarchart);
+
+  this->show ();
 
   handleExpression ();
 }

@@ -28,6 +28,7 @@
 
 QT_CHARTS_USE_NAMESPACE
 
+#if 0
 static QChartView *chartView = nullptr;
 
 void
@@ -50,6 +51,7 @@ QGraphicsView::mousePressEvent(QMouseEvent *event)
     }
   }
 }
+#endif
 
 int
 main (int argc, char *argv[])
@@ -84,18 +86,13 @@ main (int argc, char *argv[])
   if (!ws.isEmpty ()) {
     std::string cmd = ")load " + ws.toStdString ();
     const char *rc = apl_command (cmd.c_str ());
-    fprintf (stderr, "rc = \"%s\"\n", rc);
+    //    fprintf (stderr, "rc = \"%s\"\n", rc);
+    if (rc) free ((void *)rc);
     settings.setValue (LOAD_WS, ws);
   }
-  
-  QChart *chart      = new QChart ();
-  QPolarChart *polarchart = new QPolarChart ();
 
-  chartView = new QChartView ();
-  MainWindow window (chartView, chart, polarchart);
-  chartView->setRenderHint (QPainter::Antialiasing);
+  MainWindow window (nullptr);
 
-  window.setCentralWidget (chartView);
   window.show ();
   return app.exec ();
 }

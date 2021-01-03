@@ -50,8 +50,7 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  MainWindow(QChartView *chartView, QChart *chart, QPolarChart *polarchart,
-	     QWidget *parent = nullptr);
+  MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void buildMenu (MainWindow *win, QChart *chart, QPolarChart *polarchart);
 
@@ -69,25 +68,25 @@ private slots:
   
 private:
   void           createActions();
-  QChartView	*lcl_chartView;
-  QChart	*lcl_chart;
-  QPolarChart	*lcl_polarchart;
+  QChartView	*chartView;
+  QChart	*chart;
+  QPolarChart	*polarchart;
   QLineEdit	*chart_title;
   QLineEdit	*y_title;
   QLineEdit	*x_title;
-  QLineEdit *x_var_name;
+  QLineEdit 	*x_var_name;
   QDoubleSpinBox *x_var_min;
   QDoubleSpinBox *x_var_max;
-  QLineEdit *z_title;
-  QLineEdit *z_var_name;
+  QLineEdit 	*z_title;
+  QLineEdit 	*z_var_name;
   QDoubleSpinBox *z_var_min;
   QDoubleSpinBox *z_var_max;
-  QLineEdit *apl_expression;
-  QLineEdit *fcn_label;
-  QSettings settings;
-  QCheckBox *do_spline;
-  QCheckBox *do_polar;
+  QLineEdit 	*apl_expression;
+  QLineEdit 	*fcn_label;
+  QSettings 	 settings;
+  QCheckBox 	*do_spline;
+  QCheckBox 	*do_polar;
   QChart::ChartTheme theme;
-  QComboBox *themebox;
+  QComboBox 	*themebox;
 };
 #endif // MAINWINDOW_H
