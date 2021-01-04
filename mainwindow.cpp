@@ -15,6 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 
+// https://doc.qt.io/qt-5/qtdatavisualization-index.html
+
 #include <QtWidgets>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
@@ -25,7 +27,6 @@
 #include <values.h>
 
 #include <apl/libapl.h>
-#include <apl/ErrorCode.hh>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -183,7 +184,7 @@ MainWindow::handleExpression ()
     if (input.isEmpty ()) return;
     QString fcn = QString ("%1  ← %2").arg (expvar).arg (input);
     int xrc = apl_exec (fcn.toStdString ().c_str ());
-    if (xrc != E_NO_ERROR) return;
+    if (xrc != LAE_NO_ERROR) return;
 
     APL_value res = get_var_value (expvar, "something");
 

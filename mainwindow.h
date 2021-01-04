@@ -27,7 +27,6 @@ QT_CHARTS_USE_NAMESPACE
 
 
 #include <apl/libapl.h>
-#include <apl/ErrorCode.hh>
 
 // for settings
 #define LOAD_WS    "load_ws"
