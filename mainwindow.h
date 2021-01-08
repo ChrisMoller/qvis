@@ -76,6 +76,7 @@ private slots:
   
 private:
   void           createActions();
+  bool 		 saveFile(const QString &fileName);
   QChartView	*chartView;
   QChart	*chart;
   QPolarChart	*polarchart;
@@ -96,6 +97,7 @@ private:
   QCheckBox 	*do_polar;
   QChart::ChartTheme theme;
   QComboBox 	*themebox;
+  QString 	 curFile;
   void		 create_menuBar ();
   int	         handle_vector (APL_value res,
 				APL_value xvals,

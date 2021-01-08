@@ -325,6 +325,12 @@ MainWindow::newFile()
 #endif
 }
 
+bool
+MainWindow::saveFile(const QString &fileName  __attribute__((unused)))
+{
+  return true;
+}
+
 void
 MainWindow::open()
 {
@@ -340,7 +346,7 @@ MainWindow::open()
 bool
 MainWindow::save()
 {
-#if 0
+#if 1
   if (curFile.isEmpty()) {
     return saveAs();
   } else {
@@ -354,16 +360,12 @@ MainWindow::save()
 bool
 MainWindow::saveAs()
 {
-#if 0
   QFileDialog dialog(this);
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   if (dialog.exec() != QDialog::Accepted)
     return false;
   return saveFile(dialog.selectedFiles().first());
-#else
-  return true;
-#endif
 }
 
 void
