@@ -68,6 +68,11 @@ private slots:
   void byebye ();
   void valChanged(bool enabled);
   void themeChanged(int newtheme);
+  void newFile();
+  void open();
+  bool save();
+  bool saveAs();
+  void about();
   
 private:
   void           createActions();
@@ -91,8 +96,9 @@ private:
   QCheckBox 	*do_polar;
   QChart::ChartTheme theme;
   QComboBox 	*themebox;
-  int	         handle_real_vector (APL_value res,
-				     APL_value xvals,
-				     QString flbl);
+  void		 create_menuBar ();
+  int	         handle_vector (APL_value res,
+				APL_value xvals,
+				QString flbl);
 };
 #endif // MAINWINDOW_H

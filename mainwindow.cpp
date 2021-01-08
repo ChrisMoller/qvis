@@ -24,6 +24,8 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
+#include <QMenuBar>
+#include <complex>
 #include <values.h>
 
 #include <apl/libapl.h>
@@ -55,7 +57,7 @@ MainWindow::byebye ()
 {
   // quit button pressed
   // chart x-ed out second
-  fprintf (stderr, "byebye\n");
+  //  fprintf (stderr, "byebye\n");
   settings.setValue (HEIGHT, chartView->height ());
   settings.setValue (WIDTH, chartView->width ());
   QCoreApplication::quit ();
@@ -91,47 +93,73 @@ MainWindow::handleSettings ()
 }
 
 int
-MainWindow::handle_real_vector (APL_value res,
-				APL_value xvals,
-				QString flbl)
+MainWindow::handle_vector (APL_value res,
+			   APL_value xvals,
+			   QString flbl)
 {
-  int frc = 1;
+  uint64_t count = get_element_count (res);
+
+  int res_type = -1;
+  std::vector<std::complex<double>> vect (count);
+  for (uint64_t c = 0; c < count; c++) {
+    if (is_numeric (res, c)) {
+      if (res_type == -1) res_type = CCT_NUMERIC;
+      if (is_complex (res, c)) {
+	if (res_type == CCT_NUMERIC) res_type = CCT_COMPLEX;
+	vect[c] = std::complex<double> ((double)get_real (res, c),
+					(double)get_imag (res, c));
+      }
+      else
+	vect[c] = std::complex<double> ((double)get_real (res, c), 0.0);
+    }
+  }
+  
+  int frc = 0;
   
   chartView->chart ()->removeAllSeries();
-  uint64_t count = get_element_count (res);
   qreal y_max = -MAXDOUBLE;
   qreal y_min =  MAXDOUBLE;
+  //  qreal z_max = -MAXDOUBLE;
+  //  qreal z_min =  MAXDOUBLE;
 
-  QSplineSeries *sseries = nullptr;
-  QLineSeries   *pseries = nullptr;
-  Qt::CheckState spline_checked = do_spline->checkState();
-  settings.setValue (DO_SPLINE,  spline_checked);
-  if (spline_checked == Qt::Checked) {
-    sseries = new QSplineSeries ();
-    sseries->setName(flbl);
+  if (res_type == CCT_COMPLEX) {
+    // fixme
+    // complex vector vs idx, rank = 1
   }
   else {
-    pseries = new QLineSeries ();
-    pseries->setName(flbl);
-  }
-  for (uint64_t i = 0; i < count; i++) {
-    qreal y_val = (qreal)get_real (res, i);
-    if (y_max < y_val) y_max = y_val;
-    if (y_min > y_val) y_min = y_val;
-    if (sseries) sseries->append ((qreal)get_real (xvals, i), y_val);
-    else pseries->append ((qreal)get_real (xvals, i), y_val);
-  }
+    // real vector vs idx, rank = 1
+    QSplineSeries *sseries = nullptr;
+    QLineSeries   *pseries = nullptr;
+    Qt::CheckState spline_checked = do_spline->checkState();
+    settings.setValue (DO_SPLINE,  spline_checked);
+    if (spline_checked == Qt::Checked) {
+      sseries = new QSplineSeries ();
+      sseries->setName(flbl);
+    }
+    else {
+      pseries = new QLineSeries ();
+      pseries->setName(flbl);
+    }
+    for (uint64_t i = 0; i < count; i++) {
+      qreal y_val = (qreal)vect[i].real ();
+      if (y_max < y_val) y_max = y_val;
+      if (y_min > y_val) y_min = y_val;
+      if (sseries) sseries->append ((qreal)get_real (xvals, i), y_val);
+      else pseries->append ((qreal)get_real (xvals, i), y_val);
+    }
 
-  if (sseries)
-    chartView->chart ()->addSeries (sseries);
-  else
-    chartView->chart ()->addSeries (pseries);
+    if (sseries)
+      chartView->chart ()->addSeries (sseries);
+    else
+      chartView->chart ()->addSeries (pseries);
 
-  chartView->chart ()->createDefaultAxes ();
+    chartView->chart ()->createDefaultAxes ();
     
-  qreal dy = 0.075 * (y_max - y_min);
-  chartView->chart ()->axes (Qt::Vertical).first()
-    ->setRange(y_min-dy, y_max+dy);
+    qreal dy = 0.075 * (y_max - y_min);
+    chartView->chart ()->axes (Qt::Vertical).first()
+      ->setRange(y_min-dy, y_max+dy);
+    frc = 1;
+  }
 
   return frc;
 }
@@ -163,8 +191,11 @@ MainWindow::handleExpression ()
       QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
       .arg(xlbl).arg(xmin).arg(incr).arg(xmax);
     apl_exec (range_x.toStdString ().c_str ());
+    
+    char loc[256];
+    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
     APL_value xvals =
-      get_var_value (xlbl.toStdString ().c_str (), "something");
+      get_var_value (xlbl.toStdString ().c_str (), loc);
 
     //    https://doc.qt.io/qt-5/qtcharts-splinechart-example.html
 
@@ -186,10 +217,51 @@ MainWindow::handleExpression ()
     int xrc = apl_exec (fcn.toStdString ().c_str ());
     if (xrc != LAE_NO_ERROR) return;
 
-    APL_value res = get_var_value (expvar, "something");
+    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+    APL_value res = get_var_value (expvar, loc);
 
     if (res) {
-      int frc =  handle_real_vector (res, xvals, flbl);
+      int frc = 0;
+
+      int rank = get_rank (res);
+
+      // curves
+
+      switch (rank)  {
+      case 1:
+	frc =  handle_vector (res, xvals, flbl);
+	break;
+      case 2:
+	// real array vs idx, rank = 2, one curve per row
+
+	// real parametric array, rank = 2, row !sel vs row sel,
+	//       one curve per !sel
+
+      
+	// complex array vs idx, rank = 2, one curve per row
+
+	// complex parametric array, rank = 2, row !sel vs row sel, sel real
+      
+	// real parametric array, rank > 2, row !sel vs row sel,
+	//       one curve per !sel, sel real
+
+	// surfaces
+
+	// real array vs ix, iz, rank = 2
+
+
+	// complex array rank = 2, !sel vs re(sel),im(sel)
+
+	  break;
+      case 3:
+	// real array vs ix, iz, rank = 3. one surface plane
+	break;
+
+      default:
+	break;
+      }
+
+	
 
       if (frc) {
 	settings.setValue (X_VAR_NAME, xlbl);
@@ -219,10 +291,17 @@ MainWindow::handleExpression ()
 	  ->setTitleText(y_ttl);
 
 	QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
+	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+	release_value (res, loc);
+	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+	release_value (xvals, loc);
 	apl_command (cmd.toStdString ().c_str ());
 	if (zset) {
 	  cmd = QString (")erase %1").arg (zlbl);
 	  apl_command (cmd.toStdString ().c_str ());
+	  // fixme
+	  // sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+	  // release_value (zvals, loc);
 	}
       }
     }
@@ -236,9 +315,134 @@ MainWindow::valChanged (bool enabled __attribute__((unused)))
 }
 
 void
+MainWindow::newFile()
+{
+#if 0
+  if (maybeSave()) {
+    textEdit->clear();
+    setCurrentFile(QString());
+  }
+#endif
+}
+
+void
+MainWindow::open()
+{
+#if 0
+  if (maybeSave()) {
+    QString fileName = QFileDialog::getOpenFileName(this);
+    if (!fileName.isEmpty())
+      loadFile(fileName);
+  }
+#endif
+}
+
+bool
+MainWindow::save()
+{
+#if 0
+  if (curFile.isEmpty()) {
+    return saveAs();
+  } else {
+    return saveFile(curFile);
+  }
+#else
+  return true;
+#endif
+}
+
+bool
+MainWindow::saveAs()
+{
+#if 0
+  QFileDialog dialog(this);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+  if (dialog.exec() != QDialog::Accepted)
+    return false;
+  return saveFile(dialog.selectedFiles().first());
+#else
+  return true;
+#endif
+}
+
+void
+MainWindow::about()
+{
+  QMessageBox::about(this,
+		     tr("About qvis"),
+	     tr("<b>qvis</b> allows APL expressions to be interactively "
+		"visualised with respect axes minima and maxima and"
+                "dynamically variable parameters."));
+}
+
+void
+MainWindow::create_menuBar ()
+{
+  QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+  QToolBar *fileToolBar = addToolBar(tr("File"));
+  const QIcon newIcon =
+    QIcon::fromTheme("document-new", QIcon(":/images/new.png"));
+  QAction *newAct = new QAction(newIcon, tr("&New"), this);
+  newAct->setShortcuts(QKeySequence::New);
+  newAct->setStatusTip(tr("Create a new file"));
+  connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
+  fileMenu->addAction(newAct);
+  fileToolBar->addAction(newAct);
+
+  const QIcon openIcon =
+    QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
+  QAction *openAct = new QAction(openIcon, tr("&Open..."), this);
+  openAct->setShortcuts(QKeySequence::Open);
+  openAct->setStatusTip(tr("Open an existing file"));
+  connect(openAct, &QAction::triggered, this, &MainWindow::open);
+  fileMenu->addAction(openAct);
+  fileToolBar->addAction(openAct);
+
+  const QIcon saveIcon =
+    QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
+  QAction *saveAct = new QAction(saveIcon, tr("&Save"), this);
+  saveAct->setShortcuts(QKeySequence::Save);
+  saveAct->setStatusTip(tr("Save the document to disk"));
+  connect(saveAct, &QAction::triggered, this, &MainWindow::save);
+  fileMenu->addAction(saveAct);
+  fileToolBar->addAction(saveAct);
+
+  const QIcon saveAsIcon = QIcon::fromTheme("document-save-as");
+  QAction *saveAsAct =
+    fileMenu->addAction(saveAsIcon, tr("Save &As..."), this,
+			&MainWindow::saveAs);
+  saveAsAct->setShortcuts(QKeySequence::SaveAs);
+  saveAsAct->setStatusTip(tr("Save the document under a new name"));
+
+  fileMenu->addSeparator();
+
+  const QIcon exitIcon = QIcon::fromTheme("application-exit");
+  QAction *exitAct =
+    fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
+  exitAct->setShortcuts(QKeySequence::Quit);
+  exitAct->setStatusTip(tr("Exit the application"));
+
+#if 0
+  QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
+  QToolBar *editToolBar = addToolBar(tr("Edit"));
+#endif
+
+  QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+  QAction *aboutAct =
+    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+  aboutAct->setStatusTip(tr("Show the application's About box"));
+
+  QAction *aboutQtAct =
+    helpMenu->addAction(tr("About &Qt"), qApp, &QApplication::aboutQt);
+  aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
+}
+
+void
 MainWindow::buildMenu (MainWindow *win, QChart *chart,
 			QPolarChart *polarchart)
 {
+  create_menuBar ();
   QGroupBox *formGroupBox = new QGroupBox ("Visualisation");
   QGridLayout *layout = new QGridLayout;
 

@@ -56,6 +56,9 @@ QGraphicsView::mousePressEvent(QMouseEvent *event)
 int
 main (int argc, char *argv[])
 {
+  // supress anoying messages
+  qputenv("QT_LOGGING_RULES","*.debug=false;qt.qpa.*=false");
+
   init_libapl ("apl", 0);
 
   QApplication app (argc, argv);
