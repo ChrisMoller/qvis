@@ -69,6 +69,7 @@
 QT_CHARTS_USE_NAMESPACE
 
 #include "mainwindow.h"
+#include "xml.h"
 
 #define expvar "expvarλ"
 
@@ -87,9 +88,10 @@ MainWindow::themeChanged (int newtheme __attribute__((unused)))
   handleExpression ();
 }
 
-void
+bool
 MainWindow::maybeSave()
 {
+  bool rc = true;	// true => ok to zap, false => don't zap;
   if (changed) {
     QMessageBox::StandardButton ret;
     ret = QMessageBox::warning(this, tr("Scribble"),
@@ -98,20 +100,20 @@ MainWindow::maybeSave()
 			       QMessageBox::Save | QMessageBox::Discard
 			       | QMessageBox::Cancel);
     if (ret == QMessageBox::Save) save();
+    else if (ret == QMessageBox::Cancel) rc = false;
   }
+  return rc;
 }
 
 
 void
 MainWindow::byebye ()
 {
-  // quit button pressed
-  // chart x-ed out second
-  //  fprintf (stderr, "byebye\n");
-  settings.setValue (HEIGHT, chartView->height ());
-  settings.setValue (WIDTH, chartView->width ());
-  maybeSave ();
-  QCoreApplication::quit ();
+  if (maybeSave ()) {
+    settings.setValue (HEIGHT, chartView->height ());
+    settings.setValue (WIDTH, chartView->width ());
+    QCoreApplication::quit ();
+  }
 }
 
 void
@@ -393,46 +395,56 @@ MainWindow::saveFile (QString &fileName)
   stream.setAutoFormatting(true);
   stream.writeStartDocument();
 
-  stream.writeStartElement("qvis");
-  stream.writeAttribute("height", QString::number (chartView->height ()));
-  stream.writeAttribute("width",  QString::number (chartView->width ()));
-  stream.writeAttribute("theme",  QString::number ((int)theme));
+  stream.writeStartElement(XML_tags[XML_qvis]);
+  stream.writeAttribute(XML_tags[XML_height],
+			QString::number (chartView->height ()));
+  stream.writeAttribute(XML_tags[XML_width],
+			QString::number (chartView->width ()));
+  stream.writeAttribute(XML_tags[XML_theme],
+			QString::number ((int)theme));
   
-  stream.writeStartElement("curve");
+  stream.writeStartElement(XML_tags[XML_curve]);
   Qt::CheckState polar_checked = do_polar->checkState();
-  stream.writeAttribute("polar", (polar_checked == Qt::Checked)  ?
-			"true" : "false");
+  stream.writeAttribute(XML_tags[XML_polar],
+			(polar_checked == Qt::Checked)  ?
+			XML_tags[XML_true] : XML_tags[XML_false]);
   Qt::CheckState spline_checked = do_spline->checkState();
-  stream.writeAttribute("spline", (spline_checked == Qt::Checked)  ?
-			"true" : "false");
+  stream.writeAttribute(XML_tags[XML_spline],
+			(spline_checked == Qt::Checked)  ?
+			XML_tags[XML_true] : XML_tags[XML_false]);
   
-  stream.writeTextElement("shorttitle", "none");
-  stream.writeTextElement("title", chart_title->text ());
+  stream.writeTextElement(XML_tags[XML_shorttitle], "none");
+  stream.writeTextElement(XML_tags[XML_title], chart_title->text ());
   
-  stream.writeStartElement("function");
-  stream.writeTextElement("label", fcn_label->text ());
-  stream.writeTextElement("title", y_title->text ());
-  stream.writeTextElement("expression", apl_expression->text ());
+  stream.writeStartElement(XML_tags[XML_function]);
+  stream.writeTextElement(XML_tags[XML_label], fcn_label->text ());
+  stream.writeTextElement(XML_tags[XML_title], y_title->text ());
+  stream.writeTextElement(XML_tags[XML_expression],
+			  apl_expression->text ());
   stream.writeEndElement(); // function
   
-  stream.writeStartElement("ix");
-  stream.writeTextElement("name",  x_var_name->text ());
-  stream.writeTextElement("title", x_title->text ());
+  stream.writeStartElement (XML_tags[XML_ix]);
+  stream.writeTextElement(XML_tags[XML_name],  x_var_name->text ());
+  stream.writeTextElement(XML_tags[XML_title], x_title->text ());
 
-  stream.writeStartElement("range");
-  stream.writeTextElement("min", QString::number (x_var_min->value ()));
-  stream.writeTextElement("max", QString::number (x_var_max->value ()));
+  stream.writeStartElement(XML_tags[XML_range]);
+  stream.writeTextElement(XML_tags[XML_min],
+			  QString::number (x_var_min->value ()));
+  stream.writeTextElement(XML_tags[XML_max],
+			  QString::number (x_var_max->value ()));
   stream.writeEndElement(); // range
 
   stream.writeEndElement(); // ix
   
-  stream.writeStartElement("iz");
-  stream.writeTextElement("name",  z_var_name->text ());
-  stream.writeTextElement("title", z_title->text ());
+  stream.writeStartElement(XML_tags[XML_iz]);
+  stream.writeTextElement(XML_tags[XML_name],  z_var_name->text ());
+  stream.writeTextElement(XML_tags[XML_title], z_title->text ());
 
-  stream.writeStartElement("range");
-  stream.writeTextElement("min", QString::number (z_var_min->value ()));
-  stream.writeTextElement("max", QString::number (z_var_max->value ()));
+  stream.writeStartElement(XML_tags[XML_range]);
+  stream.writeTextElement(XML_tags[XML_min],
+			  QString::number (z_var_min->value ()));
+  stream.writeTextElement(XML_tags[XML_max],
+			  QString::number (z_var_max->value ()));
   stream.writeEndElement(); // range
 
   stream.writeEndElement(); // iz

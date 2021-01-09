@@ -109,6 +109,7 @@ private:
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);
-  void		 maybeSave();
+
+  bool		 maybeSave();
 };
 #endif // MAINWINDOW_H
