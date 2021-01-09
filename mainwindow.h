@@ -109,7 +109,7 @@ private:
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);
-
+   QHash<const QString, int> xmlhash;
   bool		 maybeSave();
 };
 #endif // MAINWINDOW_H

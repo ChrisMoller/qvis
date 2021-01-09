@@ -16,7 +16,9 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
-    mainwindow.h
+    mainwindow.h \
+    xml.h \
+    XMLtags.def
 
 FORMS +=
 

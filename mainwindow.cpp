@@ -58,7 +58,7 @@
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <QMenuBar>
-//#include <QFile>
+#include <QHash>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <complex>
@@ -395,55 +395,55 @@ MainWindow::saveFile (QString &fileName)
   stream.setAutoFormatting(true);
   stream.writeStartDocument();
 
-  stream.writeStartElement(XML_tags[XML_qvis]);
-  stream.writeAttribute(XML_tags[XML_height],
+  stream.writeStartElement(xml_tags[XML_qvis].tag);
+  stream.writeAttribute(xml_tags[XML_height].tag,
 			QString::number (chartView->height ()));
-  stream.writeAttribute(XML_tags[XML_width],
+  stream.writeAttribute(xml_tags[XML_width].tag,
 			QString::number (chartView->width ()));
-  stream.writeAttribute(XML_tags[XML_theme],
+  stream.writeAttribute(xml_tags[XML_theme].tag,
 			QString::number ((int)theme));
   
-  stream.writeStartElement(XML_tags[XML_curve]);
+  stream.writeStartElement(xml_tags[XML_curve].tag);
   Qt::CheckState polar_checked = do_polar->checkState();
-  stream.writeAttribute(XML_tags[XML_polar],
+  stream.writeAttribute(xml_tags[XML_polar].tag,
 			(polar_checked == Qt::Checked)  ?
-			XML_tags[XML_true] : XML_tags[XML_false]);
+			xml_tags[XML_true].tag : xml_tags[XML_false].tag);
   Qt::CheckState spline_checked = do_spline->checkState();
-  stream.writeAttribute(XML_tags[XML_spline],
+  stream.writeAttribute(xml_tags[XML_spline].tag,
 			(spline_checked == Qt::Checked)  ?
-			XML_tags[XML_true] : XML_tags[XML_false]);
+			xml_tags[XML_true].tag : xml_tags[XML_false].tag);
   
-  stream.writeTextElement(XML_tags[XML_shorttitle], "none");
-  stream.writeTextElement(XML_tags[XML_title], chart_title->text ());
+  stream.writeTextElement(xml_tags[XML_shorttitle].tag, "none");
+  stream.writeTextElement(xml_tags[XML_title].tag, chart_title->text ());
   
-  stream.writeStartElement(XML_tags[XML_function]);
-  stream.writeTextElement(XML_tags[XML_label], fcn_label->text ());
-  stream.writeTextElement(XML_tags[XML_title], y_title->text ());
-  stream.writeTextElement(XML_tags[XML_expression],
+  stream.writeStartElement(xml_tags[XML_function].tag);
+  stream.writeTextElement(xml_tags[XML_label].tag, fcn_label->text ());
+  stream.writeTextElement(xml_tags[XML_title].tag, y_title->text ());
+  stream.writeTextElement(xml_tags[XML_expression].tag,
 			  apl_expression->text ());
   stream.writeEndElement(); // function
   
-  stream.writeStartElement (XML_tags[XML_ix]);
-  stream.writeTextElement(XML_tags[XML_name],  x_var_name->text ());
-  stream.writeTextElement(XML_tags[XML_title], x_title->text ());
+  stream.writeStartElement (xml_tags[XML_ix].tag);
+  stream.writeTextElement(xml_tags[XML_name].tag,  x_var_name->text ());
+  stream.writeTextElement(xml_tags[XML_title].tag, x_title->text ());
 
-  stream.writeStartElement(XML_tags[XML_range]);
-  stream.writeTextElement(XML_tags[XML_min],
+  stream.writeStartElement(xml_tags[XML_range].tag);
+  stream.writeTextElement(xml_tags[XML_min].tag,
 			  QString::number (x_var_min->value ()));
-  stream.writeTextElement(XML_tags[XML_max],
+  stream.writeTextElement(xml_tags[XML_max].tag,
 			  QString::number (x_var_max->value ()));
   stream.writeEndElement(); // range
 
   stream.writeEndElement(); // ix
   
-  stream.writeStartElement(XML_tags[XML_iz]);
-  stream.writeTextElement(XML_tags[XML_name],  z_var_name->text ());
-  stream.writeTextElement(XML_tags[XML_title], z_title->text ());
+  stream.writeStartElement(xml_tags[XML_iz].tag);
+  stream.writeTextElement(xml_tags[XML_name].tag,  z_var_name->text ());
+  stream.writeTextElement(xml_tags[XML_title].tag, z_title->text ());
 
-  stream.writeStartElement(XML_tags[XML_range]);
-  stream.writeTextElement(XML_tags[XML_min],
+  stream.writeStartElement(xml_tags[XML_range].tag);
+  stream.writeTextElement(xml_tags[XML_min].tag,
 			  QString::number (z_var_min->value ()));
-  stream.writeTextElement(XML_tags[XML_max],
+  stream.writeTextElement(xml_tags[XML_max].tag,
 			  QString::number (z_var_max->value ()));
   stream.writeEndElement(); // range
 
@@ -769,6 +769,8 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
 MainWindow::MainWindow (QWidget *parent)
   : QMainWindow(parent)
 {
+  for (long unsigned int i = 0; i < sizeof(xml_tags) / sizeof(xml_tag_s); i++)
+    xmlhash.insert (xml_tags[i].tag, xml_tags[i].idx);
   chart      = new QChart ();
   polarchart = new QPolarChart ();
   chartView = new QChartView ();

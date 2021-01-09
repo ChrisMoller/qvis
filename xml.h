@@ -4,10 +4,14 @@ enum XML_enums
   {
 #include "XMLtags.def"
   };
-
-
 #undef xml_def
-#define xml_def(v) #v
-const char *XML_tags[] = {
+
+typedef struct {
+  const QString tag;
+  int idx;
+} xml_tag_s;
+
+#define xml_def(v) #v, XML_ ## v
+xml_tag_s xml_tags[] = {
 #include "XMLtags.def"
   };
