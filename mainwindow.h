@@ -67,6 +67,7 @@ private slots:
   void handleSettings ();
   void byebye ();
   void valChanged(bool enabled);
+  void valChangedv();
   void themeChanged(int newtheme);
   void newFile();
   void open();
@@ -81,26 +82,33 @@ private:
   QChart	*chart;
   QPolarChart	*polarchart;
   QLineEdit	*chart_title;
+  
   QLineEdit	*y_title;
+  QLineEdit 	*apl_expression;
+  QLineEdit 	*fcn_label;
+
   QLineEdit	*x_title;
   QLineEdit 	*x_var_name;
   QDoubleSpinBox *x_var_min;
   QDoubleSpinBox *x_var_max;
+
   QLineEdit 	*z_title;
   QLineEdit 	*z_var_name;
   QDoubleSpinBox *z_var_min;
   QDoubleSpinBox *z_var_max;
-  QLineEdit 	*apl_expression;
-  QLineEdit 	*fcn_label;
-  QSettings 	 settings;
+
   QCheckBox 	*do_spline;
   QCheckBox 	*do_polar;
   QChart::ChartTheme theme;
+
+  bool		 changed;
+  QSettings 	 settings;
   QComboBox 	*themebox;
   QString 	 curFile;
   void		 create_menuBar ();
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);
+  void		 maybeSave();
 };
 #endif // MAINWINDOW_H

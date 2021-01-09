@@ -87,6 +87,20 @@ MainWindow::themeChanged (int newtheme __attribute__((unused)))
   handleExpression ();
 }
 
+void
+MainWindow::maybeSave()
+{
+  if (changed) {
+    QMessageBox::StandardButton ret;
+    ret = QMessageBox::warning(this, tr("Scribble"),
+			       tr("The curve may have been modified.\n"
+				  "Do you want to save your changes?"),
+			       QMessageBox::Save | QMessageBox::Discard
+			       | QMessageBox::Cancel);
+    if (ret == QMessageBox::Save) save();
+  }
+}
+
 
 void
 MainWindow::byebye ()
@@ -96,6 +110,7 @@ MainWindow::byebye ()
   //  fprintf (stderr, "byebye\n");
   settings.setValue (HEIGHT, chartView->height ());
   settings.setValue (WIDTH, chartView->width ());
+  maybeSave ();
   QCoreApplication::quit ();
 }
 
@@ -126,6 +141,7 @@ MainWindow::handleSettings ()
   QDialog dialog;
   dialog.setLayout (layout);
   dialog.exec ();
+  changed = true;
 }
 
 int
@@ -347,7 +363,14 @@ MainWindow::handleExpression ()
 void
 MainWindow::valChanged (bool enabled __attribute__((unused)))
 {
+  changed = true;
   handleExpression ();
+}
+
+void
+MainWindow::valChangedv ()
+{
+  valChanged (true);
 }
 
 void
@@ -388,8 +411,31 @@ MainWindow::saveFile (QString &fileName)
   
   stream.writeStartElement("function");
   stream.writeTextElement("label", fcn_label->text ());
+  stream.writeTextElement("title", y_title->text ());
   stream.writeTextElement("expression", apl_expression->text ());
   stream.writeEndElement(); // function
+  
+  stream.writeStartElement("ix");
+  stream.writeTextElement("name",  x_var_name->text ());
+  stream.writeTextElement("title", x_title->text ());
+
+  stream.writeStartElement("range");
+  stream.writeTextElement("min", QString::number (x_var_min->value ()));
+  stream.writeTextElement("max", QString::number (x_var_max->value ()));
+  stream.writeEndElement(); // range
+
+  stream.writeEndElement(); // ix
+  
+  stream.writeStartElement("iz");
+  stream.writeTextElement("name",  z_var_name->text ());
+  stream.writeTextElement("title", z_title->text ());
+
+  stream.writeStartElement("range");
+  stream.writeTextElement("min", QString::number (z_var_min->value ()));
+  stream.writeTextElement("max", QString::number (z_var_max->value ()));
+  stream.writeEndElement(); // range
+
+  stream.writeEndElement(); // iz
   
   stream.writeEndElement(); // curve
   
@@ -414,15 +460,11 @@ MainWindow::open()
 bool
 MainWindow::save()
 {
-#if 1
   if (curFile.isEmpty()) {
     return saveAs();
   } else {
     return saveFile(curFile);
   }
-#else
-  return true;
-#endif
 }
 
 bool
@@ -630,8 +672,7 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   QObject::connect (apl_expression,
 		    &QLineEdit::editingFinished,
 		    this,
-		    &MainWindow::handleExpression);
-
+		    &MainWindow::valChangedv);
 
   /*  toggles */
   
@@ -738,6 +779,7 @@ MainWindow::MainWindow (QWidget *parent)
   this->show ();
 
   handleExpression ();
+  changed = false;
 }
 
 MainWindow::~MainWindow()
