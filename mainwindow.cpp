@@ -17,6 +17,39 @@
 
 // https://doc.qt.io/qt-5/qtdatavisualization-index.html
 
+/***
+    <vis height="." width="." theme=".">
+      <curve polar="." spline="."> <!-- any number of repeats -->
+        <shorttitle>.....</shorttitle>
+        <title>.....</title>
+        <function>
+	  <label>...</label>
+	  <expression>...</expression>
+	</function>
+	<ix>
+	  <label>...</label>
+	  <var>...</var>
+	  <range>
+	    <min>...</min>
+	    <max>...</max>
+	  </range>
+	</ix>
+	<iz>
+	  <label>...</label>
+	  <var>...</var>
+	  <range>
+	    <min>...</min>
+	    <max>...</max>
+	  </range>
+	</iz>
+        <parameter>		<!-- any number of repeats -->
+  	  <var>...</var>
+	  <value>...</value>
+        </parameter>
+      </curve>
+    </vis>
+ ***/
+
 #include <QtWidgets>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
@@ -25,6 +58,9 @@
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <QMenuBar>
+//#include <QFile>
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
 #include <complex>
 #include <values.h>
 
@@ -326,8 +362,40 @@ MainWindow::newFile()
 }
 
 bool
-MainWindow::saveFile(const QString &fileName  __attribute__((unused)))
+MainWindow::saveFile (QString &fileName)
 {
+  QFile file (fileName);
+  file.open (QIODevice::WriteOnly | QIODevice::Text);
+  QXmlStreamWriter stream(&file);
+  stream.setAutoFormatting(true);
+  stream.writeStartDocument();
+
+  stream.writeStartElement("qvis");
+  stream.writeAttribute("height", QString::number (chartView->height ()));
+  stream.writeAttribute("width",  QString::number (chartView->width ()));
+  stream.writeAttribute("theme",  QString::number ((int)theme));
+  
+  stream.writeStartElement("curve");
+  Qt::CheckState polar_checked = do_polar->checkState();
+  stream.writeAttribute("polar", (polar_checked == Qt::Checked)  ?
+			"true" : "false");
+  Qt::CheckState spline_checked = do_spline->checkState();
+  stream.writeAttribute("spline", (spline_checked == Qt::Checked)  ?
+			"true" : "false");
+  
+  stream.writeTextElement("shorttitle", "none");
+  stream.writeTextElement("title", chart_title->text ());
+  
+  stream.writeStartElement("function");
+  stream.writeTextElement("label", fcn_label->text ());
+  stream.writeTextElement("expression", apl_expression->text ());
+  stream.writeEndElement(); // function
+  
+  stream.writeEndElement(); // curve
+  
+  stream.writeEndElement(); // qvis
+  stream.writeEndDocument();
+  file.close ();
   return true;
 }
 

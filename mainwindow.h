@@ -76,7 +76,7 @@ private slots:
   
 private:
   void           createActions();
-  bool 		 saveFile(const QString &fileName);
+  bool 		 saveFile (QString &fileName);
   QChartView	*chartView;
   QChart	*chart;
   QPolarChart	*polarchart;
