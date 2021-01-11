@@ -50,20 +50,25 @@ QT_CHARTS_USE_NAMESPACE
 
 class Function
 {
+public:
   QString label;
   QString title;
   QString expression;
 };
 
+class Range
+{
+public:
+  double min;
+  double max;
+};
+
 class Index
 {
+public:
   QString name;
   QString title;
-  class Range
-  {
-    double min;
-    double max;
-  };
+  Range   range;
 };
 
 class Curve
@@ -80,7 +85,7 @@ public:
 
 typedef struct {
   QString tag;
-  void (*handler)(QXmlStreamReader &stream, Curve &curve);
+  void (*handler)(QXmlStreamReader &stream, Curve &curve, int &doing);
   int idx;
   int logical;
 } xml_tag_s;
@@ -93,10 +98,31 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void buildMenu (MainWindow *win, QChart *chart, QPolarChart *polarchart);
-  static void handle_qvis  (QXmlStreamReader &stream,	   Curve &curve);
-  static void handle_curve (QXmlStreamReader &stream,	   Curve &curve);
-  static void handle_shorttitle (QXmlStreamReader &stream, Curve &curve);
-  static void handle_title (QXmlStreamReader &stream, 	   Curve &curve);
+  bool parseCurve (Curve &curve, QXmlStreamReader &stream);
+  bool parseFunction (Curve &curve, QXmlStreamReader &stream);
+  bool parseRange (Range &rng, QXmlStreamReader &stream);
+  bool parseIdx (Index &idx, QXmlStreamReader &stream);
+  bool parseIx (Curve &curve, QXmlStreamReader &stream);
+  bool parseIz (Curve &curve, QXmlStreamReader &stream);
+
+  static void handle_qvis  (QXmlStreamReader &stream,	   Curve &curve,
+			    int &doing);
+  static void handle_curve (QXmlStreamReader &stream,	   Curve &curve,
+			    int &doing);
+  static void handle_shorttitle (QXmlStreamReader &stream, Curve &curve,
+			    int &doing);
+  static void handle_title (QXmlStreamReader &stream, 	   Curve &curve,
+			    int &doing);
+  static void handle_label (QXmlStreamReader &stream, 	   Curve &curve,
+			    int &doing);
+  static void handle_function (QXmlStreamReader &stream,   Curve &curve,
+			    int &doing);
+  static void handle_expression (QXmlStreamReader &stream,   Curve &curve,
+			    int &doing);
+  static void handle_ix (QXmlStreamReader &stream,   Curve &curve,
+			    int &doing);
+  static void handle_iz (QXmlStreamReader &stream,   Curve &curve,
+			    int &doing);
 									  
 public slots:
 

@@ -358,55 +358,6 @@ MainWindow::newFile()
 #endif
 }
 
-#if 0
-void
-MainWindow::handle_unhandled (QXmlStreamReader &stream)
-{
-    fprintf (stderr, "not handling %d %s\n",
-	     xmlhash.value (stream.name ().toString ()),
-	     stream.name ().toString ().toStdString ().c_str ()
-	     );
-}
-
-void
-MainWindow::handle_qvis (QXmlStreamReader &stream)
-{
-    fprintf (stderr, "handling %d %s\n",
-	     xmlhash.value (stream.name ().toString ()),
-	     stream.name ().toString ().toStdString ().c_str ()
-	     );
-}
-
-void
-MainWindow::readFile (QString &fileName)
-{
-  QFile file (fileName);
-  file.open (QIODevice::ReadOnly | QIODevice::Text);
-  QXmlStreamReader stream(&file);
-
-  while (!stream.atEnd()) {
-    stream.readNextStartElement();
-#if 0
-    void (*fcn)(QString &fileName) =
-      (xmlhash.value (stream.name ().toString ()))->handler;
-    (*fcn)(stream);
-#else
-    int idx = xmlhash.value (stream.name ().toString ());
-    (*xml_tags[idx].handler)(stream);
-#endif
-#if 0
-    fprintf (stderr, "elem %s %d %s %p\n",
-	     stream.name ().toString ().toStdString ().c_str (),
-	     idx,
-	     xml_tags[idx].tag.toStdString ().c_str (),
-	     xml_tags[idx].handler
-	     );
-#endif
-  }
-
-}
-#endif
-
 void
 MainWindow::open()
 {

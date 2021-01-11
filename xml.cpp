@@ -135,9 +135,19 @@ MainWindow::saveFile (QString &fileName)
   return true;
 }
 
+enum {
+  DOING_nothing,
+  DOING_qvis,
+  DOING_curve,
+  DOING_function,
+  DOING_ix,
+  DOING_iz
+};
+
 void
 MainWindow::handle_qvis (QXmlStreamReader &stream,
-			 Curve &curve __attribute__((unused)))
+			 Curve &curve __attribute__((unused)),
+			 int &doing __attribute__((unused)))
 {
   if (stream.isStartElement ()) {
     QXmlStreamAttributes attrs = stream.attributes();
@@ -150,12 +160,13 @@ MainWindow::handle_qvis (QXmlStreamReader &stream,
     }
   }
   else {
-    //    fprintf (stderr, "ending ");
+    doing = DOING_nothing;
   }
 }
 
 void
-MainWindow::handle_curve (QXmlStreamReader &stream, Curve &curve)
+MainWindow::handle_curve (QXmlStreamReader &stream, Curve &curve,
+			  int &doing)
 {
   if (stream.isStartElement ()) {
     QXmlStreamAttributes attrs = stream.attributes();
@@ -163,33 +174,101 @@ MainWindow::handle_curve (QXmlStreamReader &stream, Curve &curve)
       curve.polar  = (attrs.value (xml_tags[XML_polar].tag)).toInt ();
       curve.spline = (attrs.value (xml_tags[XML_spline].tag)).toInt ();
     }
+    doing = DOING_curve;
   }
   else {
-    //    fprintf (stderr, "ending ");
+    doing = DOING_nothing;
   }
 }
 
 void
 MainWindow::handle_shorttitle (QXmlStreamReader &stream,
-			       Curve &curve __attribute__((unused)))
+			       Curve &curve __attribute__((unused)),
+			       int &doing __attribute__((unused)))
 {
   if (stream.isStartElement ()) {
     curve.shorttitle = stream.readElementText ();
   }
   else {
-    //    fprintf (stderr, "ending ");
   }
 }
 
 void
 MainWindow::handle_title (QXmlStreamReader &stream,
-			  Curve &curve __attribute__((unused)))
+			  Curve &curve __attribute__((unused)),
+			  int &doing)
 {
+  fprintf (stderr, "title doing %d\n", doing);
   if (stream.isStartElement ()) {
-    curve.title = stream.readElementText ();
+    switch (doing) {
+    case DOING_curve:
+      curve.title = stream.readElementText ();
+      break;
+    case DOING_function:
+      curve.function.title = stream.readElementText ();
+      break;
+    case DOING_ix:
+      curve.ix.title = stream.readElementText ();
+      break;
+    case DOING_iz:
+      curve.iz.title = stream.readElementText ();
+      break;
+    default:
+      break;
+    }
   }
   else {
-    //    fprintf (stderr, "ending ");
+  }
+}
+
+void
+MainWindow::handle_label (QXmlStreamReader &stream,
+			  Curve &curve __attribute__((unused)),
+			  int &doing)
+{
+  fprintf (stderr, "label doing %d\n", doing);
+  if (stream.isStartElement ()) {
+    switch (doing) {
+    case DOING_function:
+      curve.function.label = stream.readElementText ();
+      break;
+    default:
+      break;
+    }
+  }
+  else {
+  }
+}
+
+void
+MainWindow::handle_expression (QXmlStreamReader &stream,
+			       Curve &curve __attribute__((unused)),
+			       int &doing)
+{
+  fprintf (stderr, "expr doing %d\n", doing);
+  if (stream.isStartElement ()) {
+    switch (doing) {
+    case DOING_function:
+      curve.function.expression = stream.readElementText ();
+      break;
+    default:
+      break;
+    }
+  }
+  else {
+  }
+}
+
+void
+MainWindow::handle_function (QXmlStreamReader &stream,
+			     Curve &curve __attribute__((unused)),
+			     int &doing)
+{
+  if (stream.isStartElement ()) {
+    doing = DOING_function;
+  }
+  else {
+    doing = DOING_nothing;
   }
 }
 
@@ -199,8 +278,150 @@ show_curve (Curve &curve)
   fprintf (stderr, "polar = %d, spline = %d\n", curve.polar, curve.spline);
   fprintf (stderr, "shorttitle = %s\n",
 	   curve.shorttitle.toStdString ().c_str ());
-  fprintf (stderr, "title = %s\n",
+  fprintf (stderr, "curve title = %s\n",
 	   curve.title.toStdString ().c_str ());
+  fprintf (stderr, "function title = %s\n",
+	   curve.function.title.toStdString ().c_str ());
+  fprintf (stderr, "function label = %s\n",
+	   curve.function.label.toStdString ().c_str ());
+  fprintf (stderr, "function expression = %s\n",
+	   curve.function.expression.toStdString ().c_str ());
+  fprintf (stderr, "ix name = %s\n",
+	   curve.ix.name.toStdString ().c_str ());
+  fprintf (stderr, "ix title = %s\n",
+	   curve.ix.title.toStdString ().c_str ());
+  fprintf (stderr, "ix range min = %g\n",
+	   curve.ix.range.min);
+  fprintf (stderr, "ix range max = %g\n",
+	   curve.ix.range.max);
+  fprintf (stderr, "iz name = %s\n",
+	   curve.iz.name.toStdString ().c_str ());
+  fprintf (stderr, "iz title = %s\n",
+	   curve.iz.title.toStdString ().c_str ());
+  fprintf (stderr, "iz range min = %g\n",
+	   curve.iz.range.min);
+  fprintf (stderr, "ix range max = %g\n",
+	   curve.iz.range.max);
+}
+
+bool
+MainWindow::parseRange (Range &rng, QXmlStreamReader &stream)
+{
+  bool rc = true;
+  while (stream.readNextStartElement()) {
+    if (stream.isStartElement ()) {
+      QString sn = stream.name ().toString ();
+      if (0 == QString::compare (sn, xml_tags[XML_min].tag))
+	rng.min = stream.readElementText ().toDouble ();
+      else if (0 == QString::compare (sn, xml_tags[XML_max].tag))
+	rng.max = stream.readElementText ().toDouble ();
+      else {
+	rc = false;
+	break;
+      }
+    }
+    else break;
+  }
+  return rc;
+}
+
+bool
+MainWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
+{
+  bool rc = true;
+  while (stream.readNextStartElement()) {
+    if (stream.isStartElement ()) {
+      QString sn = stream.name ().toString ();
+      if (0 == QString::compare (sn, xml_tags[XML_name].tag))
+	idx.name = stream.readElementText ();
+      else if (0 == QString::compare (sn, xml_tags[XML_title].tag))
+	idx.title = stream.readElementText ();
+      else if (0 == QString::compare (sn, xml_tags[XML_range].tag))
+	rc = parseRange (idx.range, stream);
+      else {
+	rc = false;
+	break;
+      }
+    }
+    else break;
+  }
+  return rc;
+}
+
+bool
+MainWindow::parseIx (Curve &curve, QXmlStreamReader &stream)
+{
+  return parseIdx (curve.ix, stream);
+}
+
+bool
+MainWindow::parseIz (Curve &curve, QXmlStreamReader &stream)
+{
+  return parseIdx (curve.iz, stream);
+}
+
+bool
+MainWindow::parseFunction (Curve &curve, QXmlStreamReader &stream)
+{
+  bool rc = true;
+  while (stream.readNextStartElement()) {
+    if (stream.isStartElement ()) {
+      QString sn = stream.name ().toString ();
+      if (0 == QString::compare (sn, xml_tags[XML_label].tag))
+	curve.function.label = stream.readElementText ();
+      else if (0 == QString::compare (sn, xml_tags[XML_title].tag))
+	curve.function.title = stream.readElementText ();
+      else if (0 == QString::compare (sn, xml_tags[XML_expression].tag))
+	curve.function.expression = stream.readElementText ();
+      else {
+	rc = false;
+	break;
+      }
+    }
+    else break;
+  }
+  return rc;
+}
+
+bool
+MainWindow::parseCurve (Curve &curve, QXmlStreamReader &stream)
+{
+  bool rc = true;
+  stream.readNextStartElement();
+  if (stream.isStartElement ()) {
+    QString sn = stream.name ().toString ();
+    if (0 == QString::compare (sn, xml_tags[XML_curve].tag)) {
+      QXmlStreamAttributes attrs = stream.attributes();
+      if (!attrs.isEmpty ()) {
+	curve.polar  = (attrs.value (xml_tags[XML_polar].tag)).toInt ();
+	curve.spline = (attrs.value (xml_tags[XML_spline].tag)).toInt ();
+	while (stream.readNextStartElement()) {
+	  if (stream.isStartElement ()) {
+	    sn = stream.name ().toString ();
+	    if (0 == QString::compare (sn, xml_tags[XML_shorttitle].tag)) 
+	      curve.shorttitle = stream.readElementText ();
+	    else if (0 == QString::compare (sn, xml_tags[XML_title].tag))
+	      curve.title = stream.readElementText ();
+	    else if (0 == QString::compare (sn, xml_tags[XML_function].tag))
+	      rc = parseFunction (curve, stream);
+	    else if (0 == QString::compare (sn, xml_tags[XML_ix].tag))
+	      rc = parseIx (curve, stream);
+	    else if (0 == QString::compare (sn, xml_tags[XML_iz].tag)) 
+	      rc = parseIz (curve, stream);
+	    else {
+	      rc = false;
+	      break;
+	    }
+	  }
+	  else break;
+	}
+      }
+      else rc = false;
+    }
+  }
+  else rc = false;
+
+  return rc;
 }
 
 void
@@ -211,18 +432,30 @@ MainWindow::readFile (QString &fileName)
   QXmlStreamReader stream(&file);
 
   Curve curve;
-  while (!stream.atEnd()) {
-    stream.readNextStartElement();
-    int idx = xmlhash.value (stream.name ().toString (), -1);
-    if (idx >= 0 && idx < XML_LAST && xml_tags[idx].handler) {
-      (*xml_tags[idx].handler)(stream, curve);
+  bool rc = true;
+
+  stream.readNextStartElement();
+  if (stream.isStartElement ()) {
+    QString sn = stream.name ().toString ();
+    if (0 == QString::compare (sn, xml_tags[XML_qvis].tag)) {
+      QXmlStreamAttributes attrs = stream.attributes();
+      if (!attrs.isEmpty ()) {
+	int height = (attrs.value (xml_tags[XML_height].tag)).toInt ();
+	int width  = (attrs.value (xml_tags[XML_width].tag)).toInt ();
+	int theme  = (attrs.value (xml_tags[XML_theme].tag)).toInt ();
+	fprintf (stderr, "height = %d, width = %d, theme = %d\n",
+	       height, width, theme);
+	rc = parseCurve (curve, stream);
+      }
+      else rc = false;
     }
-#if 1
-    else fprintf (stderr, "%s skipped\n",
-		  stream.name ().toString ().toStdString ().c_str ());
-#endif
   }
-  show_curve (curve);
+  else rc = false;
+
+  if (rc) show_curve (curve);
+  else {
+    fprintf (stderr, "Error line %d\n", (int)stream.lineNumber ());
+  }
 }
 
 void
@@ -231,7 +464,7 @@ MainWindow::initXmlHash ()
 #undef xml_def
 #define xml_def(v,p, l) p
   //  static void *fcn[] = {
-  void (*fcn[])(QXmlStreamReader &stream, Curve &curve) = {
+  void (*fcn[])(QXmlStreamReader &stream, Curve &curve, int &doing) = {
 #include "XMLtags.def"
   };
   
