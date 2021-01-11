@@ -136,7 +136,8 @@ MainWindow::saveFile (QString &fileName)
 }
 
 void
-MainWindow::handle_qvis (QXmlStreamReader &stream)
+MainWindow::handle_qvis (QXmlStreamReader &stream,
+			 Curve &curve __attribute__((unused)))
 {
   if (stream.isStartElement ()) {
     QXmlStreamAttributes attrs = stream.attributes();
@@ -154,15 +155,13 @@ MainWindow::handle_qvis (QXmlStreamReader &stream)
 }
 
 void
-MainWindow::handle_curve (QXmlStreamReader &stream)
+MainWindow::handle_curve (QXmlStreamReader &stream, Curve &curve)
 {
   if (stream.isStartElement ()) {
     QXmlStreamAttributes attrs = stream.attributes();
     if (!attrs.isEmpty ()) {
-      bool polar  = (attrs.value (xml_tags[XML_polar].tag)).toInt ();
-      bool spline = (attrs.value (xml_tags[XML_spline].tag)).toInt ();
-      fprintf (stderr, "polar = %d, spline = %d\n",
-	       polar, spline);
+      curve.polar  = (attrs.value (xml_tags[XML_polar].tag)).toInt ();
+      curve.spline = (attrs.value (xml_tags[XML_spline].tag)).toInt ();
     }
   }
   else {
@@ -171,11 +170,11 @@ MainWindow::handle_curve (QXmlStreamReader &stream)
 }
 
 void
-MainWindow::handle_shorttitle (QXmlStreamReader &stream)
+MainWindow::handle_shorttitle (QXmlStreamReader &stream,
+			       Curve &curve __attribute__((unused)))
 {
   if (stream.isStartElement ()) {
-    QString st = stream.readElementText ();
-    fprintf (stderr, "shorttitle = %s\n", st.toStdString ().c_str ());
+    curve.shorttitle = stream.readElementText ();
   }
   else {
     //    fprintf (stderr, "ending ");
@@ -183,15 +182,25 @@ MainWindow::handle_shorttitle (QXmlStreamReader &stream)
 }
 
 void
-MainWindow::handle_title (QXmlStreamReader &stream)
+MainWindow::handle_title (QXmlStreamReader &stream,
+			  Curve &curve __attribute__((unused)))
 {
   if (stream.isStartElement ()) {
-    QString st = stream.readElementText ();
-    fprintf (stderr, "title = %s\n", st.toStdString ().c_str ());
+    curve.title = stream.readElementText ();
   }
   else {
     //    fprintf (stderr, "ending ");
   }
+}
+
+static void
+show_curve (Curve &curve)
+{
+  fprintf (stderr, "polar = %d, spline = %d\n", curve.polar, curve.spline);
+  fprintf (stderr, "shorttitle = %s\n",
+	   curve.shorttitle.toStdString ().c_str ());
+  fprintf (stderr, "title = %s\n",
+	   curve.title.toStdString ().c_str ());
 }
 
 void
@@ -201,16 +210,19 @@ MainWindow::readFile (QString &fileName)
   file.open (QIODevice::ReadOnly | QIODevice::Text);
   QXmlStreamReader stream(&file);
 
+  Curve curve;
   while (!stream.atEnd()) {
     stream.readNextStartElement();
     int idx = xmlhash.value (stream.name ().toString (), -1);
-    if (idx >= 0 && idx < XML_LAST && xml_tags[idx].handler) 
-      (*xml_tags[idx].handler)(stream);
+    if (idx >= 0 && idx < XML_LAST && xml_tags[idx].handler) {
+      (*xml_tags[idx].handler)(stream, curve);
+    }
 #if 1
     else fprintf (stderr, "%s skipped\n",
 		  stream.name ().toString ().toStdString ().c_str ());
 #endif
   }
+  show_curve (curve);
 }
 
 void
@@ -219,7 +231,7 @@ MainWindow::initXmlHash ()
 #undef xml_def
 #define xml_def(v,p, l) p
   //  static void *fcn[] = {
-  void (*fcn[])(QXmlStreamReader &stream) = {
+  void (*fcn[])(QXmlStreamReader &stream, Curve &curve) = {
 #include "XMLtags.def"
   };
   

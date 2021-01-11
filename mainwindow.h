@@ -48,9 +48,39 @@ QT_CHARTS_USE_NAMESPACE
 #define WIDTH      "width"
 #define HEIGHT     "height"
 
+class Function
+{
+  QString label;
+  QString title;
+  QString expression;
+};
+
+class Index
+{
+  QString name;
+  QString title;
+  class Range
+  {
+    double min;
+    double max;
+  };
+};
+
+class Curve
+{
+public:
+  bool polar;
+  bool spline;
+  QString shorttitle;
+  QString title;
+  Function function;
+  Index ix;
+  Index iz;
+};
+
 typedef struct {
   QString tag;
-  void (*handler)(QXmlStreamReader &stream);
+  void (*handler)(QXmlStreamReader &stream, Curve &curve);
   int idx;
   int logical;
 } xml_tag_s;
@@ -63,10 +93,10 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void buildMenu (MainWindow *win, QChart *chart, QPolarChart *polarchart);
-  static void handle_qvis  (QXmlStreamReader &stream);
-  static void handle_curve (QXmlStreamReader &stream);
-  static void handle_shorttitle (QXmlStreamReader &stream);
-  static void handle_title (QXmlStreamReader &stream);
+  static void handle_qvis  (QXmlStreamReader &stream,	   Curve &curve);
+  static void handle_curve (QXmlStreamReader &stream,	   Curve &curve);
+  static void handle_shorttitle (QXmlStreamReader &stream, Curve &curve);
+  static void handle_title (QXmlStreamReader &stream, 	   Curve &curve);
 									  
 public slots:
 
@@ -123,5 +153,6 @@ private:
 				QString flbl);
   bool		 maybeSave();
   void		 initXmlHash ();
+  std::vector<Curve> curves;
 };
 #endif // MAINWINDOW_H
