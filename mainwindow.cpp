@@ -37,6 +37,8 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
+//static QHash<const QString, int> xmlhash;
+
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 {
@@ -661,6 +663,8 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
 MainWindow::MainWindow (QWidget *parent)
   : QMainWindow(parent)
 {
+  initXmlHash ();
+  
   chart      = new QChart ();
   polarchart = new QPolarChart ();
   chartView = new QChartView ();

@@ -50,7 +50,7 @@
 #include <QtWidgets>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
-//#include <QHash>
+#include <QHash>
 
 #include "mainwindow.h"
 #include "xml.h"
@@ -59,6 +59,8 @@
 xml_tag_s xml_tags[] = {
 #include "XMLtags.def"
   };
+
+static QHash<const QString, int> xmlhash;
 
 bool
 MainWindow::saveFile (QString &fileName)
@@ -169,16 +171,19 @@ bool
 MainWindow::parseRange (Range &rng, QXmlStreamReader &stream)
 {
   bool rc = true;
-  while (stream.readNextStartElement()) {
+  while (rc && stream.readNextStartElement()) {
     if (stream.isStartElement ()) {
       QString sn = stream.name ().toString ();
-      if (0 == QString::compare (sn, xml_tags[XML_min].tag))
-	rng.min = stream.readElementText ().toDouble ();
-      else if (0 == QString::compare (sn, xml_tags[XML_max].tag))
-	rng.max = stream.readElementText ().toDouble ();
-      else {
-	rc = false;
-	break;
+      switch (xmlhash.value (sn)) {
+	case XML_min:
+	  rng.min = stream.readElementText ().toDouble ();
+	  break;
+	case XML_max:
+	  rng.max = stream.readElementText ().toDouble ();
+	  break;
+	default:
+	  rc = false;
+	  break;
       }
     }
     else break;
@@ -190,16 +195,20 @@ bool
 MainWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
 {
   bool rc = true;
-  while (stream.readNextStartElement()) {
+  while (rc && stream.readNextStartElement()) {
     if (stream.isStartElement ()) {
       QString sn = stream.name ().toString ();
-      if (0 == QString::compare (sn, xml_tags[XML_name].tag))
+      switch (xmlhash.value (sn)) {
+      case XML_name:
 	idx.name = stream.readElementText ();
-      else if (0 == QString::compare (sn, xml_tags[XML_title].tag))
+	break;
+      case XML_title:
 	idx.title = stream.readElementText ();
-      else if (0 == QString::compare (sn, xml_tags[XML_range].tag))
+	break;
+      case XML_range:
 	rc = parseRange (idx.range, stream);
-      else {
+	break;
+      default:
 	rc = false;
 	break;
       }
@@ -225,16 +234,20 @@ bool
 MainWindow::parseFunction (Curve &curve, QXmlStreamReader &stream)
 {
   bool rc = true;
-  while (stream.readNextStartElement()) {
+  while (rc && stream.readNextStartElement()) {
     if (stream.isStartElement ()) {
       QString sn = stream.name ().toString ();
-      if (0 == QString::compare (sn, xml_tags[XML_label].tag))
+      switch (xmlhash.value (sn)) {
+      case XML_label:
 	curve.function.label = stream.readElementText ();
-      else if (0 == QString::compare (sn, xml_tags[XML_title].tag))
+	break;
+      case XML_title:
 	curve.function.title = stream.readElementText ();
-      else if (0 == QString::compare (sn, xml_tags[XML_expression].tag))
+	break;
+      case XML_expression:
 	curve.function.expression = stream.readElementText ();
-      else {
+	break;
+      default:
 	rc = false;
 	break;
       }
@@ -259,17 +272,23 @@ MainWindow::parseCurve (Curve &curve, QXmlStreamReader &stream)
 	while (stream.readNextStartElement()) {
 	  if (stream.isStartElement ()) {
 	    sn = stream.name ().toString ();
-	    if (0 == QString::compare (sn, xml_tags[XML_shorttitle].tag)) 
+	    switch (xmlhash.value (sn)) {
+	    case XML_shorttitle:
 	      curve.shorttitle = stream.readElementText ();
-	    else if (0 == QString::compare (sn, xml_tags[XML_title].tag))
+	      break;
+	    case XML_title:
 	      curve.title = stream.readElementText ();
-	    else if (0 == QString::compare (sn, xml_tags[XML_function].tag))
+	      break;
+	    case XML_function:
 	      rc = parseFunction (curve, stream);
-	    else if (0 == QString::compare (sn, xml_tags[XML_ix].tag))
+	      break;
+	    case XML_ix:
 	      rc = parseIx (curve, stream);
-	    else if (0 == QString::compare (sn, xml_tags[XML_iz].tag)) 
+	      break;
+	    case XML_iz:
 	      rc = parseIz (curve, stream);
-	    else {
+	      break;
+	    default:
 	      rc = false;
 	      break;
 	    }
@@ -314,8 +333,14 @@ MainWindow::readFile (QString &fileName)
   else rc = false;
 
   if (rc) show_curve (curve);
-  else {
+  else { // fixme
     fprintf (stderr, "Error line %d\n", (int)stream.lineNumber ());
   }
 }
 
+void
+MainWindow::initXmlHash ()
+{
+  for (long unsigned int i = 0; i < XML_LAST; i++)
+    xmlhash.insert (xml_tags[i].tag, (int)i);
+}
