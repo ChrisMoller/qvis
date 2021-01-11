@@ -48,6 +48,15 @@ QT_CHARTS_USE_NAMESPACE
 #define WIDTH      "width"
 #define HEIGHT     "height"
 
+typedef struct {
+  QString tag;
+  void (*handler)(QXmlStreamReader &stream);
+  //  void *handler;
+  int idx;
+} xml_tag_s;
+
+//#define xml_def(v,p) xmlTag (#v, p, XML_ ## v)
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -56,7 +65,9 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void buildMenu (MainWindow *win, QChart *chart, QPolarChart *polarchart);
-
+  static void handle_qvis (QXmlStreamReader &stream);
+  static void handle_unhandled (QXmlStreamReader &stream);
+									  
 public slots:
 
 protected:
@@ -78,6 +89,7 @@ private slots:
 private:
   void           createActions();
   bool 		 saveFile (QString &fileName);
+  void 		 readFile (QString &fileName);
   QChartView	*chartView;
   QChart	*chart;
   QPolarChart	*polarchart;
@@ -109,7 +121,7 @@ private:
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);
-   QHash<const QString, int> xmlhash;
   bool		 maybeSave();
+  //  QHash<const QString, int> xmlhash;
 };
 #endif // MAINWINDOW_H

@@ -71,7 +71,19 @@ QT_CHARTS_USE_NAMESPACE
 #include "mainwindow.h"
 #include "xml.h"
 
+
+#if 0
+static void MainWindow::handle_qvis (QXmlStreamReader &stream);
+//#define xml_def(v,p) #v, p, XML_ ## v
+#define xml_def(v,p) #v, nullptr, XML_ ## v
+xml_tag_s xml_tags[] = {
+#include "XMLtags.def"
+  };
+#endif
+
 #define expvar "expvarλ"
+
+static QHash<const QString, int> xmlhash;
 
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
@@ -457,16 +469,100 @@ MainWindow::saveFile (QString &fileName)
   return true;
 }
 
+#if 0
+typedef enum {
+  EXPECTING_qvis,
+  EXPECTING_curve,
+} read_state_e;
+
+read_state_e read_state = EXPECTING_qvis;
+    switch(read_state) {
+    case EXPECTING_qvis:
+      {
+	QXmlStreamAttributes attrs = stream.attributes ();
+	if (attrs.hasAttribute (xml_tags[XML_height].tag)) {
+	  QString val = attrs.value(xml_tags[XML_height].tag).toString ();
+	  fprintf (stderr, "height = %s\n", val.toStdString ().c_str ());
+	}
+	if (attrs.hasAttribute (xml_tags[XML_width].tag)) {
+	  QString val = attrs.value(xml_tags[XML_width].tag).toString ();
+	  fprintf (stderr, "width = %s\n", val.toStdString ().c_str ());
+	}
+	if (attrs.hasAttribute (xml_tags[XML_theme].tag)) {
+	  QString val = attrs.value(xml_tags[XML_theme].tag).toString ();
+	  fprintf (stderr, "theme = %s\n", val.toStdString ().c_str ());
+	}
+	read_state = EXPECTING_curve;
+      }
+      break;
+    case EXPECTING_curve:
+      {
+	QXmlStreamAttributes attrs = stream.attributes ();
+	if (attrs.hasAttribute (xml_tags[XML_polar].tag)) {
+	  QString val = attrs.value(xml_tags[XML_polar].tag).toString ();
+	  fprintf (stderr, "polar = %s\n", val.toStdString ().c_str ());
+	}
+	if (attrs.hasAttribute (xml_tags[XML_spline].tag)) {
+	  QString val = attrs.value(xml_tags[XML_spline].tag).toString ();
+	  fprintf (stderr, "spline = %s\n", val.toStdString ().c_str ());
+	}
+      }
+      break;
+    }
+#endif
+
+void
+MainWindow::handle_unhandled (QXmlStreamReader &stream)
+{
+    fprintf (stderr, "not handling %d %s\n",
+	     // getHashValue (stream.name ().toString ()),
+	     xmlhash.value (stream.name ().toString ()),
+	     stream.name ().toString ().toStdString ().c_str ()
+	     );
+}
+
+void
+MainWindow::handle_qvis (QXmlStreamReader &stream)
+{
+    fprintf (stderr, "handling %d %s\n",
+	     // getHashValue (stream.name ().toString ()),
+	     xmlhash.value (stream.name ().toString ()),
+	     stream.name ().toString ().toStdString ().c_str ()
+	     );
+}
+
+void
+MainWindow::readFile (QString &fileName)
+{
+  QFile file (fileName);
+  file.open (QIODevice::ReadOnly | QIODevice::Text);
+  QXmlStreamReader stream(&file);
+
+  while (!stream.atEnd()) {
+    stream.readNextStartElement();
+    int idx = xmlhash.value (stream.name ().toString ());
+    (*xml_tags[idx].handler)(stream);
+#if 0
+    fprintf (stderr, "elem %s %d %s %p\n",
+	     stream.name ().toString ().toStdString ().c_str (),
+	     idx,
+	     xml_tags[idx].tag.toStdString ().c_str (),
+	     xml_tags[idx].handler
+	     );
+#endif
+  }
+
+}
+
 void
 MainWindow::open()
 {
-#if 0
-  if (maybeSave()) {
-    QString fileName = QFileDialog::getOpenFileName(this);
-    if (!fileName.isEmpty())
-      loadFile(fileName);
-  }
-#endif
+  QFileDialog dialog(this);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  dialog.setNameFilter("*.vis");
+  if (dialog.exec() == QDialog::Accepted)
+    readFile(dialog.selectedFiles().first());
 }
 
 bool
@@ -769,8 +865,39 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
 MainWindow::MainWindow (QWidget *parent)
   : QMainWindow(parent)
 {
-  for (long unsigned int i = 0; i < sizeof(xml_tags) / sizeof(xml_tag_s); i++)
-    xmlhash.insert (xml_tags[i].tag, xml_tags[i].idx);
+
+  /***
+      type ‘void (MainWindow::)(QXmlStreamReader&)’ to
+      type ‘void (*)(QXmlStreamReader&)’
+      type ‘void (MainWindow::)(QXmlStreamReader&)’ to
+      type ‘void (*)(QXmlStreamReader&)’
+      type ‘void (MainWindow::)(QXmlStreamReader&)’ to
+      type ‘void*’
+
+   ***/
+
+  //for (long unsigned int i = 0; i < XML_LAST; i++) {
+  //}
+
+#undef xml_def
+#define xml_def(v,p) p
+  //  static void *fcn[] = {
+  void (*fcn[])(QXmlStreamReader &stream) = {
+#include "XMLtags.def"
+  };
+  
+  for (long unsigned int i = 0; i < XML_LAST; i++) {
+    xmlhash.insert (xml_tags[i].tag, (int)i);
+    xml_tags[i].handler = fcn[i]; // (void *)(&handle_qvis);
+#if 0
+    fprintf (stderr, "tbl %s %p %d\n",
+	     xml_tags[i].tag.toStdString ().c_str (),
+	     xml_tags[i].handler,
+	     xml_tags[i].idx);
+#endif
+  }
+      
+
   chart      = new QChart ();
   polarchart = new QPolarChart ();
   chartView = new QChartView ();
