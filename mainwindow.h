@@ -52,6 +52,7 @@ typedef struct {
   QString tag;
   void (*handler)(QXmlStreamReader &stream);
   int idx;
+  int logical;
 } xml_tag_s;
 
 class MainWindow : public QMainWindow
@@ -62,8 +63,9 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void buildMenu (MainWindow *win, QChart *chart, QPolarChart *polarchart);
-  static void handle_qvis (QXmlStreamReader &stream);
-  static void handle_unhandled (QXmlStreamReader &stream);
+  static void handle_qvis  (QXmlStreamReader &stream);
+  static void handle_curve (QXmlStreamReader &stream);
+  static void handle_shorttitle (QXmlStreamReader &stream);
 									  
 public slots:
 

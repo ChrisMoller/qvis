@@ -55,16 +55,12 @@
 #include "mainwindow.h"
 #include "xml.h"
 
-#define xml_def(v,p) #v, nullptr, XML_ ## v
+#define xml_def(v,p,l) #v, nullptr, XML_ ## v, l
 xml_tag_s xml_tags[] = {
 #include "XMLtags.def"
   };
 
-#if 0
-static QHash<const QString, xml_tag_s*> xmlhash;
-#else
 static QHash<const QString, int> xmlhash;
-#endif
 
 bool
 MainWindow::saveFile (QString &fileName)
@@ -87,11 +83,13 @@ MainWindow::saveFile (QString &fileName)
   Qt::CheckState polar_checked = do_polar->checkState();
   stream.writeAttribute(xml_tags[XML_polar].tag,
 			(polar_checked == Qt::Checked)  ?
-			xml_tags[XML_true].tag : xml_tags[XML_false].tag);
+			QString::number (xml_tags[XML_true].logical) :
+			QString::number (xml_tags[XML_false].logical));
   Qt::CheckState spline_checked = do_spline->checkState();
   stream.writeAttribute(xml_tags[XML_spline].tag,
 			(spline_checked == Qt::Checked)  ?
-			xml_tags[XML_true].tag : xml_tags[XML_false].tag);
+			QString::number (xml_tags[XML_true].logical) :
+			QString::number (xml_tags[XML_false].logical));
   
   stream.writeTextElement(xml_tags[XML_shorttitle].tag, "none");
   stream.writeTextElement(xml_tags[XML_title].tag, chart_title->text ());
@@ -138,21 +136,50 @@ MainWindow::saveFile (QString &fileName)
 }
 
 void
-MainWindow::handle_unhandled (QXmlStreamReader &stream)
+MainWindow::handle_qvis (QXmlStreamReader &stream)
 {
-    fprintf (stderr, "not handling %d %s\n",
-	     xmlhash.value (stream.name ().toString ()),
-	     stream.name ().toString ().toStdString ().c_str ()
-	     );
+  if (stream.isStartElement ()) {
+    QXmlStreamAttributes attrs = stream.attributes();
+    if (!attrs.isEmpty ()) {
+      int height = (attrs.value (xml_tags[XML_height].tag)).toInt ();
+      int width  = (attrs.value (xml_tags[XML_width].tag)).toInt ();
+      int theme  = (attrs.value (xml_tags[XML_theme].tag)).toInt ();
+      fprintf (stderr, "height = %d, width = %d, theme = %d\n",
+	       height, width, theme);
+    }
+  }
+  else {
+    //    fprintf (stderr, "ending ");
+  }
 }
 
 void
-MainWindow::handle_qvis (QXmlStreamReader &stream)
+MainWindow::handle_curve (QXmlStreamReader &stream)
 {
-    fprintf (stderr, "handling %d %s\n",
-	     xmlhash.value (stream.name ().toString ()),
-	     stream.name ().toString ().toStdString ().c_str ()
-	     );
+  if (stream.isStartElement ()) {
+    QXmlStreamAttributes attrs = stream.attributes();
+    if (!attrs.isEmpty ()) {
+      bool polar  = (attrs.value (xml_tags[XML_polar].tag)).toInt ();
+      bool spline = (attrs.value (xml_tags[XML_spline].tag)).toInt ();
+      fprintf (stderr, "polar = %d, spline = %d\n",
+	       polar, spline);
+    }
+  }
+  else {
+    //    fprintf (stderr, "ending ");
+  }
+}
+
+void
+MainWindow::handle_shorttitle (QXmlStreamReader &stream)
+{
+  if (stream.isStartElement ()) {
+    QString st = stream.text ().toString ();
+    fprintf (stderr, "shorttitle = %s\n", st.toStdString ().c_str ());
+  }
+  else {
+    //    fprintf (stderr, "ending ");
+  }
 }
 
 void
@@ -164,21 +191,12 @@ MainWindow::readFile (QString &fileName)
 
   while (!stream.atEnd()) {
     stream.readNextStartElement();
-#if 0
-    void (*fcn)(QString &fileName) =
-      (xmlhash.value (stream.name ().toString ()))->handler;
-    (*fcn)(stream);
-#else
-    int idx = xmlhash.value (stream.name ().toString ());
-    (*xml_tags[idx].handler)(stream);
-#endif
-#if 0
-    fprintf (stderr, "elem %s %d %s %p\n",
-	     stream.name ().toString ().toStdString ().c_str (),
-	     idx,
-	     xml_tags[idx].tag.toStdString ().c_str (),
-	     xml_tags[idx].handler
-	     );
+    int idx = xmlhash.value (stream.name ().toString (), -1);
+    if (idx >= 0 && idx < XML_LAST && xml_tags[idx].handler) 
+      (*xml_tags[idx].handler)(stream);
+#if 1
+    else fprintf (stderr, "%s skipped\n",
+		  stream.name ().toString ().toStdString ().c_str ());
 #endif
   }
 }
@@ -187,24 +205,14 @@ void
 MainWindow::initXmlHash ()
 {
 #undef xml_def
-#define xml_def(v,p) p
+#define xml_def(v,p, l) p
   //  static void *fcn[] = {
   void (*fcn[])(QXmlStreamReader &stream) = {
 #include "XMLtags.def"
   };
   
   for (long unsigned int i = 0; i < XML_LAST; i++) {
-#if 0
-    xmlhash.insert (xml_tags[i].tag, &xml_tags[i]);
-#else
     xmlhash.insert (xml_tags[i].tag, (int)i);
-#endif
     xml_tags[i].handler = fcn[i]; // (void *)(&handle_qvis);
-#if 0
-    fprintf (stderr, "tbl %s %p %d\n",
-	     xml_tags[i].tag.toStdString ().c_str (),
-	     xml_tags[i].handler,
-	     xml_tags[i].idx);
-#endif
   }
 }
