@@ -66,6 +66,7 @@ public:
   static void handle_qvis  (QXmlStreamReader &stream);
   static void handle_curve (QXmlStreamReader &stream);
   static void handle_shorttitle (QXmlStreamReader &stream);
+  static void handle_title (QXmlStreamReader &stream);
 									  
 public slots:
 

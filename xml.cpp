@@ -174,8 +174,20 @@ void
 MainWindow::handle_shorttitle (QXmlStreamReader &stream)
 {
   if (stream.isStartElement ()) {
-    QString st = stream.text ().toString ();
+    QString st = stream.readElementText ();
     fprintf (stderr, "shorttitle = %s\n", st.toStdString ().c_str ());
+  }
+  else {
+    //    fprintf (stderr, "ending ");
+  }
+}
+
+void
+MainWindow::handle_title (QXmlStreamReader &stream)
+{
+  if (stream.isStartElement ()) {
+    QString st = stream.readElementText ();
+    fprintf (stderr, "title = %s\n", st.toStdString ().c_str ());
   }
   else {
     //    fprintf (stderr, "ending ");
