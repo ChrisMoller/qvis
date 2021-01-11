@@ -7,10 +7,11 @@ enum XML_enums
 #undef xml_def
 
 
-//void handle_qvis (QXmlStreamReader &stream, int idx);
-
-//#define xml_def(v,p) #v, p, XML_ ## v
+#if 1
+extern xml_tag_s xml_tags[];
+#else
 #define xml_def(v,p) #v, nullptr, XML_ ## v
 xml_tag_s xml_tags[] = {
 #include "XMLtags.def"
   };
+#endif

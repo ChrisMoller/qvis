@@ -17,39 +17,6 @@
 
 // https://doc.qt.io/qt-5/qtdatavisualization-index.html
 
-/***
-    <vis height="." width="." theme=".">
-      <curve polar="." spline="."> <!-- any number of repeats -->
-        <shorttitle>.....</shorttitle>
-        <title>.....</title>
-        <function>
-	  <label>...</label>
-	  <expression>...</expression>
-	</function>
-	<ix>
-	  <label>...</label>
-	  <var>...</var>
-	  <range>
-	    <min>...</min>
-	    <max>...</max>
-	  </range>
-	</ix>
-	<iz>
-	  <label>...</label>
-	  <var>...</var>
-	  <range>
-	    <min>...</min>
-	    <max>...</max>
-	  </range>
-	</iz>
-        <parameter>		<!-- any number of repeats -->
-  	  <var>...</var>
-	  <value>...</value>
-        </parameter>
-      </curve>
-    </vis>
- ***/
-
 #include <QtWidgets>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
@@ -58,9 +25,6 @@
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <QMenuBar>
-#include <QHash>
-#include <QXmlStreamWriter>
-#include <QXmlStreamReader>
 #include <complex>
 #include <values.h>
 
@@ -71,19 +35,15 @@ QT_CHARTS_USE_NAMESPACE
 #include "mainwindow.h"
 #include "xml.h"
 
-
-#if 0
-static void MainWindow::handle_qvis (QXmlStreamReader &stream);
-//#define xml_def(v,p) #v, p, XML_ ## v
-#define xml_def(v,p) #v, nullptr, XML_ ## v
-xml_tag_s xml_tags[] = {
-#include "XMLtags.def"
-  };
-#endif
-
 #define expvar "expvarλ"
 
+#if 0
+#if 0
+static QHash<const QString, xml_tag_s*> xmlhash;
+#else
 static QHash<const QString, int> xmlhash;
+#endif
+#endif
 
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
@@ -398,124 +358,11 @@ MainWindow::newFile()
 #endif
 }
 
-bool
-MainWindow::saveFile (QString &fileName)
-{
-  QFile file (fileName);
-  file.open (QIODevice::WriteOnly | QIODevice::Text);
-  QXmlStreamWriter stream(&file);
-  stream.setAutoFormatting(true);
-  stream.writeStartDocument();
-
-  stream.writeStartElement(xml_tags[XML_qvis].tag);
-  stream.writeAttribute(xml_tags[XML_height].tag,
-			QString::number (chartView->height ()));
-  stream.writeAttribute(xml_tags[XML_width].tag,
-			QString::number (chartView->width ()));
-  stream.writeAttribute(xml_tags[XML_theme].tag,
-			QString::number ((int)theme));
-  
-  stream.writeStartElement(xml_tags[XML_curve].tag);
-  Qt::CheckState polar_checked = do_polar->checkState();
-  stream.writeAttribute(xml_tags[XML_polar].tag,
-			(polar_checked == Qt::Checked)  ?
-			xml_tags[XML_true].tag : xml_tags[XML_false].tag);
-  Qt::CheckState spline_checked = do_spline->checkState();
-  stream.writeAttribute(xml_tags[XML_spline].tag,
-			(spline_checked == Qt::Checked)  ?
-			xml_tags[XML_true].tag : xml_tags[XML_false].tag);
-  
-  stream.writeTextElement(xml_tags[XML_shorttitle].tag, "none");
-  stream.writeTextElement(xml_tags[XML_title].tag, chart_title->text ());
-  
-  stream.writeStartElement(xml_tags[XML_function].tag);
-  stream.writeTextElement(xml_tags[XML_label].tag, fcn_label->text ());
-  stream.writeTextElement(xml_tags[XML_title].tag, y_title->text ());
-  stream.writeTextElement(xml_tags[XML_expression].tag,
-			  apl_expression->text ());
-  stream.writeEndElement(); // function
-  
-  stream.writeStartElement (xml_tags[XML_ix].tag);
-  stream.writeTextElement(xml_tags[XML_name].tag,  x_var_name->text ());
-  stream.writeTextElement(xml_tags[XML_title].tag, x_title->text ());
-
-  stream.writeStartElement(xml_tags[XML_range].tag);
-  stream.writeTextElement(xml_tags[XML_min].tag,
-			  QString::number (x_var_min->value ()));
-  stream.writeTextElement(xml_tags[XML_max].tag,
-			  QString::number (x_var_max->value ()));
-  stream.writeEndElement(); // range
-
-  stream.writeEndElement(); // ix
-  
-  stream.writeStartElement(xml_tags[XML_iz].tag);
-  stream.writeTextElement(xml_tags[XML_name].tag,  z_var_name->text ());
-  stream.writeTextElement(xml_tags[XML_title].tag, z_title->text ());
-
-  stream.writeStartElement(xml_tags[XML_range].tag);
-  stream.writeTextElement(xml_tags[XML_min].tag,
-			  QString::number (z_var_min->value ()));
-  stream.writeTextElement(xml_tags[XML_max].tag,
-			  QString::number (z_var_max->value ()));
-  stream.writeEndElement(); // range
-
-  stream.writeEndElement(); // iz
-  
-  stream.writeEndElement(); // curve
-  
-  stream.writeEndElement(); // qvis
-  stream.writeEndDocument();
-  file.close ();
-  return true;
-}
-
 #if 0
-typedef enum {
-  EXPECTING_qvis,
-  EXPECTING_curve,
-} read_state_e;
-
-read_state_e read_state = EXPECTING_qvis;
-    switch(read_state) {
-    case EXPECTING_qvis:
-      {
-	QXmlStreamAttributes attrs = stream.attributes ();
-	if (attrs.hasAttribute (xml_tags[XML_height].tag)) {
-	  QString val = attrs.value(xml_tags[XML_height].tag).toString ();
-	  fprintf (stderr, "height = %s\n", val.toStdString ().c_str ());
-	}
-	if (attrs.hasAttribute (xml_tags[XML_width].tag)) {
-	  QString val = attrs.value(xml_tags[XML_width].tag).toString ();
-	  fprintf (stderr, "width = %s\n", val.toStdString ().c_str ());
-	}
-	if (attrs.hasAttribute (xml_tags[XML_theme].tag)) {
-	  QString val = attrs.value(xml_tags[XML_theme].tag).toString ();
-	  fprintf (stderr, "theme = %s\n", val.toStdString ().c_str ());
-	}
-	read_state = EXPECTING_curve;
-      }
-      break;
-    case EXPECTING_curve:
-      {
-	QXmlStreamAttributes attrs = stream.attributes ();
-	if (attrs.hasAttribute (xml_tags[XML_polar].tag)) {
-	  QString val = attrs.value(xml_tags[XML_polar].tag).toString ();
-	  fprintf (stderr, "polar = %s\n", val.toStdString ().c_str ());
-	}
-	if (attrs.hasAttribute (xml_tags[XML_spline].tag)) {
-	  QString val = attrs.value(xml_tags[XML_spline].tag).toString ();
-	  fprintf (stderr, "spline = %s\n", val.toStdString ().c_str ());
-	}
-      }
-      break;
-    }
-#endif
-
 void
 MainWindow::handle_unhandled (QXmlStreamReader &stream)
 {
     fprintf (stderr, "not handling %d %s\n",
-	     // getHashValue (stream.name ().toString ()),
 	     xmlhash.value (stream.name ().toString ()),
 	     stream.name ().toString ().toStdString ().c_str ()
 	     );
@@ -525,7 +372,6 @@ void
 MainWindow::handle_qvis (QXmlStreamReader &stream)
 {
     fprintf (stderr, "handling %d %s\n",
-	     // getHashValue (stream.name ().toString ()),
 	     xmlhash.value (stream.name ().toString ()),
 	     stream.name ().toString ().toStdString ().c_str ()
 	     );
@@ -540,8 +386,14 @@ MainWindow::readFile (QString &fileName)
 
   while (!stream.atEnd()) {
     stream.readNextStartElement();
+#if 0
+    void (*fcn)(QString &fileName) =
+      (xmlhash.value (stream.name ().toString ()))->handler;
+    (*fcn)(stream);
+#else
     int idx = xmlhash.value (stream.name ().toString ());
     (*xml_tags[idx].handler)(stream);
+#endif
 #if 0
     fprintf (stderr, "elem %s %d %s %p\n",
 	     stream.name ().toString ().toStdString ().c_str (),
@@ -553,6 +405,7 @@ MainWindow::readFile (QString &fileName)
   }
 
 }
+#endif
 
 void
 MainWindow::open()
@@ -866,37 +719,7 @@ MainWindow::MainWindow (QWidget *parent)
   : QMainWindow(parent)
 {
 
-  /***
-      type ‘void (MainWindow::)(QXmlStreamReader&)’ to
-      type ‘void (*)(QXmlStreamReader&)’
-      type ‘void (MainWindow::)(QXmlStreamReader&)’ to
-      type ‘void (*)(QXmlStreamReader&)’
-      type ‘void (MainWindow::)(QXmlStreamReader&)’ to
-      type ‘void*’
-
-   ***/
-
-  //for (long unsigned int i = 0; i < XML_LAST; i++) {
-  //}
-
-#undef xml_def
-#define xml_def(v,p) p
-  //  static void *fcn[] = {
-  void (*fcn[])(QXmlStreamReader &stream) = {
-#include "XMLtags.def"
-  };
-  
-  for (long unsigned int i = 0; i < XML_LAST; i++) {
-    xmlhash.insert (xml_tags[i].tag, (int)i);
-    xml_tags[i].handler = fcn[i]; // (void *)(&handle_qvis);
-#if 0
-    fprintf (stderr, "tbl %s %p %d\n",
-	     xml_tags[i].tag.toStdString ().c_str (),
-	     xml_tags[i].handler,
-	     xml_tags[i].idx);
-#endif
-  }
-      
+  initXmlHash ();
 
   chart      = new QChart ();
   polarchart = new QPolarChart ();

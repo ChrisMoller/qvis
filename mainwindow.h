@@ -51,11 +51,8 @@ QT_CHARTS_USE_NAMESPACE
 typedef struct {
   QString tag;
   void (*handler)(QXmlStreamReader &stream);
-  //  void *handler;
   int idx;
 } xml_tag_s;
-
-//#define xml_def(v,p) xmlTag (#v, p, XML_ ## v)
 
 class MainWindow : public QMainWindow
 {
@@ -122,6 +119,6 @@ private:
 				APL_value xvals,
 				QString flbl);
   bool		 maybeSave();
-  //  QHash<const QString, int> xmlhash;
+  void		 initXmlHash ();
 };
 #endif // MAINWINDOW_H

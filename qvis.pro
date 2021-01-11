@@ -13,7 +13,8 @@ LIBS += -L`apl --show_lib_dir` -lapl
 
 SOURCES += \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    xml.cpp
 
 HEADERS += \
     mainwindow.h \
