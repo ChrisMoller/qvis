@@ -1,5 +1,5 @@
 
-#define xml_def(v,p, l) XML_ ## v
+#define xml_def(v,l) XML_ ## v
 enum XML_enums
   {
 #include "XMLtags.def"

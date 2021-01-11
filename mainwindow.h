@@ -85,9 +85,8 @@ public:
 
 typedef struct {
   QString tag;
-  void (*handler)(QXmlStreamReader &stream, Curve &curve, int &doing);
   int idx;
-  int logical;
+  bool logical;
 } xml_tag_s;
 
 class MainWindow : public QMainWindow
@@ -104,25 +103,6 @@ public:
   bool parseIdx (Index &idx, QXmlStreamReader &stream);
   bool parseIx (Curve &curve, QXmlStreamReader &stream);
   bool parseIz (Curve &curve, QXmlStreamReader &stream);
-
-  static void handle_qvis  (QXmlStreamReader &stream,	   Curve &curve,
-			    int &doing);
-  static void handle_curve (QXmlStreamReader &stream,	   Curve &curve,
-			    int &doing);
-  static void handle_shorttitle (QXmlStreamReader &stream, Curve &curve,
-			    int &doing);
-  static void handle_title (QXmlStreamReader &stream, 	   Curve &curve,
-			    int &doing);
-  static void handle_label (QXmlStreamReader &stream, 	   Curve &curve,
-			    int &doing);
-  static void handle_function (QXmlStreamReader &stream,   Curve &curve,
-			    int &doing);
-  static void handle_expression (QXmlStreamReader &stream,   Curve &curve,
-			    int &doing);
-  static void handle_ix (QXmlStreamReader &stream,   Curve &curve,
-			    int &doing);
-  static void handle_iz (QXmlStreamReader &stream,   Curve &curve,
-			    int &doing);
 									  
 public slots:
 

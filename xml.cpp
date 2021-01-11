@@ -50,17 +50,15 @@
 #include <QtWidgets>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
-#include <QHash>
+//#include <QHash>
 
 #include "mainwindow.h"
 #include "xml.h"
 
-#define xml_def(v,p,l) #v, nullptr, XML_ ## v, l
+#define xml_def(v, l) #v, XML_ ## v, l
 xml_tag_s xml_tags[] = {
 #include "XMLtags.def"
   };
-
-static QHash<const QString, int> xmlhash;
 
 bool
 MainWindow::saveFile (QString &fileName)
@@ -133,143 +131,6 @@ MainWindow::saveFile (QString &fileName)
   stream.writeEndDocument();
   file.close ();
   return true;
-}
-
-enum {
-  DOING_nothing,
-  DOING_qvis,
-  DOING_curve,
-  DOING_function,
-  DOING_ix,
-  DOING_iz
-};
-
-void
-MainWindow::handle_qvis (QXmlStreamReader &stream,
-			 Curve &curve __attribute__((unused)),
-			 int &doing __attribute__((unused)))
-{
-  if (stream.isStartElement ()) {
-    QXmlStreamAttributes attrs = stream.attributes();
-    if (!attrs.isEmpty ()) {
-      int height = (attrs.value (xml_tags[XML_height].tag)).toInt ();
-      int width  = (attrs.value (xml_tags[XML_width].tag)).toInt ();
-      int theme  = (attrs.value (xml_tags[XML_theme].tag)).toInt ();
-      fprintf (stderr, "height = %d, width = %d, theme = %d\n",
-	       height, width, theme);
-    }
-  }
-  else {
-    doing = DOING_nothing;
-  }
-}
-
-void
-MainWindow::handle_curve (QXmlStreamReader &stream, Curve &curve,
-			  int &doing)
-{
-  if (stream.isStartElement ()) {
-    QXmlStreamAttributes attrs = stream.attributes();
-    if (!attrs.isEmpty ()) {
-      curve.polar  = (attrs.value (xml_tags[XML_polar].tag)).toInt ();
-      curve.spline = (attrs.value (xml_tags[XML_spline].tag)).toInt ();
-    }
-    doing = DOING_curve;
-  }
-  else {
-    doing = DOING_nothing;
-  }
-}
-
-void
-MainWindow::handle_shorttitle (QXmlStreamReader &stream,
-			       Curve &curve __attribute__((unused)),
-			       int &doing __attribute__((unused)))
-{
-  if (stream.isStartElement ()) {
-    curve.shorttitle = stream.readElementText ();
-  }
-  else {
-  }
-}
-
-void
-MainWindow::handle_title (QXmlStreamReader &stream,
-			  Curve &curve __attribute__((unused)),
-			  int &doing)
-{
-  fprintf (stderr, "title doing %d\n", doing);
-  if (stream.isStartElement ()) {
-    switch (doing) {
-    case DOING_curve:
-      curve.title = stream.readElementText ();
-      break;
-    case DOING_function:
-      curve.function.title = stream.readElementText ();
-      break;
-    case DOING_ix:
-      curve.ix.title = stream.readElementText ();
-      break;
-    case DOING_iz:
-      curve.iz.title = stream.readElementText ();
-      break;
-    default:
-      break;
-    }
-  }
-  else {
-  }
-}
-
-void
-MainWindow::handle_label (QXmlStreamReader &stream,
-			  Curve &curve __attribute__((unused)),
-			  int &doing)
-{
-  fprintf (stderr, "label doing %d\n", doing);
-  if (stream.isStartElement ()) {
-    switch (doing) {
-    case DOING_function:
-      curve.function.label = stream.readElementText ();
-      break;
-    default:
-      break;
-    }
-  }
-  else {
-  }
-}
-
-void
-MainWindow::handle_expression (QXmlStreamReader &stream,
-			       Curve &curve __attribute__((unused)),
-			       int &doing)
-{
-  fprintf (stderr, "expr doing %d\n", doing);
-  if (stream.isStartElement ()) {
-    switch (doing) {
-    case DOING_function:
-      curve.function.expression = stream.readElementText ();
-      break;
-    default:
-      break;
-    }
-  }
-  else {
-  }
-}
-
-void
-MainWindow::handle_function (QXmlStreamReader &stream,
-			     Curve &curve __attribute__((unused)),
-			     int &doing)
-{
-  if (stream.isStartElement ()) {
-    doing = DOING_function;
-  }
-  else {
-    doing = DOING_nothing;
-  }
 }
 
 static void
@@ -458,18 +319,3 @@ MainWindow::readFile (QString &fileName)
   }
 }
 
-void
-MainWindow::initXmlHash ()
-{
-#undef xml_def
-#define xml_def(v,p, l) p
-  //  static void *fcn[] = {
-  void (*fcn[])(QXmlStreamReader &stream, Curve &curve, int &doing) = {
-#include "XMLtags.def"
-  };
-  
-  for (long unsigned int i = 0; i < XML_LAST; i++) {
-    xmlhash.insert (xml_tags[i].tag, (int)i);
-    xml_tags[i].handler = fcn[i]; // (void *)(&handle_qvis);
-  }
-}
