@@ -150,6 +150,17 @@ MainWindow::handle_vector (APL_value res,
     // real vector vs idx, rank = 1
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;
+#if 1
+    settings.setValue (DO_SPLINE,  curve.spline);
+    if (curve.spline) {
+      sseries = new QSplineSeries ();
+      sseries->setName(flbl);
+    }
+    else {
+      pseries = new QLineSeries ();
+      pseries->setName(flbl);
+    }
+#else
     Qt::CheckState spline_checked = do_spline->checkState();
     settings.setValue (DO_SPLINE,  spline_checked);
     if (spline_checked == Qt::Checked) {
@@ -160,6 +171,8 @@ MainWindow::handle_vector (APL_value res,
       pseries = new QLineSeries ();
       pseries->setName(flbl);
     }
+#endif
+
     for (uint64_t i = 0; i < count; i++) {
       qreal y_val = (qreal)vect[i].real ();
       if (y_max < y_val) y_max = y_val;
@@ -187,46 +200,55 @@ MainWindow::handle_vector (APL_value res,
 void
 MainWindow::handleExpression ()
 {
+#if 1
+  settings.setValue (DO_POLAR, curve.polar);
+  chartView->setChart (curve.polar ? polarchart : chart);
+#else
   Qt::CheckState polar_checked = do_polar->checkState();
   bool is_polar = (polar_checked == Qt::Checked) ? true : false;
   settings.setValue (DO_POLAR, is_polar);
   chartView->setChart (is_polar ? polarchart : chart);
+#endif
 		     
-  QString xlbl = x_var_name->text ();
-  double  xmin = x_var_min->value ();
-  double  xmax = x_var_max->value ();
 
-  QString zlbl = z_var_name->text ();
+
+#if 0
   double  zmin = z_var_min->value ();
   double  zmax = z_var_max->value ();
-
+  QString zlbl = z_var_name->text ();
+  double  xmax = x_var_max->value ();
+  double  xmin = x_var_min->value ();
+  QString xlbl = x_var_name->text ();
   QString flbl  = fcn_label->text ();
+#endif
   int incr = 16;
 
-  if (!xlbl.isEmpty ()) {
+  if (!curve.ix.name.isEmpty ()) {
     /***
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
     ***/
     QString range_x =
       QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
-      .arg(xlbl).arg(xmin).arg(incr).arg(xmax);
+      .arg(curve.ix.name).arg(curve.ix.range.min).arg(incr)
+      .arg(curve.ix.range.max);
     apl_exec (range_x.toStdString ().c_str ());
     
     char loc[256];
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
     APL_value xvals =
-      get_var_value (xlbl.toStdString ().c_str (), loc);
+      get_var_value (curve.ix.name.toStdString ().c_str (), loc);
 
     //    https://doc.qt.io/qt-5/qtcharts-splinechart-example.html
 
     bool zset = false;
-    if (!zlbl.isEmpty ()) {
-      settings.setValue (Z_VAR_NAME, zlbl);
-      settings.setValue (Z_VAR_MIN,  zmin);
-      settings.setValue (Z_VAR_MAX,  zmax);
+    if (!curve.iz.name.isEmpty ()) {
+      settings.setValue (Z_VAR_NAME, curve.iz.name);
+      settings.setValue (Z_VAR_MIN,  curve.iz.range.min);
+      settings.setValue (Z_VAR_MAX,  curve.iz.range.max);
       QString range_z =
 	QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
-	.arg(zlbl).arg(zmin).arg(incr).arg(zmax);
+	.arg(curve.iz.name).arg(curve.iz.range.min)
+	.arg(incr).arg(curve.iz.range.max);
       zset = true;
       apl_exec (range_z.toStdString ().c_str ());
     }
@@ -249,7 +271,8 @@ MainWindow::handleExpression ()
 
       switch (rank)  {
       case 1:
-	frc =  handle_vector (res, xvals, flbl);
+	// fixme -- don't need to  pass lbl
+	frc =  handle_vector (res, xvals, curve.function.title);
 	break;
       case 2:
 	// real array vs idx, rank = 2, one curve per row
@@ -284,10 +307,14 @@ MainWindow::handleExpression ()
 	
 
       if (frc) {
-	settings.setValue (X_VAR_NAME, xlbl);
-	settings.setValue (X_VAR_MIN,  xmin);
-	settings.setValue (X_VAR_MAX,  xmax);
+	settings.setValue (X_VAR_NAME, curve.ix.name);
+	settings.setValue (X_VAR_MIN,  curve.ix.range.min);
+	settings.setValue (X_VAR_MAX,  curve.ix.range.max);
+#if 1
+	settings.setValue (FCN_LABEL,  curve.function.title);
+#else
 	settings.setValue (FCN_LABEL,  flbl);
+#endif
 	settings.setValue (FUNCTION,   input);
 
 	settings.setValue (HEIGHT, chartView->height ());
@@ -296,28 +323,40 @@ MainWindow::handleExpression ()
 	settings.setValue (THEME,  theme);
 	chartView->chart ()->setTheme (theme);
 
+#if 1
+	settings.setValue (CHART_TITLE,  curve.title);
+	chartView->chart ()->setTitle (curve.title);
+#else
 	QString ttl = chart_title->text ();
 	settings.setValue (CHART_TITLE,  ttl);
 	chartView->chart ()->setTitle (ttl);
+#endif
       
-	QString x_ttl = x_title->text ();
-	settings.setValue (X_TITLE,  x_ttl);
+	//	QString x_ttl = x_title->text ();
+	settings.setValue (X_TITLE,  curve.ix.title);
 	chartView->chart ()->axes (Qt::Horizontal).first()
-	  ->setTitleText(x_ttl);
-      
+	  ->setTitleText(curve.ix.title);
+
+#if 1
+	settings.setValue (Y_TITLE,  curve.function.label);
+	chartView->chart ()->axes (Qt::Vertical).first()
+	  ->setTitleText(curve.function.label);
+#else
 	QString y_ttl = y_title->text ();
 	settings.setValue (Y_TITLE,  y_ttl);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText(y_ttl);
+#endif
 
-	QString cmd = QString (")erase %1 %2").arg (expvar).arg (xlbl);
+	QString cmd =
+	  QString (")erase %1 %2").arg (expvar).arg (curve.ix.name);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
 	release_value (res, loc);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
 	release_value (xvals, loc);
 	apl_command (cmd.toStdString ().c_str ());
 	if (zset) {
-	  cmd = QString (")erase %1").arg (zlbl);
+	  cmd = QString (")erase %1").arg (curve.iz.name);
 	  apl_command (cmd.toStdString ().c_str ());
 	  // fixme
 	  // sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
@@ -331,6 +370,21 @@ MainWindow::handleExpression ()
 void
 MainWindow::valChanged (bool enabled __attribute__((unused)))
 {
+  curve.polar  = (Qt::Checked == do_polar->checkState());
+  curve.spline = (Qt::Checked == do_spline->checkState());
+  //  curve.shorttitle
+  curve.title			= chart_title->text ();
+  curve.function.label		= y_title->text ();
+  curve.function.title		= fcn_label->text ();
+  curve.function.expression	= apl_expression->text ();
+  curve.ix.name			= x_var_name->text ();
+  curve.ix.title		= x_title->text ();
+  curve.ix.range.min		= x_var_min->value ();
+  curve.ix.range.max		= x_var_max->value ();
+  curve.iz.name			= z_var_name->text ();
+  curve.iz.title		= z_title->text ();
+  curve.iz.range.min 		= z_var_min->value ();
+  curve.iz.range.max 		= z_var_max->value ();
   changed = true;
   handleExpression ();
 }
@@ -345,6 +399,8 @@ void
 MainWindow::newFile()
 {
 #if 0
+  QChartView *newChartView = new QChartView ();
+  this->setCentralWidget (newChartView);
   if (maybeSave()) {
     textEdit->clear();
     setCurrentFile(QString());
@@ -469,16 +525,16 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   int row = 0;
   int col = 0;
 
-  QString ttl = settings.value (CHART_TITLE).toString ();
+  curve.title = settings.value (CHART_TITLE).toString ();
   chart_title = new  QLineEdit ();
   chart_title->setPlaceholderText ("chart title");
-  chart_title->setText (ttl);
+  chart_title->setText (curve.title);
   layout->addWidget (chart_title, row, 0, 1, 3);
   
-  QString y_text = settings.value (Y_TITLE).toString ();
+  curve.function.label = settings.value (Y_TITLE).toString ();
   y_title = new  QLineEdit ();
   y_title->setPlaceholderText ("y axix label");
-  y_title->setText (y_text);
+  y_title->setText (curve.function.label);
   layout->addWidget (y_title, row, 3);
   
   /*  x indep vbl */
@@ -486,38 +542,38 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   row++;
   col = 0;
   
-  QString xlbl = settings.value (X_VAR_NAME).toString ();
+  curve.ix.name = settings.value (X_VAR_NAME).toString ();
   x_var_name = new  QLineEdit ();
   x_var_name->setPlaceholderText ("x variable name");
-  x_var_name->setText (xlbl);
+  x_var_name->setText (curve.ix.name);
   layout->addWidget (x_var_name, row, col++);
   
-  double xmin = settings.value (X_VAR_MIN).toDouble ();
+  curve.ix.range.min = settings.value (X_VAR_MIN).toDouble ();
   x_var_min = new  QDoubleSpinBox ();
   x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
   x_var_min->setToolTip ("x minimum value");
-  x_var_min->setValue (xmin);
+  x_var_min->setValue (curve.ix.range.min);
   QObject::connect (x_var_min,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
 		    &MainWindow::valChanged);
   layout->addWidget (x_var_min, row, col++);
 
-  double xmax = settings.value (X_VAR_MAX).toDouble ();
+  curve.ix.range.max = settings.value (X_VAR_MAX).toDouble ();
   x_var_max = new  QDoubleSpinBox ();
   x_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
   x_var_max->setToolTip ("x maximum value");
-  x_var_max->setValue (xmax);
+  x_var_max->setValue (curve.ix.range.max);
   QObject::connect (x_var_max,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
 		    &MainWindow::valChanged);
   layout->addWidget (x_var_max, row, col++);
   
-  QString x_text = settings.value (X_TITLE).toString ();
+  curve.ix.title = settings.value (X_TITLE).toString ();
   x_title = new  QLineEdit ();
   x_title->setPlaceholderText ("x axix label");
-  x_title->setText (x_text);
+  x_title->setText (curve.ix.title);
   layout->addWidget (x_title, row, col++);
 
   /*  z indep vbl */
@@ -525,38 +581,38 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   row++;
   col = 0;
 
-  QString zlbl = settings.value (Z_VAR_NAME).toString ();
+  curve.iz.name = settings.value (Z_VAR_NAME).toString ();
   z_var_name = new  QLineEdit ();
   z_var_name->setPlaceholderText ("z variable name");
-  z_var_name->setText (zlbl);
+  z_var_name->setText (curve.iz.name);
   layout->addWidget (z_var_name, row, col++);
 
-  double zmin = settings.value (Z_VAR_MIN).toDouble ();
+  curve.iz.range.min = settings.value (Z_VAR_MIN).toDouble ();
   z_var_min = new  QDoubleSpinBox ();
   z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
   z_var_min->setToolTip ("z minimum value");
-  z_var_min->setValue (zmin);
+  z_var_min->setValue (curve.iz.range.min);
   QObject::connect (z_var_min,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
 		    &MainWindow::valChanged);
   layout->addWidget (z_var_min, row, col++);
 
-  double zmax = settings.value (Z_VAR_MAX).toDouble ();
+  curve.iz.range.max = settings.value (Z_VAR_MAX).toDouble ();
   z_var_max = new  QDoubleSpinBox ();
   z_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
   z_var_max->setToolTip ("z maximum value");
-  z_var_max->setValue (zmax);
+  z_var_max->setValue (curve.iz.range.max);
   QObject::connect (z_var_max,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
 		    &MainWindow::valChanged);
   layout->addWidget (z_var_max, row, col++);
   
-  QString z_text = settings.value (Z_TITLE).toString ();
+  curve.iz.title = settings.value (Z_TITLE).toString ();
   z_title = new  QLineEdit ();
   z_title->setPlaceholderText ("z axix label");
-  z_title->setText (z_text);
+  z_title->setText (curve.iz.title);
   layout->addWidget (z_title, row, col++);
 
 
@@ -564,16 +620,16 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
 
   row++;
   col = 0;
-  QString flbl = settings.value (FCN_LABEL).toString ();
+  curve.function.title = settings.value (FCN_LABEL).toString ();
   fcn_label = new  QLineEdit ();
   fcn_label->setPlaceholderText ("curve label");
-  fcn_label->setText (flbl);
+  fcn_label->setText (curve.function.title);
   layout->addWidget (fcn_label, row, col++);
 
-  QString fcn = settings.value (FUNCTION).toString ();
+  curve.function.expression = settings.value (FUNCTION).toString ();
   apl_expression = new  QLineEdit ();
   apl_expression->setPlaceholderText ("function");
-  apl_expression->setText (fcn);
+  apl_expression->setText (curve.function.expression);
   layout->addWidget (apl_expression, row, col, 1, 3);
   QObject::connect (apl_expression,
 		    &QLineEdit::editingFinished,
@@ -585,18 +641,18 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   row++;
   col = 0;
   
-  bool dospl = settings.value (DO_SPLINE).toBool ();
+  curve.spline = settings.value (DO_SPLINE).toBool ();
   do_spline = new QCheckBox ("Spline");
-  do_spline->setCheckState (dospl ? Qt::Checked : Qt::Unchecked);
+  do_spline->setCheckState (curve.spline ? Qt::Checked : Qt::Unchecked);
   layout->addWidget (do_spline, row, col++);
   connect(do_spline,
 	  &QCheckBox::stateChanged,
 	  this,
 	  &MainWindow::valChanged);
   
-  bool dopol = settings.value (DO_POLAR).toBool ();
+  curve.polar = settings.value (DO_POLAR).toBool ();
   do_polar = new QCheckBox ("Polar");
-  do_polar->setCheckState (dopol ? Qt::Checked : Qt::Unchecked);
+  do_polar->setCheckState (curve.polar ? Qt::Checked : Qt::Unchecked);
   layout->addWidget (do_polar, row, col++);
   connect(do_polar,
 	  &QCheckBox::stateChanged,
@@ -657,7 +713,7 @@ MainWindow::buildMenu (MainWindow *win, QChart *chart,
   formGroupBox->setLayout (layout);
   formGroupBox->show ();
 
-  chartView->setChart (dopol ? polarchart : chart);
+  chartView->setChart (curve.polar ? polarchart : chart);
 }
 
 MainWindow::MainWindow (QWidget *parent)

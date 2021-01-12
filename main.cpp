@@ -96,6 +96,5 @@ main (int argc, char *argv[])
 
   MainWindow window (nullptr);
 
-  window.show ();
   return app.exec ();
 }
