@@ -695,6 +695,7 @@ MainWindow::MainWindow (QWidget *parent)
 
   this->show ();
 
+  curves.push_back (curve);
   handleExpression ();
   changed = false;
 }

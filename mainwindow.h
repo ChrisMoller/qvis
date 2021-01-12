@@ -159,7 +159,7 @@ private:
 				QString flbl);
   bool		 maybeSave();
   void		 initXmlHash ();
-  //  std::vector<Curve> curves;
+  std::vector<Curve> curves;
   Curve		 curve;
 };
 #endif // MAINWINDOW_H

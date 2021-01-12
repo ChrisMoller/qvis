@@ -135,6 +135,7 @@ MainWindow::saveFile (QString &fileName)
   return true;
 }
 
+#if 0
 static void
 show_curve (Curve &curve)
 {
@@ -166,6 +167,7 @@ show_curve (Curve &curve)
   fprintf (stderr, "ix range max = %g\n",
 	   curve.iz.range.max);
 }
+#endif
 
 bool
 MainWindow::parseRange (Range &rng, QXmlStreamReader &stream)
@@ -311,7 +313,7 @@ MainWindow::readFile (QString &fileName)
   file.open (QIODevice::ReadOnly | QIODevice::Text);
   QXmlStreamReader stream(&file);
 
-  Curve curve;
+  //  Curve curve;
   bool rc = true;
 
   stream.readNextStartElement();
@@ -332,7 +334,8 @@ MainWindow::readFile (QString &fileName)
   }
   else rc = false;
 
-  if (rc) show_curve (curve);
+    // show_curve (curve);
+  if (rc)  handleExpression ();
   else { // fixme
     fprintf (stderr, "Error line %d\n", (int)stream.lineNumber ());
   }
