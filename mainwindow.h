@@ -89,6 +89,44 @@ typedef struct {
   bool logical;
 } xml_tag_s;
 
+
+class MainWindow;
+
+class ChartWindow : public QMainWindow
+{
+  Q_OBJECT
+  
+public:
+  ChartWindow(MainWindow *parent = nullptr);
+  ~ChartWindow();
+  QChartView	*chartView;
+  QChart	*chart;
+  QPolarChart	*polarchart;
+  std::vector<Curve> curves;
+  Curve		 curve;
+  bool		 changed;
+  bool 		 saveFile (QString &fileName);
+  void 		 readFile (QString &fileName);
+  bool parseCurve (Curve &curve, QXmlStreamReader &stream);
+  bool parseFunction (Curve &curve, QXmlStreamReader &stream);
+  bool parseRange (Range &rng, QXmlStreamReader &stream);
+  bool parseIdx (Index &idx, QXmlStreamReader &stream);
+  bool parseIx (Curve &curve, QXmlStreamReader &stream);
+  bool parseIz (Curve &curve, QXmlStreamReader &stream);
+  void		 initXmlHash ();
+  
+public slots:
+  void handleExpression ();
+  
+private:
+  QChart::ChartTheme theme;
+  MainWindow	*mainWindow;
+  int	         handle_vector (APL_value res,
+				APL_value xvals,
+				QString flbl);
+};
+
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -96,13 +134,8 @@ class MainWindow : public QMainWindow
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
-  void buildMenu (MainWindow *win, QChart *chart, QPolarChart *polarchart);
-  bool parseCurve (Curve &curve, QXmlStreamReader &stream);
-  bool parseFunction (Curve &curve, QXmlStreamReader &stream);
-  bool parseRange (Range &rng, QXmlStreamReader &stream);
-  bool parseIdx (Index &idx, QXmlStreamReader &stream);
-  bool parseIx (Curve &curve, QXmlStreamReader &stream);
-  bool parseIz (Curve &curve, QXmlStreamReader &stream);
+  void buildMenu (MainWindow *win);
+  QSettings 	 settings;
 									  
 public slots:
 
@@ -110,7 +143,6 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
-  void handleExpression ();
   void handleSettings ();
   void byebye ();
   void valChanged(bool enabled);
@@ -122,13 +154,8 @@ private slots:
   bool saveAs();
   void about();
   
-private:
+public:
   void           createActions();
-  bool 		 saveFile (QString &fileName);
-  void 		 readFile (QString &fileName);
-  QChartView	*chartView;
-  QChart	*chart;
-  QPolarChart	*polarchart;
   QLineEdit	*chart_title;
   
   QLineEdit	*y_title;
@@ -147,19 +174,13 @@ private:
 
   QCheckBox 	*do_spline;
   QCheckBox 	*do_polar;
-  QChart::ChartTheme theme;
 
-  bool		 changed;
-  QSettings 	 settings;
   QComboBox 	*themebox;
+  bool		 changed;
   QString 	 curFile;
+  QChart::ChartTheme theme;	// fixme--copy to chartwin
   void		 create_menuBar ();
-  int	         handle_vector (APL_value res,
-				APL_value xvals,
-				QString flbl);
   bool		 maybeSave();
-  void		 initXmlHash ();
-  std::vector<Curve> curves;
-  Curve		 curve;
+  ChartWindow	*chartWindow;
 };
 #endif // MAINWINDOW_H

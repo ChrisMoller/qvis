@@ -63,7 +63,7 @@ xml_tag_s xml_tags[] = {
 static QHash<const QString, int> xmlhash;
 
 bool
-MainWindow::saveFile (QString &fileName)
+ChartWindow::saveFile (QString &fileName)
 {
   QFile file (fileName);
   file.open (QIODevice::WriteOnly | QIODevice::Text);
@@ -80,49 +80,49 @@ MainWindow::saveFile (QString &fileName)
 			QString::number ((int)theme));
   
   stream.writeStartElement(xml_tags[XML_curve].tag);
-  Qt::CheckState polar_checked = do_polar->checkState();
   stream.writeAttribute(xml_tags[XML_polar].tag,
-			(polar_checked == Qt::Checked)  ?
+			curve.polar ?
 			QString::number (xml_tags[XML_true].logical) :
 			QString::number (xml_tags[XML_false].logical));
-  Qt::CheckState spline_checked = do_spline->checkState();
   stream.writeAttribute(xml_tags[XML_spline].tag,
-			(spline_checked == Qt::Checked)  ?
+			curve.spline ?
 			QString::number (xml_tags[XML_true].logical) :
 			QString::number (xml_tags[XML_false].logical));
   
-  stream.writeTextElement(xml_tags[XML_shorttitle].tag, "none");
-  stream.writeTextElement(xml_tags[XML_title].tag, chart_title->text ());
+  stream.writeTextElement(xml_tags[XML_shorttitle].tag, curve.shorttitle);
+  stream.writeTextElement(xml_tags[XML_title].tag, curve.title);
   
   stream.writeStartElement(xml_tags[XML_function].tag);
-  stream.writeTextElement(xml_tags[XML_label].tag, fcn_label->text ());
-  stream.writeTextElement(xml_tags[XML_title].tag, y_title->text ());
+  stream.writeTextElement(xml_tags[XML_label].tag,
+			  curve.function.label);
+  stream.writeTextElement(xml_tags[XML_title].tag,
+			  curve.function.title);
   stream.writeTextElement(xml_tags[XML_expression].tag,
-			  apl_expression->text ());
+			  curve.function.expression);
   stream.writeEndElement(); // function
   
   stream.writeStartElement (xml_tags[XML_ix].tag);
-  stream.writeTextElement(xml_tags[XML_name].tag,  x_var_name->text ());
-  stream.writeTextElement(xml_tags[XML_title].tag, x_title->text ());
+  stream.writeTextElement(xml_tags[XML_name].tag,  curve.ix.name);
+  stream.writeTextElement(xml_tags[XML_title].tag, curve.ix.title);
 
   stream.writeStartElement(xml_tags[XML_range].tag);
   stream.writeTextElement(xml_tags[XML_min].tag,
-			  QString::number (x_var_min->value ()));
+			  QString::number (curve.ix.range.min));
   stream.writeTextElement(xml_tags[XML_max].tag,
-			  QString::number (x_var_max->value ()));
+			  QString::number (curve.ix.range.max));
   stream.writeEndElement(); // range
 
   stream.writeEndElement(); // ix
   
   stream.writeStartElement(xml_tags[XML_iz].tag);
-  stream.writeTextElement(xml_tags[XML_name].tag,  z_var_name->text ());
-  stream.writeTextElement(xml_tags[XML_title].tag, z_title->text ());
+  stream.writeTextElement(xml_tags[XML_name].tag,  curve.iz.name);
+  stream.writeTextElement(xml_tags[XML_title].tag, curve.iz.title);
 
   stream.writeStartElement(xml_tags[XML_range].tag);
   stream.writeTextElement(xml_tags[XML_min].tag,
-			  QString::number (z_var_min->value ()));
+			  QString::number (curve.iz.range.min));
   stream.writeTextElement(xml_tags[XML_max].tag,
-			  QString::number (z_var_max->value ()));
+			  QString::number (curve.iz.range.max));
   stream.writeEndElement(); // range
 
   stream.writeEndElement(); // iz
@@ -170,7 +170,7 @@ show_curve (Curve &curve)
 #endif
 
 bool
-MainWindow::parseRange (Range &rng, QXmlStreamReader &stream)
+ChartWindow::parseRange (Range &rng, QXmlStreamReader &stream)
 {
   bool rc = true;
   while (rc && stream.readNextStartElement()) {
@@ -194,7 +194,7 @@ MainWindow::parseRange (Range &rng, QXmlStreamReader &stream)
 }
 
 bool
-MainWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
+ChartWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
 {
   bool rc = true;
   while (rc && stream.readNextStartElement()) {
@@ -221,19 +221,19 @@ MainWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
 }
 
 bool
-MainWindow::parseIx (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseIx (Curve &curve, QXmlStreamReader &stream)
 {
   return parseIdx (curve.ix, stream);
 }
 
 bool
-MainWindow::parseIz (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseIz (Curve &curve, QXmlStreamReader &stream)
 {
   return parseIdx (curve.iz, stream);
 }
 
 bool
-MainWindow::parseFunction (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseFunction (Curve &curve, QXmlStreamReader &stream)
 {
   bool rc = true;
   while (rc && stream.readNextStartElement()) {
@@ -260,7 +260,7 @@ MainWindow::parseFunction (Curve &curve, QXmlStreamReader &stream)
 }
 
 bool
-MainWindow::parseCurve (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseCurve (Curve &curve, QXmlStreamReader &stream)
 {
   bool rc = true;
   stream.readNextStartElement();
@@ -307,7 +307,7 @@ MainWindow::parseCurve (Curve &curve, QXmlStreamReader &stream)
 }
 
 void
-MainWindow::readFile (QString &fileName)
+ChartWindow::readFile (QString &fileName)
 {
   QFile file (fileName);
   file.open (QIODevice::ReadOnly | QIODevice::Text);
@@ -342,7 +342,7 @@ MainWindow::readFile (QString &fileName)
 }
 
 void
-MainWindow::initXmlHash ()
+ChartWindow::initXmlHash ()
 {
   for (long unsigned int i = 0; i < XML_LAST; i++)
     xmlhash.insert (xml_tags[i].tag, (int)i);
