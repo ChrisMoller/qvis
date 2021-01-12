@@ -150,7 +150,7 @@ MainWindow::handle_vector (APL_value res,
     // real vector vs idx, rank = 1
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;
-#if 1
+
     settings.setValue (DO_SPLINE,  curve.spline);
     if (curve.spline) {
       sseries = new QSplineSeries ();
@@ -160,18 +160,6 @@ MainWindow::handle_vector (APL_value res,
       pseries = new QLineSeries ();
       pseries->setName(flbl);
     }
-#else
-    Qt::CheckState spline_checked = do_spline->checkState();
-    settings.setValue (DO_SPLINE,  spline_checked);
-    if (spline_checked == Qt::Checked) {
-      sseries = new QSplineSeries ();
-      sseries->setName(flbl);
-    }
-    else {
-      pseries = new QLineSeries ();
-      pseries->setName(flbl);
-    }
-#endif
 
     for (uint64_t i = 0; i < count; i++) {
       qreal y_val = (qreal)vect[i].real ();
@@ -200,28 +188,10 @@ MainWindow::handle_vector (APL_value res,
 void
 MainWindow::handleExpression ()
 {
-#if 1
   settings.setValue (DO_POLAR, curve.polar);
   chartView->setChart (curve.polar ? polarchart : chart);
-#else
-  Qt::CheckState polar_checked = do_polar->checkState();
-  bool is_polar = (polar_checked == Qt::Checked) ? true : false;
-  settings.setValue (DO_POLAR, is_polar);
-  chartView->setChart (is_polar ? polarchart : chart);
-#endif
-		     
 
-
-#if 0
-  double  zmin = z_var_min->value ();
-  double  zmax = z_var_max->value ();
-  QString zlbl = z_var_name->text ();
-  double  xmax = x_var_max->value ();
-  double  xmin = x_var_min->value ();
-  QString xlbl = x_var_name->text ();
-  QString flbl  = fcn_label->text ();
-#endif
-  int incr = 16;
+  int incr = 16;  // fixme--make settable
 
   if (!curve.ix.name.isEmpty ()) {
     /***
@@ -310,11 +280,7 @@ MainWindow::handleExpression ()
 	settings.setValue (X_VAR_NAME, curve.ix.name);
 	settings.setValue (X_VAR_MIN,  curve.ix.range.min);
 	settings.setValue (X_VAR_MAX,  curve.ix.range.max);
-#if 1
 	settings.setValue (FCN_LABEL,  curve.function.title);
-#else
-	settings.setValue (FCN_LABEL,  flbl);
-#endif
 	settings.setValue (FUNCTION,   input);
 
 	settings.setValue (HEIGHT, chartView->height ());
@@ -323,30 +289,17 @@ MainWindow::handleExpression ()
 	settings.setValue (THEME,  theme);
 	chartView->chart ()->setTheme (theme);
 
-#if 1
 	settings.setValue (CHART_TITLE,  curve.title);
 	chartView->chart ()->setTitle (curve.title);
-#else
-	QString ttl = chart_title->text ();
-	settings.setValue (CHART_TITLE,  ttl);
-	chartView->chart ()->setTitle (ttl);
-#endif
       
 	//	QString x_ttl = x_title->text ();
 	settings.setValue (X_TITLE,  curve.ix.title);
 	chartView->chart ()->axes (Qt::Horizontal).first()
 	  ->setTitleText(curve.ix.title);
 
-#if 1
 	settings.setValue (Y_TITLE,  curve.function.label);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText(curve.function.label);
-#else
-	QString y_ttl = y_title->text ();
-	settings.setValue (Y_TITLE,  y_ttl);
-	chartView->chart ()->axes (Qt::Vertical).first()
-	  ->setTitleText(y_ttl);
-#endif
 
 	QString cmd =
 	  QString (")erase %1 %2").arg (expvar).arg (curve.ix.name);
