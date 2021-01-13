@@ -154,6 +154,8 @@ private slots:
   bool save();
   bool saveAs();
   void about();
+  //  void textChanged();
+  void returnPressed ();
   
 public:
   void           createActions();
@@ -184,5 +186,9 @@ public:
   bool		 maybeSave();
   ChartWindow	*chartWindow;
   void buildMenu ();
+
+private:
+  QTextEdit *aplwin;
+  QLineEdit *aplline;
 };
 #endif // MAINWINDOW_H

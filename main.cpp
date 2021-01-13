@@ -21,8 +21,12 @@
 #include <QtCharts/QLineSeries>
 #include <QtMath>
 
-#include <apl/libapl.h>
+#if 0
+#include <iostream>
+#include <fstream>
+#endif
 
+#include <apl/libapl.h>
 
 #include "mainwindow.h"
 
@@ -56,6 +60,22 @@ QGraphicsView::mousePressEvent(QMouseEvent *event)
 int
 main (int argc, char *argv[])
 {
+#if 0
+  std::ofstream out("out.txt");
+  //std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
+  std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
+  
+  std::ofstream err("err.txt");
+  //std::streambuf *cerrbuf = std::cerr.rdbuf(); //save old buf
+  std::cerr.rdbuf(err.rdbuf()); //redirect std::cout to out.txt!
+
+  std::cerr << "more junkkkkkkkkk\n";
+  std::cout << "junkkkkkkkkk\n";
+  
+  //std::cout.rdbuf(coutbuf);
+  //std::cerr.rdbuf(cerrbuf);
+#endif
+
   // supress anoying messages
   qputenv("QT_LOGGING_RULES","*.debug=false;qt.qpa.*=false");
 

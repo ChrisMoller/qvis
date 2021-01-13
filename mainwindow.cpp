@@ -20,12 +20,18 @@
 #include <QtWidgets>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
+#include <QTextEdit>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <QMenuBar>
 #include <values.h>
+
+#include <iostream>
+#include <sstream>
+
+#include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -268,6 +274,43 @@ MainWindow::create_menuBar ()
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
+#if 0
+void MainWindow::textChanged()
+{
+  QString text = aplwin->toPlainText ();
+  QChar	lc = text.back();
+  const char *str = text.toStdString ().c_str ();
+  if (str[strlen (str) - 1] == '\n')
+  fprintf (stderr, "%d: \"%s\"\n", strlen (str), str);
+}
+#endif
+
+void MainWindow::returnPressed()
+{
+  QString text = aplline->text();
+  aplline->setText ("");
+  aplwin->append (text);
+  
+  std::stringstream outbuffer;
+  std::streambuf *coutbuf = std::cout.rdbuf();
+  std::cout.rdbuf(outbuffer.rdbuf());
+  
+  std::stringstream errbuffer;
+  std::streambuf *cerrbuf = std::cout.rdbuf();
+  std::cerr.rdbuf(errbuffer.rdbuf());
+  std::cerr.clear ();
+  
+  apl_exec (text.toStdString ().c_str ());
+
+  std::cout.rdbuf(coutbuf);
+  std::cerr.rdbuf(cerrbuf);
+
+  if (errbuffer.str ().size () > 0)
+    aplwin->append (errbuffer.str ().c_str ());
+  if (outbuffer.str ().size () > 0)
+    aplwin->append (outbuffer.str ().c_str ());
+}
+
 void
 MainWindow::buildMenu ()
 {
@@ -280,6 +323,21 @@ MainWindow::buildMenu ()
 
   int row = 0;
   int col = 0;
+
+  aplwin = new QTextEdit ();
+  aplwin->setReadOnly (true);
+  layout->addWidget (aplwin, row, 0, 1, 4);
+
+  row++;
+
+  aplline = new  QLineEdit ();
+  aplline->setPlaceholderText ("APL");
+  connect(aplline, &QLineEdit::returnPressed,
+	  this, &MainWindow::returnPressed);
+  layout->addWidget (aplline, row, 0, 1, 4);
+  
+  row++;
+  col = 0;
 
   chartWindow->curve.title = settings.value (CHART_TITLE).toString ();
   chart_title = new  QLineEdit ();
@@ -491,6 +549,5 @@ MainWindow::MainWindow (QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-
 }
 
