@@ -137,7 +137,7 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
   void buildMenu (MainWindow *win);
-  QSettings 	 settings;
+  //  QSettings 	 settings;
 									  
 public slots:
 

@@ -43,13 +43,9 @@ public:
   bool		 changed;
   bool 		 saveFile (QString &fileName);
   void 		 readFile (QString &fileName);
-  bool parseCurve (Curve &curve, QXmlStreamReader &stream);
-  bool parseFunction (Curve &curve, QXmlStreamReader &stream);
-  bool parseRange (Range &rng, QXmlStreamReader &stream);
-  bool parseIdx (Index &idx, QXmlStreamReader &stream);
-  bool parseIx (Curve &curve, QXmlStreamReader &stream);
-  bool parseIz (Curve &curve, QXmlStreamReader &stream);
   void		 initXmlHash ();
+  void		 saveSettings ();
+  QSettings 	 settings;
   
 public slots:
   void handleExpression ();
@@ -57,6 +53,12 @@ public slots:
 private:
   QChart::ChartTheme theme;
   MainWindow	*mainWindow;
+  bool parseCurve (Curve &curve, QXmlStreamReader &stream);
+  bool parseFunction (Curve &curve, QXmlStreamReader &stream);
+  bool parseRange (Range &rng, QXmlStreamReader &stream);
+  bool parseIdx (Index &idx, QXmlStreamReader &stream);
+  bool parseIx (Curve &curve, QXmlStreamReader &stream);
+  bool parseIz (Curve &curve, QXmlStreamReader &stream);
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);

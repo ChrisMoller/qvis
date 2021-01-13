@@ -35,6 +35,33 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
+void
+ChartWindow::saveSettings ()
+{
+  //  QSettings settings;
+
+  settings.setValue (DO_SPLINE,  curve.spline);
+  settings.setValue (DO_POLAR, curve.polar);
+  settings.setValue (Z_VAR_NAME, curve.iz.name);
+  settings.setValue (Z_VAR_MIN,  curve.iz.range.min);
+  settings.setValue (Z_VAR_MAX,  curve.iz.range.max);
+  
+  settings.setValue (X_VAR_NAME, curve.ix.name);
+  settings.setValue (X_VAR_MIN,  curve.ix.range.min);
+  settings.setValue (X_VAR_MAX,  curve.ix.range.max);
+  settings.setValue (FUNCTION,   curve.function.expression);
+  settings.setValue (FCN_LABEL,  curve.function.label);
+
+  settings.setValue (HEIGHT, chartView->height ());
+  settings.setValue (WIDTH, chartView->width ());
+
+  settings.setValue (THEME,  theme);
+
+  settings.setValue (CHART_TITLE,  curve.title);
+  settings.setValue (X_TITLE,  curve.ix.title);
+  settings.setValue (Y_TITLE,  curve.function.title);
+}
+
 int
 ChartWindow::handle_vector (APL_value res,
 			   APL_value xvals,
@@ -74,7 +101,7 @@ ChartWindow::handle_vector (APL_value res,
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;
 
-    mainWindow->settings.setValue (DO_SPLINE,  curve.spline);
+    //    mainWindow->settings.setValue (DO_SPLINE,  curve.spline);
     if (curve.spline) {
       sseries = new QSplineSeries ();
       sseries->setName(flbl);
@@ -92,10 +119,8 @@ ChartWindow::handle_vector (APL_value res,
       else pseries->append ((qreal)get_real (xvals, i), y_val);
     }
 
-    if (sseries)
-      chartView->chart ()->addSeries (sseries);
-    else
-      chartView->chart ()->addSeries (pseries);
+    if (sseries) chartView->chart ()->addSeries (sseries);
+    else         chartView->chart ()->addSeries (pseries);
 
     chartView->chart ()->createDefaultAxes ();
     
@@ -112,7 +137,7 @@ ChartWindow::handle_vector (APL_value res,
 void
 ChartWindow::handleExpression ()
 {
-  mainWindow->settings.setValue (DO_POLAR, curve.polar);
+  //  mainWindow->settings.setValue (DO_POLAR, curve.polar);
   chartView->setChart (curve.polar ? polarchart : chart);
 
   int incr = 16;  // fixme--make settable
@@ -136,9 +161,6 @@ ChartWindow::handleExpression ()
 
     bool zset = false;
     if (!curve.iz.name.isEmpty ()) {
-      mainWindow->settings.setValue (Z_VAR_NAME, curve.iz.name);
-      mainWindow->settings.setValue (Z_VAR_MIN,  curve.iz.range.min);
-      mainWindow->settings.setValue (Z_VAR_MAX,  curve.iz.range.max);
       QString range_z =
 	QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
 	.arg(curve.iz.name).arg(curve.iz.range.min)
@@ -147,7 +169,8 @@ ChartWindow::handleExpression ()
       apl_exec (range_z.toStdString ().c_str ());
     }
 
-    QString input = mainWindow->apl_expression->text ();
+    QString input = curve.function.expression;
+
     if (input.isEmpty ()) return;
     QString fcn = QString ("%1  ← %2").arg (expvar).arg (input);
     int xrc = apl_exec (fcn.toStdString ().c_str ());
@@ -201,27 +224,12 @@ ChartWindow::handleExpression ()
 	
 
       if (frc) {
-	mainWindow->settings.setValue (X_VAR_NAME, curve.ix.name);
-	mainWindow->settings.setValue (X_VAR_MIN,  curve.ix.range.min);
-	mainWindow->settings.setValue (X_VAR_MAX,  curve.ix.range.max);
-	mainWindow->settings.setValue (FCN_LABEL,  curve.function.title);
-	mainWindow->settings.setValue (FUNCTION,   input);
-
-	mainWindow->settings.setValue (HEIGHT, chartView->height ());
-	mainWindow->settings.setValue (WIDTH, chartView->width ());
-
-	mainWindow->settings.setValue (THEME,  theme);
 	chartView->chart ()->setTheme (theme);
-
-	mainWindow->settings.setValue (CHART_TITLE,  curve.title);
 	chartView->chart ()->setTitle (curve.title);
       
-	//	QString x_ttl = x_title->text ();
-	mainWindow->settings.setValue (X_TITLE,  curve.ix.title);
 	chartView->chart ()->axes (Qt::Horizontal).first()
 	  ->setTitleText(curve.ix.title);
 
-	mainWindow->settings.setValue (Y_TITLE,  curve.function.label);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText(curve.function.label);
 
@@ -250,17 +258,28 @@ ChartWindow::ChartWindow (MainWindow *parent)
 {
   mainWindow = parent;
   initXmlHash ();
+
+  QVariant ww = settings.value (WIDTH);
+  QVariant hh = settings.value (HEIGHT);
+  if (ww.isValid () && hh.isValid ()) 
+    this->resize (ww.toInt (), hh.toInt ());
+
   chart      = new QChart ();
   polarchart = new QPolarChart ();
   chartView = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
+   QVariant tt = settings.value (THEME);
+   
+  theme = tt.isValid ()
+    ? (QChart::ChartTheme)tt.toInt ()
+    :  QChart::ChartThemeBlueCerulean;
+  //  fprintf (stderr, "theme = %d\n", theme);
+  //  chartView->chart ()->setTheme (theme);
+  
   this->setCentralWidget (chartView);
-  fprintf (stderr, "aboutto show\n");
   this->show ();
 
   curves.push_back (curve);
-  //chartView->setChart (curve.polar ? polarchart : chart);
-  //  handleExpression ();
 }
 
 ChartWindow::~ChartWindow()
