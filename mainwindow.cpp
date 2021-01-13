@@ -274,11 +274,35 @@ MainWindow::create_menuBar ()
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
+/***
+    aaaa		ix = 0.5 down nothing, up 0
+
+
+    aaaa
+    bbbb
+    cccc		ix = 2,5 down nothing up 2  ix -> 1.5
+
+    aaaa
+    bbbb		ix = 1.5 down 2 up 1	    ix = 9.5
+    cccc
+
+    aaaa		ix = 0.5 down 1 up 
+    bbbb	
+    cccc
+ ***/
+
+static QStringList *histlist = new  QStringList ();
+static double histlist_ix = 0;
+
 void MainWindow::returnPressed()
 {
   QString text = aplline->text();
   aplline->setText ("");
+  
   aplwin->append (text);
+  histlist->append (text);
+  histlist->removeDuplicates();
+  histlist_ix = (double)(histlist->count ()) - 0.5;
   
   std::stringstream outbuffer;
   std::streambuf *coutbuf = std::cout.rdbuf();
@@ -310,14 +334,16 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
   static int rc = 0;
   if (obj == watched) {
     if (event->type() == QEvent::KeyPress) {
-      QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-      if (keyEvent->key() == Qt::Key_Up) {
-	fprintf (stderr, "kpf %d up\n", rc++);
-	return true;
-      }
-      else if(keyEvent->key() == Qt::Key_Down) {
-	fprintf (stderr, "kpf %d down\n", rc++);
-	return true;
+      if (!histlist->isEmpty ()) {
+	QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+	if (keyEvent->key() == Qt::Key_Up) {
+	  fprintf (stderr, "kpf %d up\n", rc++);
+	  return true;
+	}
+	else if(keyEvent->key() == Qt::Key_Down) {
+	  fprintf (stderr, "kpf %d down\n", rc++);
+	  return true;
+	}
       }
     }
   }
