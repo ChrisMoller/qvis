@@ -304,6 +304,26 @@ void MainWindow::returnPressed()
     aplwin->append (outbuffer.str ().c_str ());
 }
 
+bool
+KeyPressEater::eventFilter(QObject *obj, QEvent *event)
+{
+  static int rc = 0;
+  if (obj == watched) {
+    if (event->type() == QEvent::KeyPress) {
+      QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+      if (keyEvent->key() == Qt::Key_Up) {
+	fprintf (stderr, "kpf %d up\n", rc++);
+	return true;
+      }
+      else if(keyEvent->key() == Qt::Key_Down) {
+	fprintf (stderr, "kpf %d down\n", rc++);
+	return true;
+      }
+    }
+  }
+  return QObject::eventFilter(obj, event);
+}
+
 void
 MainWindow::buildMenu ()
 {
@@ -321,9 +341,10 @@ MainWindow::buildMenu ()
   layout->addWidget (aplwin, row, 0, 1, 4);
 
   row++;
-
   aplline = new  QLineEdit ();
   aplline->setPlaceholderText ("APL");
+  keyPressEater = new KeyPressEater (aplline);
+  aplline->installEventFilter(keyPressEater);
   connect(aplline, &QLineEdit::returnPressed,
 	  this, &MainWindow::returnPressed);
   layout->addWidget (aplline, row, 0, 1, 4);

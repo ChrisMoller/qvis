@@ -89,43 +89,19 @@ typedef struct {
   bool logical;
 } xml_tag_s;
 
-#if 0
-class MainWindow;
-
-class ChartWindow : public QMainWindow
+class KeyPressEater : public QObject
 {
-  Q_OBJECT
+    Q_OBJECT
   
 public:
-  ChartWindow(MainWindow *parent = nullptr);
-  ~ChartWindow();
-  QChartView	*chartView;
-  QChart	*chart;
-  QPolarChart	*polarchart;
-  std::vector<Curve> curves;
-  Curve		 curve;
-  bool		 changed;
-  bool 		 saveFile (QString &fileName);
-  void 		 readFile (QString &fileName);
-  bool parseCurve (Curve &curve, QXmlStreamReader &stream);
-  bool parseFunction (Curve &curve, QXmlStreamReader &stream);
-  bool parseRange (Range &rng, QXmlStreamReader &stream);
-  bool parseIdx (Index &idx, QXmlStreamReader &stream);
-  bool parseIx (Curve &curve, QXmlStreamReader &stream);
-  bool parseIz (Curve &curve, QXmlStreamReader &stream);
-  void		 initXmlHash ();
-  
-public slots:
-  void handleExpression ();
-  
+  KeyPressEater (QLineEdit *obj) {watched = obj;}
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
-  QChart::ChartTheme theme;
-  MainWindow	*mainWindow;
-  int	         handle_vector (APL_value res,
-				APL_value xvals,
-				QString flbl);
+  QLineEdit *watched;
 };
-#endif
 
 class ChartWindow;
 
@@ -189,5 +165,6 @@ public:
 private:
   QTextEdit *aplwin;
   QLineEdit *aplline;
+  KeyPressEater *keyPressEater;
 };
 #endif // MAINWINDOW_H
