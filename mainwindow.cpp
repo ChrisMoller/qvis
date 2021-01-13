@@ -25,19 +25,18 @@
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <QMenuBar>
-#include <complex>
+//#include <complex>
 #include <values.h>
 
-#include <apl/libapl.h>
+//#include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
 
 #include "mainwindow.h"
+#include "chartwindow.h"
 #include "xml.h"
 
 #define expvar "expvarλ"
-
-//static QHash<const QString, int> xmlhash;
 
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
@@ -112,6 +111,7 @@ MainWindow::handleSettings ()
   changed = true;
 }
 
+#if 0
 int
 ChartWindow::handle_vector (APL_value res,
 			   APL_value xvals,
@@ -319,6 +319,7 @@ ChartWindow::handleExpression ()
     }
   }
 }
+#endif
 
 void
 MainWindow::valChanged (bool enabled __attribute__((unused)))
@@ -713,6 +714,7 @@ MainWindow::MainWindow (QWidget *parent)
   changed = false;
 }
 
+#if 0
 ChartWindow::ChartWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
@@ -731,12 +733,13 @@ ChartWindow::ChartWindow (MainWindow *parent)
   handleExpression ();
 }
 
-MainWindow::~MainWindow()
+ChartWindow::~ChartWindow()
 {
 
 }
+#endif
 
-ChartWindow::~ChartWindow()
+MainWindow::~MainWindow()
 {
 
 }

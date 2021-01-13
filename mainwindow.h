@@ -89,7 +89,7 @@ typedef struct {
   bool logical;
 } xml_tag_s;
 
-
+#if 0
 class MainWindow;
 
 class ChartWindow : public QMainWindow
@@ -125,7 +125,9 @@ private:
 				APL_value xvals,
 				QString flbl);
 };
+#endif
 
+class ChartWindow;
 
 class MainWindow : public QMainWindow
 {

@@ -14,9 +14,11 @@ LIBS += -L`apl --show_lib_dir` -lapl
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    chartwindow.cpp \
     xml.cpp
 
 HEADERS += \
+    chartwindow.h \
     mainwindow.h \
     xml.h \
     XMLtags.def

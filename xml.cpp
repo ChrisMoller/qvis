@@ -48,11 +48,13 @@
  ***/
 
 #include <QtWidgets>
+#include <QtCharts/QChartView>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QHash>
 
 #include "mainwindow.h"
+#include "chartwindow.h"
 #include "xml.h"
 
 #define xml_def(v, l) #v, XML_ ## v, l
