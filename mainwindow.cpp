@@ -77,12 +77,7 @@ MainWindow::byebye ()
 {
   if (maybeSave ()) {
     chartWindow->saveSettings ();
-#if 0
     QCoreApplication::quit ();
-#else
-    fprintf (stderr, "doing apl off\n");
-    apl_exec (")off");
-#endif
   }
 }
 
@@ -279,24 +274,6 @@ MainWindow::create_menuBar ()
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
-#if 0
-void MainWindow::textChanged()
-{
-  QString text = aplwin->toPlainText ();
-  QChar	lc = text.back();
-  const char *str = text.toStdString ().c_str ();
-  if (str[strlen (str) - 1] == '\n')
-  fprintf (stderr, "%d: \"%s\"\n", strlen (str), str);
-}
-#endif
-
-#if 0  // fixme -- create hash
-#define err_def(c, txt, major, minor)   txt,
-static char *apl_msgs[] = {
-#include <apl/Error.def>
-};
-#endif
-
 void MainWindow::returnPressed()
 {
   QString text = aplline->text();
@@ -306,24 +283,23 @@ void MainWindow::returnPressed()
   std::stringstream outbuffer;
   std::streambuf *coutbuf = std::cout.rdbuf();
   std::cout.rdbuf(outbuffer.rdbuf());
-  
+
   std::stringstream errbuffer;
-  std::streambuf *cerrbuf = std::cout.rdbuf();
+  std::streambuf *cerrbuf = std::cerr.rdbuf();
   std::cerr.rdbuf(errbuffer.rdbuf());
-  std::cerr.clear ();
   
   LIBAPL_error execerr = apl_exec (text.toStdString ().c_str ());
   if (execerr != LAE_NO_ERROR) {
     QString emsg =
       QString ("APL error %1").arg ((int)execerr, 8, 16, QLatin1Char('0'));
     aplwin->append (emsg);
+    if (errbuffer.str ().size () > 0)
+      aplwin->append (errbuffer.str ().c_str ());
   }
 
   std::cout.rdbuf(coutbuf);
   std::cerr.rdbuf(cerrbuf);
 
-  if (errbuffer.str ().size () > 0)
-    aplwin->append (errbuffer.str ().c_str ());
   if (outbuffer.str ().size () > 0)
     aplwin->append (outbuffer.str ().c_str ());
 }
@@ -334,7 +310,6 @@ MainWindow::buildMenu ()
   create_menuBar ();
   QGroupBox *formGroupBox = new QGroupBox ();
   QGridLayout *layout = new QGridLayout;
-  //  QGridLayout *layout = dynamic_cast<QGridLayout*>(this->layout());
 
   QSettings settings;
 

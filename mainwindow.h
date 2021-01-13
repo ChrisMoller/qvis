@@ -154,7 +154,6 @@ private slots:
   bool save();
   bool saveAs();
   void about();
-  //  void textChanged();
   void returnPressed ();
   
 public:
