@@ -136,8 +136,6 @@ class MainWindow : public QMainWindow
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
-  void buildMenu (MainWindow *win);
-  //  QSettings 	 settings;
 									  
 public slots:
 
@@ -146,7 +144,7 @@ protected:
 
 private slots:
   void handleExpression ();
-  void handleSettings ();
+  //  void handleSettings ();
   void byebye ();
   void valChanged(bool enabled);
   void valChangedv();
@@ -185,5 +183,6 @@ public:
   void		 create_menuBar ();
   bool		 maybeSave();
   ChartWindow	*chartWindow;
+  void buildMenu ();
 };
 #endif // MAINWINDOW_H

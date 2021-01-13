@@ -40,8 +40,14 @@ ChartWindow::saveSettings ()
 {
   //  QSettings settings;
 
+  settings.setValue (HEIGHT,	 chartView->height ());
+  settings.setValue (WIDTH,	 chartView->width ());
+  settings.setValue (THEME,	 theme);
+  
+  settings.setValue (CHART_TITLE, curve.title);
   settings.setValue (DO_SPLINE,  curve.spline);
-  settings.setValue (DO_POLAR, curve.polar);
+  settings.setValue (DO_POLAR,   curve.polar);
+  
   settings.setValue (Z_VAR_NAME, curve.iz.name);
   settings.setValue (Z_VAR_MIN,  curve.iz.range.min);
   settings.setValue (Z_VAR_MAX,  curve.iz.range.max);
@@ -49,17 +55,12 @@ ChartWindow::saveSettings ()
   settings.setValue (X_VAR_NAME, curve.ix.name);
   settings.setValue (X_VAR_MIN,  curve.ix.range.min);
   settings.setValue (X_VAR_MAX,  curve.ix.range.max);
+
   settings.setValue (FUNCTION,   curve.function.expression);
   settings.setValue (FCN_LABEL,  curve.function.label);
 
-  settings.setValue (HEIGHT, chartView->height ());
-  settings.setValue (WIDTH, chartView->width ());
-
-  settings.setValue (THEME,  theme);
-
-  settings.setValue (CHART_TITLE,  curve.title);
-  settings.setValue (X_TITLE,  curve.ix.title);
-  settings.setValue (Y_TITLE,  curve.function.title);
+  settings.setValue (X_TITLE,  	 curve.ix.title);
+  settings.setValue (Y_TITLE,    curve.function.title);
 }
 
 int
@@ -101,7 +102,6 @@ ChartWindow::handle_vector (APL_value res,
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;
 
-    //    mainWindow->settings.setValue (DO_SPLINE,  curve.spline);
     if (curve.spline) {
       sseries = new QSplineSeries ();
       sseries->setName(flbl);
@@ -137,7 +137,6 @@ ChartWindow::handle_vector (APL_value res,
 void
 ChartWindow::handleExpression ()
 {
-  //  mainWindow->settings.setValue (DO_POLAR, curve.polar);
   chartView->setChart (curve.polar ? polarchart : chart);
 
   int incr = 16;  // fixme--make settable
@@ -268,13 +267,11 @@ ChartWindow::ChartWindow (MainWindow *parent)
   polarchart = new QPolarChart ();
   chartView = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
-   QVariant tt = settings.value (THEME);
    
+  QVariant tt = settings.value (THEME);
   theme = tt.isValid ()
     ? (QChart::ChartTheme)tt.toInt ()
     :  QChart::ChartThemeBlueCerulean;
-  //  fprintf (stderr, "theme = %d\n", theme);
-  //  chartView->chart ()->setTheme (theme);
   
   this->setCentralWidget (chartView);
   this->show ();

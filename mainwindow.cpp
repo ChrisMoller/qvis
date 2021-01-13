@@ -25,10 +25,7 @@
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <QMenuBar>
-//#include <complex>
 #include <values.h>
-
-//#include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -41,8 +38,6 @@ QT_CHARTS_USE_NAMESPACE
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 {
-  // chart x-ed out first
-  fprintf (stderr, "closeEvent\n");
   byebye ();
 }
 
@@ -80,6 +75,7 @@ MainWindow::byebye ()
   }
 }
 
+#if 0
 void
 MainWindow::handleSettings ()
 {
@@ -109,6 +105,7 @@ MainWindow::handleSettings ()
   dialog.exec ();
   changed = true;
 }
+#endif
 
 void
 MainWindow::handleExpression ()
@@ -247,11 +244,14 @@ MainWindow::create_menuBar ()
 
   fileMenu->addSeparator();
 
-  const QIcon exitIcon = QIcon::fromTheme("application-exit");
+  const QIcon exitIcon =
+    QIcon::fromTheme("application-exit",
+		     QIcon(":/images/application-exit.png"));
   QAction *exitAct =
     fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
   exitAct->setShortcuts(QKeySequence::Quit);
   exitAct->setStatusTip(tr("Exit the application"));
+  fileToolBar->addAction(exitAct);
 
 #if 0
   QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
@@ -269,7 +269,7 @@ MainWindow::create_menuBar ()
 }
 
 void
-MainWindow::buildMenu (MainWindow *win)
+MainWindow::buildMenu ()
 {
   create_menuBar ();
   QGroupBox *formGroupBox = new QGroupBox ();
@@ -423,6 +423,7 @@ MainWindow::buildMenu (MainWindow *win)
 
   /*   settings button   */
 
+#if 0
   row++;
   QString settings_button_style ("background-color: yellow; color: green;");
   QFont   settings_button_font ("bold");
@@ -465,6 +466,7 @@ MainWindow::buildMenu (MainWindow *win)
 		    win,
 		    SLOT (byebye()));
 
+#endif
 
 
   /*   end buttons  */
@@ -480,7 +482,7 @@ MainWindow::MainWindow (QWidget *parent)
 {
   chartWindow = new ChartWindow (this);
 
-  buildMenu (this);
+  buildMenu ();
 
   this->show ();
 
