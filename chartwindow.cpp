@@ -259,8 +259,8 @@ ChartWindow::ChartWindow (MainWindow *parent)
   this->show ();
 
   curves.push_back (curve);
-  chartView->setChart (curve.polar ? polarchart : chart);
-  handleExpression ();
+  //chartView->setChart (curve.polar ? polarchart : chart);
+  //  handleExpression ();
 }
 
 ChartWindow::~ChartWindow()

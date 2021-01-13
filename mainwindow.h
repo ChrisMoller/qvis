@@ -145,6 +145,7 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
+  void handleExpression ();
   void handleSettings ();
   void byebye ();
   void valChanged(bool enabled);

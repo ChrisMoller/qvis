@@ -111,6 +111,12 @@ MainWindow::handleSettings ()
   changed = true;
 }
 
+void
+MainWindow::handleExpression ()
+{
+  chartWindow->handleExpression ();
+}
+
 #if 0
 int
 ChartWindow::handle_vector (APL_value res,
@@ -677,6 +683,7 @@ MainWindow::buildMenu (MainWindow *win)
   formGroupBox->setLayout (layout);
   formGroupBox->show ();
   this->setCentralWidget (formGroupBox);
+  chartWindow->handleExpression ();
 }
 
 MainWindow::MainWindow (QWidget *parent)
@@ -730,7 +737,7 @@ ChartWindow::ChartWindow (MainWindow *parent)
 
   curves.push_back (curve);
   chartView->setChart (curve.polar ? polarchart : chart);
-  handleExpression ();
+  chartWindow->handleExpression ();
 }
 
 ChartWindow::~ChartWindow()
