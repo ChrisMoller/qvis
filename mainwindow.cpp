@@ -77,7 +77,12 @@ MainWindow::byebye ()
 {
   if (maybeSave ()) {
     chartWindow->saveSettings ();
+#if 0
     QCoreApplication::quit ();
+#else
+    fprintf (stderr, "doing apl off\n");
+    apl_exec (")off");
+#endif
   }
 }
 
@@ -285,6 +290,13 @@ void MainWindow::textChanged()
 }
 #endif
 
+#if 0  // fixme -- create hash
+#define err_def(c, txt, major, minor)   txt,
+static char *apl_msgs[] = {
+#include <apl/Error.def>
+};
+#endif
+
 void MainWindow::returnPressed()
 {
   QString text = aplline->text();
@@ -300,7 +312,12 @@ void MainWindow::returnPressed()
   std::cerr.rdbuf(errbuffer.rdbuf());
   std::cerr.clear ();
   
-  apl_exec (text.toStdString ().c_str ());
+  LIBAPL_error execerr = apl_exec (text.toStdString ().c_str ());
+  if (execerr != LAE_NO_ERROR) {
+    QString emsg =
+      QString ("APL error %1").arg ((int)execerr, 8, 16, QLatin1Char('0'));
+    aplwin->append (emsg);
+  }
 
   std::cout.rdbuf(coutbuf);
   std::cerr.rdbuf(cerrbuf);
