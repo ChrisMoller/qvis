@@ -25,8 +25,9 @@
 
 QT_CHARTS_USE_NAMESPACE
 
-
 #include <apl/libapl.h>
+
+#include "history.h"
 
 // for settings
 #define LOAD_WS    "load_ws"
@@ -89,17 +90,21 @@ typedef struct {
   bool logical;
 } xml_tag_s;
 
+class MainWindow;
+
 class KeyPressEater : public QObject
 {
     Q_OBJECT
   
 public:
-  KeyPressEater (QLineEdit *obj) {watched = obj;}
+  KeyPressEater (QLineEdit *obj, MainWindow *mw)
+  {watched = obj; mainwin = mw;}
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
+  MainWindow *mainwin;
   QLineEdit *watched;
 };
 
@@ -135,6 +140,9 @@ private slots:
 public:
   void           createActions();
   QLineEdit	*chart_title;
+  History *history;
+  void process_line(QString text);
+  QLineEdit *aplline;
   
   QLineEdit	*y_title;
   QLineEdit 	*apl_expression;
@@ -164,7 +172,6 @@ public:
 
 private:
   QTextEdit *aplwin;
-  QLineEdit *aplline;
   KeyPressEater *keyPressEater;
 };
 #endif // MAINWINDOW_H

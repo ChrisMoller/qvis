@@ -5,7 +5,7 @@ CONFIG += c++11
 DEL_DIR = echo
 
 #LIBS += -L/usr/local/lib/apl -lapl
-LIBS += -L`apl --show_lib_dir` -lapl
+LIBS += -L`apl --show_lib_dir` -lapl -lreadline
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -15,12 +15,14 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     chartwindow.cpp \
+    history.cpp \
     xml.cpp
 
 HEADERS += \
     chartwindow.h \
     mainwindow.h \
     xml.h \
+    history.h \
     XMLtags.def
 
 FORMS +=
