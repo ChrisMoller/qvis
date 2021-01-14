@@ -266,6 +266,43 @@ ChartWindow::imageExport()
 }
 
 void
+ChartWindow::themeChanged (int newtheme __attribute__((unused)))
+{
+  theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
+  handleExpression ();
+}
+
+void
+ChartWindow::settheme()
+{
+  QGridLayout *layout = new QGridLayout;
+  
+  themebox = new QComboBox ();
+  themebox->addItem ("Light", QChart::ChartThemeLight);
+  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+  themebox->addItem ("Dark", QChart::ChartThemeDark);
+  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
+  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
+  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
+  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
+  themebox->addItem ("Qt", QChart::ChartThemeQt);
+
+  themebox->setCurrentIndex (theme);
+  
+  connect(themebox,
+	  QOverload<int>::of(&QComboBox::activated),
+	  this,
+	  &ChartWindow::themeChanged);
+  
+  layout->addWidget(themebox, 0, 0);
+  
+  QDialog dialog;
+  dialog.setLayout (layout);
+  dialog.exec ();
+  changed = true;
+}
+
+void
 ChartWindow::create_menuBar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -278,6 +315,11 @@ ChartWindow::create_menuBar ()
   connect(imageAct, &QAction::triggered, this, &ChartWindow::imageExport);
   fileMenu->addAction(imageAct);
   fileToolBar->addAction(imageAct);
+
+  QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
+  QAction *themeAct =
+    settingsMenu->addAction(tr("&Theme"), this, &ChartWindow::settheme);
+  themeAct->setStatusTip(tr("Set theme"));
 }
 
 ChartWindow::ChartWindow (MainWindow *parent)

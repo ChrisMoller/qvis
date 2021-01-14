@@ -49,6 +49,8 @@ public:
 
 private slots:
   void imageExport();
+  void settheme();
+  void themeChanged(int newtheme);
   
 public slots:
   void handleExpression ();
@@ -66,6 +68,7 @@ private:
 				APL_value xvals,
 				QString flbl);
   void create_menuBar ();
+  QComboBox 	*themebox;
 };
 
 
