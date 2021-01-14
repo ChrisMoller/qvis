@@ -311,6 +311,7 @@ void MainWindow::returnPressed()
   QString text = aplline->text();
   history->insert (text.toStdString ().c_str ());
   process_line (text);
+  history->rebase ();
 }
 
 bool
