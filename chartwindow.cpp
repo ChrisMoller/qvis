@@ -22,6 +22,7 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
+#include <QMenuBar>
 #include <complex>
 #include <values.h>
 
@@ -38,8 +39,6 @@ QT_CHARTS_USE_NAMESPACE
 void
 ChartWindow::saveSettings ()
 {
-  //  QSettings settings;
-
   settings.setValue (HEIGHT,	 chartView->height ());
   settings.setValue (WIDTH,	 chartView->width ());
   settings.setValue (THEME,	 theme);
@@ -220,8 +219,6 @@ ChartWindow::handleExpression ()
 	break;
       }
 
-	
-
       if (frc) {
 	chartView->chart ()->setTheme (theme);
 	chartView->chart ()->setTitle (curve.title);
@@ -251,6 +248,37 @@ ChartWindow::handleExpression ()
   }
 }
 
+void
+ChartWindow::imageExport()
+{
+  QFileDialog dialog(this);
+  dialog.setFileMode(QFileDialog::AnyFile);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+  dialog.setNameFilter(tr("Images (*.png *.xpm *.jpg)"));
+  dialog.setViewMode(QFileDialog::Detail);
+  QStringList fileNames;
+  if (dialog.exec()) {
+    fileNames = dialog.selectedFiles();
+    QString fn = fileNames.first ();
+    QPixmap p = chartView->grab();
+    p.save(fn);
+  }
+}
+
+void
+ChartWindow::create_menuBar ()
+{
+  QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+  QToolBar *fileToolBar = addToolBar(tr("File"));
+  const QIcon imageIcon =
+    QIcon::fromTheme("camera-photo", QIcon(":/images/camera-photo.png"));
+  QAction *imageAct = new QAction(imageIcon, tr("&Export image"), this);
+  //  newAct->setShortcuts(QKeySequence::New);
+  imageAct->setStatusTip(tr("Export an image"));
+  connect(imageAct, &QAction::triggered, this, &ChartWindow::imageExport);
+  fileMenu->addAction(imageAct);
+  fileToolBar->addAction(imageAct);
+}
 
 ChartWindow::ChartWindow (MainWindow *parent)
   : QMainWindow(parent)
@@ -272,6 +300,8 @@ ChartWindow::ChartWindow (MainWindow *parent)
   theme = tt.isValid ()
     ? (QChart::ChartTheme)tt.toInt ()
     :  QChart::ChartThemeBlueCerulean;
+  
+  create_menuBar ();
   
   this->setCentralWidget (chartView);
   this->show ();

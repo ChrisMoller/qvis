@@ -127,15 +127,15 @@ MainWindow::valChanged (bool enabled __attribute__((unused)))
   chartWindow->curve.spline = (Qt::Checked == do_spline->checkState());
   //  curve.shorttitle
   chartWindow->curve.title			= chart_title->text ();
-  chartWindow->curve.function.label		= y_title->text ();
-  chartWindow->curve.function.title		= fcn_label->text ();
+  chartWindow->curve.function.title		= y_title->text ();
+  chartWindow->curve.function.label		= fcn_label->text ();
   chartWindow->curve.function.expression	= apl_expression->text ();
   chartWindow->curve.ix.name			= x_var_name->text ();
-  chartWindow->curve.ix.title		= x_title->text ();
+  chartWindow->curve.ix.title			= x_title->text ();
   chartWindow->curve.ix.range.min		= x_var_min->value ();
   chartWindow->curve.ix.range.max		= x_var_max->value ();
   chartWindow->curve.iz.name			= z_var_name->text ();
-  chartWindow->curve.iz.title		= z_title->text ();
+  chartWindow->curve.iz.title			= z_title->text ();
   chartWindow->curve.iz.range.min 		= z_var_min->value ();
   chartWindow->curve.iz.range.max 		= z_var_max->value ();
   chartWindow->changed = true;

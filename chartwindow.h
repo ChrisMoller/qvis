@@ -46,6 +46,9 @@ public:
   void		 initXmlHash ();
   void		 saveSettings ();
   QSettings 	 settings;
+
+private slots:
+  void imageExport();
   
 public slots:
   void handleExpression ();
@@ -62,6 +65,7 @@ private:
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);
+  void create_menuBar ();
 };
 
 

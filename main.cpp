@@ -23,61 +23,15 @@
 #include <QtCharts/QLineSeries>
 #include <QtMath>
 
-#if 0
-#include <iostream>
-#include <fstream>
-#endif
-
 #include <apl/libapl.h>
 
 #include "mainwindow.h"
 
 QT_CHARTS_USE_NAMESPACE
 
-#if 0
-static QChartView *chartView = nullptr;
-
-void
-QGraphicsView::mousePressEvent(QMouseEvent *event)
-{
-  // https://doc.qt.io/qt-5/qgraphicsview.html#mousePressEvent
-  // https://doc.qt.io/qt-5/qmouseevent.html
-  if (event->button () == 2) {
-    QFileDialog dialog(this);
-    dialog.setFileMode(QFileDialog::AnyFile);
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setNameFilter(tr("Images (*.png *.xpm *.jpg)"));
-    dialog.setViewMode(QFileDialog::Detail);
-    QStringList fileNames;
-    if (dialog.exec()) {
-      fileNames = dialog.selectedFiles();
-      QString fn = fileNames.first ();
-      QPixmap p = chartView->grab();
-      p.save(fn);
-    }
-  }
-}
-#endif
-
 int
 main (int argc, char *argv[])
 {
-#if 0
-  std::ofstream out("out.txt");
-  //std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
-  std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
-  
-  std::ofstream err("err.txt");
-  //std::streambuf *cerrbuf = std::cerr.rdbuf(); //save old buf
-  std::cerr.rdbuf(err.rdbuf()); //redirect std::cout to out.txt!
-
-  std::cerr << "more junkkkkkkkkk\n";
-  std::cout << "junkkkkkkkkk\n";
-  
-  //std::cout.rdbuf(coutbuf);
-  //std::cerr.rdbuf(cerrbuf);
-#endif
-
   // supress anoying messages
   qputenv("QT_LOGGING_RULES","*.debug=false;qt.qpa.*=false");
 
