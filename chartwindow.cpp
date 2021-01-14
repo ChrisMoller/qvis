@@ -220,14 +220,20 @@ ChartWindow::handleExpression ()
       }
 
       if (frc) {
-	chartView->chart ()->setTheme (theme);
+	chartView->chart ()->setTheme (theme);	// fixme
+	chart->setTitleFont (titlefont);	// fixme
+	chart->legend ()->setFont (titlefont);
 	chartView->chart ()->setTitle (curve.title);
       
 	chartView->chart ()->axes (Qt::Horizontal).first()
 	  ->setTitleText(curve.ix.title);
+	chartView->chart ()->axes (Qt::Horizontal).first()
+	  ->setTitleFont(titlefont);
 
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText(curve.function.label);
+	chartView->chart ()->axes (Qt::Vertical).first()
+	  ->setTitleFont(titlefont);
 
 	QString cmd =
 	  QString (")erase %1 %2").arg (expvar).arg (curve.ix.name);
@@ -303,9 +309,22 @@ ChartWindow::settheme()
 }
 
 void
+ChartWindow::setfont()
+{
+  QFontDialog dialog (chart->titleFont ());
+  bool ok;
+  QFont newfont = QFontDialog::getFont(&ok, chart->font (), this);
+  if (ok) {
+    titlefont = newfont;
+    handleExpression ();
+  }
+}
+
+void
 ChartWindow::create_menuBar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+
   QToolBar *fileToolBar = addToolBar(tr("File"));
   const QIcon imageIcon =
     QIcon::fromTheme("camera-photo", QIcon(":/images/camera-photo.png"));
@@ -317,9 +336,14 @@ ChartWindow::create_menuBar ()
   fileToolBar->addAction(imageAct);
 
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
+
   QAction *themeAct =
     settingsMenu->addAction(tr("&Theme"), this, &ChartWindow::settheme);
   themeAct->setStatusTip(tr("Set theme"));
+
+  QAction *fontAct =
+    settingsMenu->addAction(tr("&Font"), this, &ChartWindow::setfont);
+  fontAct->setStatusTip(tr("Set font"));
 }
 
 ChartWindow::ChartWindow (MainWindow *parent)

@@ -51,11 +51,13 @@ private slots:
   void imageExport();
   void settheme();
   void themeChanged(int newtheme);
+  void setfont();
   
 public slots:
   void handleExpression ();
   
 private:
+  QFont titlefont;
   QChart::ChartTheme theme;
   MainWindow	*mainWindow;
   bool parseCurve (Curve &curve, QXmlStreamReader &stream);
