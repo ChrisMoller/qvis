@@ -275,9 +275,14 @@ MainWindow::create_menuBar ()
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
+static const QColor red = QColor (255, 0, 0);
+static const QColor black = QColor (0, 0, 0);
+
 void
 MainWindow::process_line(QString text)
 {
+  QColor red = QColor (255, 0, 0);
+  QColor black = QColor (0, 0, 0);
   aplline->setText ("");
   
   aplwin->append (text);
@@ -291,12 +296,15 @@ MainWindow::process_line(QString text)
   std::cerr.rdbuf(errbuffer.rdbuf());
   
   LIBAPL_error execerr = apl_exec (text.toStdString ().c_str ());
+  
   if (execerr != LAE_NO_ERROR) {
     QString emsg =
       QString ("APL error %1").arg ((int)execerr, 8, 16, QLatin1Char('0'));
+    aplwin->setTextColor (red);
     aplwin->append (emsg);
     if (errbuffer.str ().size () > 0)
       aplwin->append (errbuffer.str ().c_str ());
+    aplwin->setTextColor (black);
   }
 
   std::cout.rdbuf(coutbuf);
