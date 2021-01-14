@@ -171,12 +171,13 @@ MainWindow::newFile()
 void
 MainWindow::open()
 {
+  ChartWindow *newchartWindow = new ChartWindow (this);
   QFileDialog dialog(this);
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptOpen);
   dialog.setNameFilter("*.vis");
   if (dialog.exec() == QDialog::Accepted)
-    chartWindow->readFile(dialog.selectedFiles().first());
+    newchartWindow->readFile(dialog.selectedFiles().first());
 }
 
 bool
