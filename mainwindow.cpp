@@ -573,9 +573,29 @@ MainWindow::buildMenu ()
 void
 MainWindow::enterChart (ChartWindow *cw)
 {
+#if 0
   fprintf (stderr, "Enterinng %p\n", cw);
   fprintf (stderr, "title = %s\n",
 	   cw->curve.title.toStdString ().c_str ());
+#endif
+  chart_title->setText (cw->curve.title);
+  y_title->setText (cw->curve.function.label);
+  
+  x_var_name->setText (cw->curve.ix.name);
+  x_var_min->setValue (cw->curve.ix.range.min);
+  x_var_max->setValue (cw->curve.ix.range.max);
+  x_title->setText (cw->curve.ix.title);
+
+  z_var_name->setText (cw->curve.iz.name);
+  z_var_min->setValue (cw->curve.iz.range.min);
+  z_var_max->setValue (cw->curve.iz.range.max);
+  z_title->setText (cw->curve.iz.title);
+
+  fcn_label->setText (chartWindow->curve.function.title);
+  apl_expression->setText (cw->curve.function.expression);
+
+  do_spline->setCheckState (cw->curve.spline ? Qt::Checked : Qt::Unchecked);
+  do_polar->setCheckState (cw->curve.polar   ? Qt::Checked : Qt::Unchecked);
 }
 
 MainWindow::MainWindow (QWidget *parent)
