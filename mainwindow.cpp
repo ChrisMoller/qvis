@@ -574,6 +574,8 @@ void
 MainWindow::enterChart (ChartWindow *cw)
 {
   fprintf (stderr, "Enterinng %p\n", cw);
+  fprintf (stderr, "title = %s\n",
+	   cw->curve.title.toStdString ().c_str ());
 }
 
 MainWindow::MainWindow (QWidget *parent)
