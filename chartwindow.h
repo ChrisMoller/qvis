@@ -27,6 +27,26 @@ QT_CHARTS_USE_NAMESPACE
 #include "mainwindow.h"
 
 class MainWindow;
+class ChartWindow;
+
+class ChartEnter : public QObject
+{
+    Q_OBJECT
+  
+public:
+  ChartEnter (QChartView *obj, ChartWindow *cw)
+  {watched = obj; chartwin = cw;}
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+private:
+  ChartWindow *chartwin;
+  QChartView *watched;
+};
+
+
+
 
 class ChartWindow : public QMainWindow
 {
@@ -71,6 +91,7 @@ private:
 				QString flbl);
   void create_menuBar ();
   QComboBox 	*themebox;
+  ChartEnter *chartEnter;
 };
 
 

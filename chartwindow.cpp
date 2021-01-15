@@ -346,6 +346,13 @@ ChartWindow::create_menuBar ()
   fontAct->setStatusTip(tr("Set font"));
 }
 
+bool
+ChartEnter::eventFilter(QObject *obj, QEvent *event)
+{
+  if (event->type() == QEvent::Enter) fprintf (stderr, "Enter\n");
+  return QObject::eventFilter(obj, event);
+}
+
 ChartWindow::ChartWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
@@ -361,6 +368,9 @@ ChartWindow::ChartWindow (MainWindow *parent)
   polarchart = new QPolarChart ();
   chartView = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
+  
+  chartEnter = new ChartEnter (chartView, this);
+  chartView->installEventFilter(chartEnter);
    
   QVariant tt = settings.value (THEME);
   theme = tt.isValid ()
