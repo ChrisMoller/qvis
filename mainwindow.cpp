@@ -570,6 +570,12 @@ MainWindow::buildMenu ()
   chartWindow->handleExpression ();
 }
 
+void
+MainWindow::enterChart (ChartWindow *cw)
+{
+  fprintf (stderr, "Enterinng %p\n", cw);
+}
+
 MainWindow::MainWindow (QWidget *parent)
   : QMainWindow(parent)
 {

@@ -34,15 +34,16 @@ class ChartEnter : public QObject
     Q_OBJECT
   
 public:
-  ChartEnter (QChartView *obj, ChartWindow *cw)
-  {watched = obj; chartwin = cw;}
+  ChartEnter (QChartView *obj, ChartWindow *cw, MainWindow *mw)
+  {watched = obj; chartwin = cw; mainwin = mw;}
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
+  MainWindow  *mainwin;
   ChartWindow *chartwin;
-  QChartView *watched;
+  QChartView  *watched;
 };
 
 

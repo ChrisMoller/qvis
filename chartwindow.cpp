@@ -349,7 +349,9 @@ ChartWindow::create_menuBar ()
 bool
 ChartEnter::eventFilter(QObject *obj, QEvent *event)
 {
-  if (event->type() == QEvent::Enter) fprintf (stderr, "Enter\n");
+  if (event->type() == QEvent::Enter) {
+    mainwin->enterChart (chartwin);
+  }
   return QObject::eventFilter(obj, event);
 }
 
@@ -369,7 +371,7 @@ ChartWindow::ChartWindow (MainWindow *parent)
   chartView = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
   
-  chartEnter = new ChartEnter (chartView, this);
+  chartEnter = new ChartEnter (chartView, this, mainWindow);
   chartView->installEventFilter(chartEnter);
    
   QVariant tt = settings.value (THEME);
