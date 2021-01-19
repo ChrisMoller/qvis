@@ -115,9 +115,11 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  MainWindow(QWidget *parent = nullptr);
-  ~MainWindow();
+  MainWindow (QString &msgs, QStringList &args, QWidget *parent = nullptr);
+  ~MainWindow ();
   void enterChart (ChartWindow *cw);       
+  History 	*history;
+  QLineEdit	*aplline;
 									  
 public slots:
 
@@ -138,38 +140,38 @@ private slots:
   void about();
   void returnPressed ();
   
-public:
+private:
   void           createActions();
-  QLineEdit	*chart_title;
-  History *history;
-  void process_line(QString text);
-  QLineEdit *aplline;
+  void		 process_line(QString text);
+  void		 loadLastSession ();
+  void		 create_menuBar ();
+  bool		 maybeSave();
+  void 		 buildMenu (QString &msgs);
   
-  QLineEdit	*y_title;
-  QLineEdit 	*apl_expression;
-  QLineEdit 	*fcn_label;
+  QLineEdit	 *chart_title;
+  
+  QLineEdit	 *y_title;
+  QLineEdit 	 *apl_expression;
+  QLineEdit 	 *fcn_label;
 
-  QLineEdit	*x_title;
-  QLineEdit 	*x_var_name;
+  QLineEdit	 *x_title;
+  QLineEdit 	 *x_var_name;
   QDoubleSpinBox *x_var_min;
   QDoubleSpinBox *x_var_max;
 
-  QLineEdit 	*z_title;
-  QLineEdit 	*z_var_name;
+  QLineEdit 	 *z_title;
+  QLineEdit 	 *z_var_name;
   QDoubleSpinBox *z_var_min;
   QDoubleSpinBox *z_var_max;
 
-  QCheckBox 	*do_spline;
-  QCheckBox 	*do_polar;
+  QCheckBox 	 *do_spline;
+  QCheckBox 	 *do_polar;
 
-  QComboBox 	*themebox;
-  bool		 changed;
-  QString 	 curFile;
+  QComboBox 	 *themebox;
+  bool		  changed;
+  QString 	  curFile;
   QChart::ChartTheme theme;	// fixme--copy to chartwin
-  void		 create_menuBar ();
-  bool		 maybeSave();
-  ChartWindow	*chartWindow;
-  void buildMenu ();
+  ChartWindow	 *chartWindow;
 
 private:
   QTextEdit *aplwin;

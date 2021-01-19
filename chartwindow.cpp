@@ -36,6 +36,7 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
+#ifdef USE_SETTINGS
 void
 ChartWindow::saveSettings ()
 {
@@ -61,6 +62,7 @@ ChartWindow::saveSettings ()
   settings.setValue (X_TITLE,  	 curve.ix.title);
   settings.setValue (Y_TITLE,    curve.function.title);
 }
+#endif
 
 int
 ChartWindow::handle_vector (APL_value res,
@@ -373,11 +375,13 @@ ChartWindow::ChartWindow (MainWindow *parent)
   
   chartEnter = new ChartEnter (chartView, this, mainWindow);
   chartView->installEventFilter(chartEnter);
-   
+
+#ifdef USE_SETTINGS
   QVariant tt = settings.value (THEME);
   theme = tt.isValid ()
     ? (QChart::ChartTheme)tt.toInt ()
     :  QChart::ChartThemeBlueCerulean;
+#endif
   
   create_menuBar ();
   

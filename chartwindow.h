@@ -46,9 +46,6 @@ private:
   QChartView  *watched;
 };
 
-
-
-
 class ChartWindow : public QMainWindow
 {
   Q_OBJECT
@@ -65,7 +62,9 @@ public:
   bool 		 saveFile (QString &fileName);
   void 		 readFile (QString &fileName);
   void		 initXmlHash ();
+#ifdef USE_SETTINGS
   void		 saveSettings ();
+#endif
   QSettings 	 settings;
 
 private slots:

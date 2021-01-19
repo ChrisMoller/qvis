@@ -47,14 +47,22 @@ main (int argc, char *argv[])
   parser.addHelpOption();
   parser.addVersionOption();
 
+#ifdef USE_SETTINGS
+  QCommandLineOption norestore ("X", "Skip loading previous session.");
+  parser.addOption(norestore);
+
   QCommandLineOption noload ("N", "Skip loading saved workspace.");
   parser.addOption(noload);
+#endif
   
   QCommandLineOption
-    loadws(QStringList() << "L" << "workspace", "workspace", "<ws>");
+    loadws("L", "Workspace to load.", "<ws>");
   parser.addOption(loadws);
 
   parser.process(app);
+
+#ifdef USE_SETTINGS
+  bool do_restore = !parser.isSet (norestore);
 
   QSettings settings;
 
@@ -65,12 +73,30 @@ main (int argc, char *argv[])
   if (!ws.isEmpty ()) {
     std::string cmd = ")load " + ws.toStdString ();
     const char *rc = apl_command (cmd.c_str ());
-    //    fprintf (stderr, "rc = \"%s\"\n", rc);
     if (rc) free ((void *)rc);
     settings.setValue (LOAD_WS, ws);
   }
 
-  MainWindow window (nullptr);
+  MainWindow window (do_restore, nullptr);
+#else
+  QStringList vals = parser.values (loadws);
+  QString startupMsgs;
+  int i;
+  for (i = 0; i < vals.count (); i++) {
+    std::string op = (i == 0) ? ")load " : ")copy ";
+    std::string cmd = op + vals.value (i).toStdString ();
+    const char *rc = apl_command (cmd.c_str ());
+    if (rc) {
+      QString line = QString ("%1%2: %3")
+	.arg (op.c_str ()).arg (vals.value (i)).arg (rc);
+      startupMsgs.append (line);
+      free ((void *)rc);
+    }
+  }
+
+  QStringList args = parser.positionalArguments();
+  MainWindow window (startupMsgs, args, nullptr);
+#endif
 
   return app.exec ();
 }
