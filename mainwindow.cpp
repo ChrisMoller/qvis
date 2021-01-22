@@ -445,7 +445,7 @@ MainWindow::enterChart (ChartWindow *cw)
 {
   chart_title->setText (cw->curve.title);
   y_title->setText (cw->curve.function.label);
-  
+
   x_var_name->setText (cw->curve.ix.name);
   x_var_min->setValue (cw->curve.ix.range.min);
   x_var_max->setValue (cw->curve.ix.range.max);
@@ -488,8 +488,6 @@ MainWindow::MainWindow (QString &msgs, QStringList &args, QWidget *parent)
     }
   }
   
-
-
   this->show ();
 
   changed = false;

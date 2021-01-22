@@ -320,15 +320,6 @@ ChartWindow::create_menuBar ()
   fontAct->setStatusTip(tr("Set font"));
 }
 
-bool
-ChartEnter::eventFilter(QObject *obj, QEvent *event)
-{
-  if (event->type() == QEvent::Enter) {
-    mainwin->enterChart (chartwin);
-  }
-  return QObject::eventFilter(obj, event);
-}
-
 ChartWindow::ChartWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
@@ -345,9 +336,6 @@ ChartWindow::ChartWindow (MainWindow *parent)
   chartView = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
   
-  chartEnter = new ChartEnter (chartView, this, mainWindow);
-  chartView->installEventFilter(chartEnter);
-
   create_menuBar ();
   
   this->setCentralWidget (chartView);

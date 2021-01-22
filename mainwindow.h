@@ -117,7 +117,7 @@ class MainWindow : public QMainWindow
 public:
   MainWindow (QString &msgs, QStringList &args, QWidget *parent = nullptr);
   ~MainWindow ();
-  void enterChart (ChartWindow *cw);       
+  void 		 enterChart (ChartWindow *cw);       
   History 	*history;
   QLineEdit	*aplline;
 									  

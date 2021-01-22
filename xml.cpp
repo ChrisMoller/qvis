@@ -15,8 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 /***
-    <vis height="." width="."/>
-    
+  <qvis height="." width=".">
     <curve id="." polar="." spline="."> <!-- any number of repeats -->
       <shorttitle>.....</shorttitle>
       <title>.....</title>
@@ -52,6 +51,7 @@
         <id>.</id>
       </curves>
     </chart>
+  </qvis>
  ***/
 
 #include <QtWidgets>

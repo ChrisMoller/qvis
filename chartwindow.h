@@ -38,7 +38,7 @@ public:
   {watched = obj; chartwin = cw; mainwin = mw;}
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event) override;
+  //    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
   MainWindow  *mainwin;
