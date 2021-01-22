@@ -15,36 +15,43 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 /***
-    <vis height="." width="." theme=".">
-      <curve polar="." spline="."> <!-- any number of repeats -->
-        <shorttitle>.....</shorttitle>
-        <title>.....</title>
-        <function>
-	  <label>...</label>
-	  <expression>...</expression>
-	</function>
-	<ix>
-	  <label>...</label>
-	  <var>...</var>
-	  <range>
-	    <min>...</min>
-	    <max>...</max>
-	  </range>
-	</ix>
-	<iz>
-	  <label>...</label>
-	  <var>...</var>
-	  <range>
-	    <min>...</min>
-	    <max>...</max>
-	  </range>
-	</iz>
-        <parameter>		<!-- any number of repeats -->
-  	  <var>...</var>
-	  <value>...</value>
-        </parameter>
-      </curve>
-    </vis>
+    <vis height="." width="."/>
+    
+    <curve id="." polar="." spline="."> <!-- any number of repeats -->
+      <shorttitle>.....</shorttitle>
+      <title>.....</title>
+      <function>
+        <label>...</label>
+	<expression>...</expression>
+      </function>
+    </curve>
+    <chart>		<!-- any number of repeats -->
+      <ix>
+	<label>...</label>
+	<var>...</var>
+	<range>
+	  <min>...</min>
+	  <max>...</max>
+	</range>
+      </ix>
+      <iz>
+	<label>...</label>
+	<var>...</var>
+	<range>
+	  <min>...</min>
+	  <max>...</max>
+	</range>
+      </iz>
+      <parameter>		<!-- any number of repeats -->
+        <var>...</var>
+	<value>...</value>
+      </parameter>
+      <curves>		<!-- any number of repeats -->
+        <id>.</id>
+        <id>.</id>
+        <id>.</id>
+      </curves>
+    </chart>
  ***/
 
 #include <QtWidgets>
@@ -136,40 +143,6 @@ ChartWindow::saveFile (QString &fileName)
   file.close ();
   return true;
 }
-
-#if 0
-static void
-show_curve (Curve &curve)
-{
-  fprintf (stderr, "polar = %d, spline = %d\n", curve.polar, curve.spline);
-  fprintf (stderr, "shorttitle = %s\n",
-	   curve.shorttitle.toStdString ().c_str ());
-  fprintf (stderr, "curve title = %s\n",
-	   curve.title.toStdString ().c_str ());
-  fprintf (stderr, "function title = %s\n",
-	   curve.function.title.toStdString ().c_str ());
-  fprintf (stderr, "function label = %s\n",
-	   curve.function.label.toStdString ().c_str ());
-  fprintf (stderr, "function expression = %s\n",
-	   curve.function.expression.toStdString ().c_str ());
-  fprintf (stderr, "ix name = %s\n",
-	   curve.ix.name.toStdString ().c_str ());
-  fprintf (stderr, "ix title = %s\n",
-	   curve.ix.title.toStdString ().c_str ());
-  fprintf (stderr, "ix range min = %g\n",
-	   curve.ix.range.min);
-  fprintf (stderr, "ix range max = %g\n",
-	   curve.ix.range.max);
-  fprintf (stderr, "iz name = %s\n",
-	   curve.iz.name.toStdString ().c_str ());
-  fprintf (stderr, "iz title = %s\n",
-	   curve.iz.title.toStdString ().c_str ());
-  fprintf (stderr, "iz range min = %g\n",
-	   curve.iz.range.min);
-  fprintf (stderr, "ix range max = %g\n",
-	   curve.iz.range.max);
-}
-#endif
 
 bool
 ChartWindow::parseRange (Range &rng, QXmlStreamReader &stream)

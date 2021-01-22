@@ -48,11 +48,6 @@ main (int argc, char *argv[])
   parser.addHelpOption();
   parser.addVersionOption();
 
-#ifdef USE_SETTINGS
-  QCommandLineOption norestore ("X", "Skip loading previous session.");
-  parser.addOption(norestore);
-#endif
-
   QCommandLineOption noCONT ("noCONT",
 			     "Skip loading SETUP or CONTINUE workspace.");
   parser.addOption(noCONT);
@@ -64,24 +59,6 @@ main (int argc, char *argv[])
   parser.process(app);
 
 
-#ifdef USE_SETTINGS
-  bool do_restore = !parser.isSet (norestore);
-
-  QSettings settings;
-
-  QString ws = parser.value(loadws);
-  if (ws.isEmpty () && !parser.isSet (noload)) 
-    ws = settings.value (LOAD_WS).toString ();
-
-  if (!ws.isEmpty ()) {
-    std::string cmd = ")load " + ws.toStdString ();
-    const char *rc = apl_command (cmd.c_str ());
-    if (rc) free ((void *)rc);
-    settings.setValue (LOAD_WS, ws);
-  }
-
-  MainWindow window (do_restore, nullptr);
-#else
   const char *rc;
   QString startupMsgs;
   bool cont_loaded = false;
@@ -125,7 +102,6 @@ main (int argc, char *argv[])
 
   QStringList args = parser.positionalArguments();
   MainWindow window (startupMsgs, args, nullptr);
-#endif
 
   return app.exec ();
 }

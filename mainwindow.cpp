@@ -77,45 +77,8 @@ MainWindow::maybeSave()
 void
 MainWindow::byebye ()
 {
-  if (maybeSave ()) {
-#ifdef USE_SETTINGS   
-    chartWindow->saveSettings ();
-#endif
-    QCoreApplication::quit ();
-  }
+  if (maybeSave ()) QCoreApplication::quit ();
 }
-
-#if 0
-void
-MainWindow::handleSettings ()
-{
-  QGridLayout *layout = new QGridLayout;
-  
-  themebox = new QComboBox ();
-  themebox->addItem ("Light", QChart::ChartThemeLight);
-  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
-  themebox->addItem ("Dark", QChart::ChartThemeDark);
-  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
-  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
-  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
-  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
-  themebox->addItem ("Qt", QChart::ChartThemeQt);
-
-  themebox->setCurrentIndex (3);
-  
-  connect(themebox,
-	  QOverload<int>::of(&QComboBox::activated),
-	  this,
-	  &MainWindow::themeChanged);
-  
-  layout->addWidget(themebox, 0, 0);
-  
-  QDialog dialog;
-  dialog.setLayout (layout);
-  dialog.exec ();
-  changed = true;
-}
-#endif
 
 void
 MainWindow::handleExpression ()
@@ -157,20 +120,6 @@ MainWindow::newFile()
   QString     emptystring;
   QStringList emptylist;
   MainWindow window (emptystring, emptylist);
-#if 0
-  chartView = new QChartView ();
-  chartView->setChart (curve.polar ? polarchart : chart);
-  chartView->setRenderHint (QPainter::Antialiasing);
-  handleExpression ();
-#endif
-  
-#if 0
-  this->setCentralWidget (newChartView);
-  if (maybeSave()) {
-    textEdit->clear();
-    setCurrentFile(QString());
-  }
-#endif
 }
 
 void
@@ -267,11 +216,6 @@ MainWindow::create_menuBar ()
   exitAct->setStatusTip(tr("Exit the application"));
   fileToolBar->addAction(exitAct);
 
-#if 0
-  QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
-  QToolBar *editToolBar = addToolBar(tr("Edit"));
-#endif
-
   QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
   QAction *aboutAct =
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
@@ -343,241 +287,157 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
   return QObject::eventFilter(obj, event);
 }
 
-#ifdef  USE_SETTINGS
-void
-MainWindow::loadLastSession ()
-{
-  QSettings settings;
-  
-  chart_title->setText (chartWindow->curve.title);
-  y_title->setText (chartWindow->curve.function.label);
-  x_var_name->setText (chartWindow->curve.ix.name);
-  x_var_min->setValue (chartWindow->curve.ix.range.min);
-  x_var_max->setValue (chartWindow->curve.ix.range.max);
-  x_title->setText (chartWindow->curve.ix.title);
-  z_var_name->setText (chartWindow->curve.iz.name);
-  z_var_min->setValue (chartWindow->curve.iz.range.min);
-  z_var_max->setValue (chartWindow->curve.iz.range.max);
-  z_title->setText (chartWindow->curve.iz.title);
-  fcn_label->setText (chartWindow->curve.function.title);
-  apl_expression->setText (chartWindow->curve.function.expression);
-  do_spline->setCheckState (chartWindow->curve.spline
-			    ? Qt::Checked : Qt::Unchecked);
-  do_polar->setCheckState (chartWindow->curve.polar
-			   ? Qt::Checked : Qt::Unchecked);
-  chartWindow->curve.title = settings.value (CHART_TITLE).toString ();
-  chartWindow->curve.function.label = settings.value (Y_TITLE).toString ();
-  chartWindow->curve.ix.name = settings.value (X_VAR_NAME).toString ();
-  chartWindow->curve.ix.range.min = settings.value (X_VAR_MIN).toDouble ();
-  chartWindow->curve.ix.range.max = settings.value (X_VAR_MAX).toDouble ();
-  chartWindow->curve.ix.title = settings.value (X_TITLE).toString ();
-  chartWindow->curve.iz.name = settings.value (Z_VAR_NAME).toString ();
-  chartWindow->curve.iz.range.min = settings.value (Z_VAR_MIN).toDouble ();
-  chartWindow->curve.iz.range.max = settings.value (Z_VAR_MAX).toDouble ();
-  chartWindow->curve.iz.title = settings.value (Z_TITLE).toString ();
-  chartWindow->curve.function.title = settings.value (FCN_LABEL).toString ();
-  chartWindow->curve.function.expression =
-    settings.value (FUNCTION).toString ();
-  chartWindow->curve.spline = settings.value (DO_SPLINE).toBool ();
-  chartWindow->curve.polar = settings.value (DO_POLAR).toBool ();
-  chartWindow->handleExpression ();
-}
-#endif
-
 void
 MainWindow::buildMenu (QString &msgs)
 {
   create_menuBar ();
-  QGroupBox *formGroupBox = new QGroupBox ();
-  QGridLayout *layout = new QGridLayout;;
 
-  int row = 0;
-  int col = 0;
-
-  aplwin = new QTextEdit ();
-  aplwin->setReadOnly (true);
-  aplwin->setText (msgs);
-  layout->addWidget (aplwin, row, 0, 1, 4);
-
-  row++;
-  aplline = new  QLineEdit ();
-  aplline->setPlaceholderText ("APL");
-  keyPressEater = new KeyPressEater (aplline, this);
-  aplline->installEventFilter(keyPressEater);
-  connect(aplline, &QLineEdit::returnPressed,
-	  this, &MainWindow::returnPressed);
-  layout->addWidget (aplline, row, 0, 1, 4);
+  QGroupBox *outerGroupBox = new QGroupBox ();
+  QVBoxLayout *outerlayout = new QVBoxLayout ();
+  outerGroupBox->setLayout (outerlayout);
   
-  row++;
-  col = 0;
+  {
+    QGroupBox *formGroupBox = new QGroupBox (QString ("Sandbox"));
+    QVBoxLayout *layout = new QVBoxLayout ();
 
-  chart_title = new  QLineEdit ();
-  chart_title->setPlaceholderText ("chart title");
-  layout->addWidget (chart_title, row, 0, 1, 3);
+    aplwin = new QTextEdit ();
+    aplwin->setReadOnly (true);
+    aplwin->setText (msgs);
+    layout->addWidget (aplwin);
+
+    aplline = new  QLineEdit ();
+    aplline->setPlaceholderText ("APL");
+    keyPressEater = new KeyPressEater (aplline, this);
+    aplline->installEventFilter(keyPressEater);
+    connect(aplline, &QLineEdit::returnPressed,
+	    this, &MainWindow::returnPressed);
+    layout->addWidget (aplline);
+
+    formGroupBox->setLayout (layout);
+    formGroupBox->setAlignment (Qt::AlignLeft);
+    outerlayout->addWidget (formGroupBox);
+  }
+  {
+    QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
+    QGridLayout *layout = new QGridLayout;;
+
+    int row = 0;
+    int col = 0;
+
+    chart_title = new  QLineEdit ();
+    chart_title->setPlaceholderText ("chart title");
+    layout->addWidget (chart_title, row, 0, 1, 3);
+
+    y_title = new  QLineEdit ();
+    y_title->setPlaceholderText ("y axix label");
+    layout->addWidget (y_title, row, 3);
+
+
+    row++;
+    col = 0;
+
+    /*  x indep vbl */
   
-  y_title = new  QLineEdit ();
-  y_title->setPlaceholderText ("y axix label");
-  layout->addWidget (y_title, row, 3);
+    x_var_name = new  QLineEdit ();
+    x_var_name->setPlaceholderText ("x variable name");
+    layout->addWidget (x_var_name, row, col++);
   
-  /*  x indep vbl */
+    x_var_min = new  QDoubleSpinBox ();
+    x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
+    x_var_min->setToolTip ("x minimum value");
+    QObject::connect (x_var_min,
+		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		      this,
+		      &MainWindow::valChanged);
+    layout->addWidget (x_var_min, row, col++);
 
-  row++;
-  col = 0;
+    x_var_max = new  QDoubleSpinBox ();
+    x_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
+    x_var_max->setToolTip ("x maximum value");
+    QObject::connect (x_var_max,
+		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		      this,
+		      &MainWindow::valChanged);
+    layout->addWidget (x_var_max, row, col++);
   
-  x_var_name = new  QLineEdit ();
-  x_var_name->setPlaceholderText ("x variable name");
-  layout->addWidget (x_var_name, row, col++);
+    x_title = new  QLineEdit ();
+    x_title->setPlaceholderText ("x axix label");
+    layout->addWidget (x_title, row, col++);
+
+    /*  z indep vbl */
+
+    row++;
+    col = 0;
+
+    z_var_name = new  QLineEdit ();
+    z_var_name->setPlaceholderText ("z variable name");
+    layout->addWidget (z_var_name, row, col++);
+
+    z_var_min = new  QDoubleSpinBox ();
+    z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
+    z_var_min->setToolTip ("z minimum value");
+    QObject::connect (z_var_min,
+		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		      this,
+		      &MainWindow::valChanged);
+    layout->addWidget (z_var_min, row, col++);
+
+    z_var_max = new  QDoubleSpinBox ();
+    z_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
+    z_var_max->setToolTip ("z maximum value");
+    QObject::connect (z_var_max,
+		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+		      this,
+		      &MainWindow::valChanged);
+    layout->addWidget (z_var_max, row, col++);
   
-  x_var_min = new  QDoubleSpinBox ();
-  x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
-  x_var_min->setToolTip ("x minimum value");
-  QObject::connect (x_var_min,
-		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		    this,
-		    &MainWindow::valChanged);
-  layout->addWidget (x_var_min, row, col++);
+    z_title = new  QLineEdit ();
+    z_title->setPlaceholderText ("z axix label");
+    layout->addWidget (z_title, row, col++);
+    
+    /*  APL expression */
 
-  x_var_max = new  QDoubleSpinBox ();
-  x_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
-  x_var_max->setToolTip ("x maximum value");
-  QObject::connect (x_var_max,
-		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		    this,
-		    &MainWindow::valChanged);
-  layout->addWidget (x_var_max, row, col++);
+    row++;
+    col = 0;
+
+    fcn_label = new  QLineEdit ();
+    fcn_label->setPlaceholderText ("curve label");
+    layout->addWidget (fcn_label, row, col++);
+
+    apl_expression = new  QLineEdit ();
+    apl_expression->setPlaceholderText ("function");
+    layout->addWidget (apl_expression, row, col, 1, 3);
+    QObject::connect (apl_expression,
+		      &QLineEdit::editingFinished,
+		      this,
+		      &MainWindow::valChangedv);
+
+    /*  toggles */
   
-  x_title = new  QLineEdit ();
-  x_title->setPlaceholderText ("x axix label");
-  layout->addWidget (x_title, row, col++);
-
-  /*  z indep vbl */
-
-  row++;
-  col = 0;
-
-  z_var_name = new  QLineEdit ();
-  z_var_name->setPlaceholderText ("z variable name");
-  layout->addWidget (z_var_name, row, col++);
-
-  z_var_min = new  QDoubleSpinBox ();
-  z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
-  z_var_min->setToolTip ("z minimum value");
-  QObject::connect (z_var_min,
-		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		    this,
-		    &MainWindow::valChanged);
-  layout->addWidget (z_var_min, row, col++);
-
-  z_var_max = new  QDoubleSpinBox ();
-  z_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
-  z_var_max->setToolTip ("z maximum value");
-  QObject::connect (z_var_max,
-		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		    this,
-		    &MainWindow::valChanged);
-  layout->addWidget (z_var_max, row, col++);
+    row++;
+    col = 0;
   
-  z_title = new  QLineEdit ();
-  z_title->setPlaceholderText ("z axix label");
-  layout->addWidget (z_title, row, col++);
-
-
-  /*  APL expression */
-
-  row++;
-  col = 0;
-  fcn_label = new  QLineEdit ();
-  fcn_label->setPlaceholderText ("curve label");
-  layout->addWidget (fcn_label, row, col++);
-
-  apl_expression = new  QLineEdit ();
-  apl_expression->setPlaceholderText ("function");
-  layout->addWidget (apl_expression, row, col, 1, 3);
-  QObject::connect (apl_expression,
-		    &QLineEdit::editingFinished,
-		    this,
-		    &MainWindow::valChangedv);
-
-  /*  toggles */
+    do_spline = new QCheckBox ("Spline");
+    layout->addWidget (do_spline, row, col++);
+    connect(do_spline,
+	    &QCheckBox::stateChanged,
+	    this,
+	    &MainWindow::valChanged);
   
-  row++;
-  col = 0;
+    do_polar = new QCheckBox ("Polar");
+    layout->addWidget (do_polar, row, col++);
+    connect(do_polar,
+	    &QCheckBox::stateChanged,
+	    this,
+	    &MainWindow::valChanged);
+    
+    formGroupBox->setLayout (layout);
+    formGroupBox->setAlignment (Qt::AlignLeft);
+    outerlayout->addWidget (formGroupBox);
+  }
+  outerGroupBox->show ();
   
-  do_spline = new QCheckBox ("Spline");
-  layout->addWidget (do_spline, row, col++);
-  connect(do_spline,
-	  &QCheckBox::stateChanged,
-	  this,
-	  &MainWindow::valChanged);
-  
-  do_polar = new QCheckBox ("Polar");
-  layout->addWidget (do_polar, row, col++);
-  connect(do_polar,
-	  &QCheckBox::stateChanged,
-	  this,
-	  &MainWindow::valChanged);
-
-#ifdef  USE_SETTINGS
-  if (do_restore) loadLastSession ();
-#endif
-
-
-  /*   buttons */
-
-  /*   settings button   */
-
-#if 0
-  row++;
-  QString settings_button_style ("background-color: yellow; color: green;");
-  QFont   settings_button_font ("bold");
-  QPushButton *settings_button = new QPushButton (QObject::tr ("Settings"));
-  settings_button->setStyleSheet (settings_button_style);
-  settings_button->setFont (settings_button_font);
-  settings_button->setToolTip ("Set parameters");
-  layout->addWidget (settings_button, row, 0);
-  QObject::connect (settings_button,
-		    SIGNAL (clicked ()),
-		    win,
-		    SLOT (handleSettings()));
-
-  /*   compute button   */
-
-  QString compute_button_style ("background-color: yellow; color: red;");
-  QFont   compute_button_font ("bold");
-  QPushButton *compute_button = new QPushButton (QObject::tr ("Draw"));
-  compute_button->setStyleSheet (compute_button_style);
-  compute_button->setFont (compute_button_font);
-  compute_button->setToolTip ("Draw");
-  layout->addWidget (compute_button, row, 1);
-  QObject::connect (compute_button,
-		    SIGNAL (clicked ()),
-		    win,
-		    SLOT (handleExpression()));
-
-  /*   quit button   */
-
-  QString quit_button_style ("background-color: red; color: yellow;");
-  QFont   quit_button_font ("bold");
-  QPushButton *quit_button = new QPushButton (QObject::tr ("Quit"));
-  quit_button->setStyleSheet (quit_button_style);
-  quit_button->setFont (quit_button_font);
-  quit_button->setToolTip ("Quit");
-  layout->addWidget (quit_button, row, 3);
-
-  QObject::connect (quit_button,
-		    SIGNAL (clicked ()),
-		    win,
-		    SLOT (byebye()));
-
-#endif
-
-
-  /*   end buttons  */
-
-  formGroupBox->setLayout (layout);
-  formGroupBox->show ();
-  this->setCentralWidget (formGroupBox);
-  //  chartWindow->handleExpression ();
+  this->setCentralWidget (outerGroupBox);
 }
 
 void
@@ -608,11 +468,6 @@ MainWindow::MainWindow (QString &msgs, QStringList &args, QWidget *parent)
   : QMainWindow(parent)
 {
   history = new History ();
-
-#ifdef USE_SETTINGS
-  if (do_restore) chartWindow = new ChartWindow (this);
-#endif
-
 
   if (!args.empty ()) {
     int i;

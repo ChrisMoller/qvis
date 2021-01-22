@@ -36,34 +36,6 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
-#ifdef USE_SETTINGS
-void
-ChartWindow::saveSettings ()
-{
-  settings.setValue (HEIGHT,	 chartView->height ());
-  settings.setValue (WIDTH,	 chartView->width ());
-  settings.setValue (THEME,	 theme);
-  
-  settings.setValue (CHART_TITLE, curve.title);
-  settings.setValue (DO_SPLINE,  curve.spline);
-  settings.setValue (DO_POLAR,   curve.polar);
-  
-  settings.setValue (Z_VAR_NAME, curve.iz.name);
-  settings.setValue (Z_VAR_MIN,  curve.iz.range.min);
-  settings.setValue (Z_VAR_MAX,  curve.iz.range.max);
-  
-  settings.setValue (X_VAR_NAME, curve.ix.name);
-  settings.setValue (X_VAR_MIN,  curve.ix.range.min);
-  settings.setValue (X_VAR_MAX,  curve.ix.range.max);
-
-  settings.setValue (FUNCTION,   curve.function.expression);
-  settings.setValue (FCN_LABEL,  curve.function.label);
-
-  settings.setValue (X_TITLE,  	 curve.ix.title);
-  settings.setValue (Y_TITLE,    curve.function.title);
-}
-#endif
-
 int
 ChartWindow::handle_vector (APL_value res,
 			   APL_value xvals,
@@ -376,13 +348,6 @@ ChartWindow::ChartWindow (MainWindow *parent)
   chartEnter = new ChartEnter (chartView, this, mainWindow);
   chartView->installEventFilter(chartEnter);
 
-#ifdef USE_SETTINGS
-  QVariant tt = settings.value (THEME);
-  theme = tt.isValid ()
-    ? (QChart::ChartTheme)tt.toInt ()
-    :  QChart::ChartThemeBlueCerulean;
-#endif
-  
   create_menuBar ();
   
   this->setCentralWidget (chartView);
