@@ -26,6 +26,7 @@
 #include <apl/libapl.h>
 
 #include "mainwindow.h"
+#include "aplexec.h"
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -50,16 +51,18 @@ main (int argc, char *argv[])
 #ifdef USE_SETTINGS
   QCommandLineOption norestore ("X", "Skip loading previous session.");
   parser.addOption(norestore);
-
-  QCommandLineOption noload ("N", "Skip loading saved workspace.");
-  parser.addOption(noload);
 #endif
+
+  QCommandLineOption noCONT ("noCONT",
+			     "Skip loading SETUP or CONTINUE workspace.");
+  parser.addOption(noCONT);
   
   QCommandLineOption
     loadws("L", "Workspace to load.", "<ws>");
   parser.addOption(loadws);
 
   parser.process(app);
+
 
 #ifdef USE_SETTINGS
   bool do_restore = !parser.isSet (norestore);
@@ -79,16 +82,42 @@ main (int argc, char *argv[])
 
   MainWindow window (do_restore, nullptr);
 #else
-  QStringList vals = parser.values (loadws);
+  const char *rc;
   QString startupMsgs;
+  bool cont_loaded = false;
+  bool setup_loaded = false;
+  if (!parser.isSet (noCONT)) {
+    QString outString;
+    QString errString;
+    QString cmd = QString (")load CONTINUE");
+    AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+    if (!outString.isEmpty ()) {
+      cont_loaded = outString.contains ("SAVED");
+      if (cont_loaded) {
+	startupMsgs.append ("CONTINUE: ");
+	startupMsgs.append (outString);
+      }
+      else {
+	cmd = QString (")load SETUP");
+	AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+	if (!outString.isEmpty ()) {
+	  startupMsgs.append ("SETUP: ");
+	  startupMsgs.append (outString);
+	}
+      }
+    }
+  }
+  QStringList vals = parser.values (loadws);
   int i;
+  bool something_loaded = cont_loaded || setup_loaded;
   for (i = 0; i < vals.count (); i++) {
-    std::string op = (i == 0) ? ")load " : ")copy ";
+    std::string op = something_loaded ? ")copy " : ")load ";
     std::string cmd = op + vals.value (i).toStdString ();
-    const char *rc = apl_command (cmd.c_str ());
+    rc = apl_command (cmd.c_str ());
     if (rc) {
       QString line = QString ("%1%2: %3")
 	.arg (op.c_str ()).arg (vals.value (i)).arg (rc);
+      something_loaded |= line.contains ("SAVED");
       startupMsgs.append (line);
       free ((void *)rc);
     }

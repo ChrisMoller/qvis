@@ -38,6 +38,7 @@ QT_CHARTS_USE_NAMESPACE
 #include "mainwindow.h"
 #include "chartwindow.h"
 #include "history.h"
+#include "aplexec.h"
 #include "xml.h"
 
 #define expvar "expvarλ"
@@ -292,32 +293,23 @@ MainWindow::process_line(QString text)
   aplline->setText ("");
   
   aplwin->append (text);
-  
-  std::stringstream outbuffer;
-  std::streambuf *coutbuf = std::cout.rdbuf();
-  std::cout.rdbuf(outbuffer.rdbuf());
 
-  std::stringstream errbuffer;
-  std::streambuf *cerrbuf = std::cerr.rdbuf();
-  std::cerr.rdbuf(errbuffer.rdbuf());
-  
-  LIBAPL_error execerr = apl_exec (text.toStdString ().c_str ());
-  
-  if (execerr != LAE_NO_ERROR) {
+  QString outString;
+  QString errString;
+  LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text,outString, errString);
+
+  if (rc != LAE_NO_ERROR) {
     QString emsg =
-      QString ("APL error %1").arg ((int)execerr, 8, 16, QLatin1Char('0'));
+      QString ("APL error %1").arg ((int)rc, 8, 16, QLatin1Char('0'));
     aplwin->setTextColor (red);
     aplwin->append (emsg);
-    if (errbuffer.str ().size () > 0)
-      aplwin->append (errbuffer.str ().c_str ());
+    if (errString.size () > 0)
+      aplwin->append (errString);
     aplwin->setTextColor (black);
   }
-
-  std::cout.rdbuf(coutbuf);
-  std::cerr.rdbuf(cerrbuf);
-
-  if (outbuffer.str ().size () > 0)
-    aplwin->append (outbuffer.str ().c_str ());
+  
+  if (outString.size () > 0)
+    aplwin->append (outString);
 }
 
 void MainWindow::returnPressed()
@@ -621,6 +613,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args, QWidget *parent)
   if (do_restore) chartWindow = new ChartWindow (this);
 #endif
 
+
   if (!args.empty ()) {
     int i;
     for (i = 0; i < args.count (); i++) {
@@ -631,8 +624,16 @@ MainWindow::MainWindow (QString &msgs, QStringList &args, QWidget *parent)
     }
   }
   
-
   buildMenu (msgs);
+
+  if (!args.empty ()) {
+    int i;
+    for (i = 0; i < args.count (); i++) {
+      enterChart (chartWindow);
+    }
+  }
+  
+
 
   this->show ();
 

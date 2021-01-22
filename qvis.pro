@@ -16,6 +16,7 @@ SOURCES += \
     mainwindow.cpp \
     chartwindow.cpp \
     history.cpp \
+    aplexec.cpp \
     xml.cpp
 
 HEADERS += \
@@ -23,6 +24,7 @@ HEADERS += \
     mainwindow.h \
     xml.h \
     history.h \
+    aplexec.h \
     XMLtags.def
 
 FORMS +=
