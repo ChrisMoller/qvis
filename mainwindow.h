@@ -135,15 +135,16 @@ private slots:
   void valChangedv();
   void themeChanged(int newtheme);
   void newFile();
-  void open();
-  void loadapl(bool copy);
+  void loadapl();
   void copyapl();
   bool save();
+  void open();
   bool saveAs();
   void about();
   void returnPressed ();
   
 private:
+  void		 openapl(bool cpy);
   void           createActions();
   void		 process_line(QString text);
   void		 loadLastSession ();

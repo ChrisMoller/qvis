@@ -136,7 +136,7 @@ MainWindow::open()
 }
 
 void
-MainWindow::loadapl(bool copy)
+MainWindow::openapl(bool copy)
 {
   /***
       xml )load )copy
@@ -148,7 +148,6 @@ MainWindow::loadapl(bool copy)
       
    ***/
 
-  fprintf (stderr, "copy = %d\n", copy);
   QString filter = copy ? QString ("*.xml") :  QString ("*.xml *.atf");
   QFileDialog dialog(this, QString ("Open APL file"), libpath, filter);
   dialog.setWindowModality(Qt::WindowModal);
@@ -184,7 +183,13 @@ MainWindow::loadapl(bool copy)
 void
 MainWindow::copyapl()
 {
-  loadapl(true);
+  openapl(true);
+}
+
+void
+MainWindow::loadapl()
+{
+  openapl(false);
 }
 
 bool
