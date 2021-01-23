@@ -119,7 +119,7 @@ MainWindow::newFile()
 {
   QString     emptystring;
   QStringList emptylist;
-  MainWindow window (emptystring, emptylist);
+  MainWindow window (emptystring, emptylist, emptystring);
 }
 
 void
@@ -133,6 +133,58 @@ MainWindow::open()
   if (dialog.exec() == QDialog::Accepted)
     newchartWindow->readFile(dialog.selectedFiles().first());
   chartWindow = newchartWindow;
+}
+
+void
+MainWindow::loadapl(bool copy)
+{
+  /***
+      xml )load )copy
+      atf  )in
+      
+      apl not work
+      xml works
+      atf works but no msg
+      
+   ***/
+
+  fprintf (stderr, "copy = %d\n", copy);
+  QString filter = copy ? QString ("*.xml") :  QString ("*.xml *.atf");
+  QFileDialog dialog(this, QString ("Open APL file"), libpath, filter);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  QString outString;
+  QString errString;
+  if (dialog.exec() == QDialog::Accepted) {
+    QString fn =  dialog.selectedFiles().first();
+    if (fn.endsWith (QString (".xml"),Qt::CaseInsensitive)) {
+      QString op = copy ? QString (")copy") : QString (")load");
+      QString cmd = QString ("%1 %2").arg (op).arg (fn);
+      AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+    }
+    else if (!copy && fn.endsWith (QString (".atf"),Qt::CaseInsensitive)) {
+      QString cmd = QString (")in %1").arg (fn);
+      AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+    }
+    else {
+      QMessageBox msgBox;
+      msgBox.setText("File type not supported.");
+      msgBox.setIcon (QMessageBox::Warning);
+      msgBox.exec();
+    }
+  }
+  if (!errString.isEmpty ()) {
+    aplwin->setTextColor (QColor (255, 0, 0));
+    aplwin->setText (outString);
+    aplwin->setTextColor (QColor (0, 0, 0));
+  }
+  if (!outString.isEmpty ()) aplwin->setText (outString);
+}
+
+void
+MainWindow::copyapl()
+{
+  loadapl(true);
 }
 
 bool
@@ -170,33 +222,51 @@ void
 MainWindow::create_menuBar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+#ifdef USE_TOOLBAR
   QToolBar *fileToolBar = addToolBar(tr("File"));
+#endif
+  
   const QIcon newIcon =
     QIcon::fromTheme("document-new", QIcon(":/images/new.png"));
   QAction *newAct = new QAction(newIcon, tr("&New"), this);
+#ifdef USE_TOOLBAR
+  fileToolBar->addAction(newAct);
+#endif
   newAct->setShortcuts(QKeySequence::New);
   newAct->setStatusTip(tr("Create a new file"));
   connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
   fileMenu->addAction(newAct);
-  fileToolBar->addAction(newAct);
 
   const QIcon openIcon =
     QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
-  QAction *openAct = new QAction(openIcon, tr("&Open..."), this);
-  openAct->setShortcuts(QKeySequence::Open);
-  openAct->setStatusTip(tr("Open an existing file"));
-  connect(openAct, &QAction::triggered, this, &MainWindow::open);
-  fileMenu->addAction(openAct);
-  fileToolBar->addAction(openAct);
+  QAction *loadAct = new QAction(openIcon, tr("&Load..."), this);
+#ifdef USE_TOOLBAR
+  fileToolBar->addAction(loadAct);
+#endif
+  loadAct->setShortcuts(QKeySequence::Open);
+  loadAct->setStatusTip(tr("Load an existing workspace"));
+  connect(loadAct, &QAction::triggered, this, &MainWindow::loadapl);
+  fileMenu->addAction(loadAct);
+
+  QAction *copyAct = new QAction(openIcon, tr("&Copy..."), this);
+#ifdef USE_TOOLBAR
+  fileToolBar->addAction(copyAct);
+#endif
+  //  copyAct->setShortcuts(QKeySequence::Copy);
+  copyAct->setStatusTip(tr("Copy an existing workspace"));
+  connect(copyAct, &QAction::triggered, this, &MainWindow::copyapl);
+  fileMenu->addAction(copyAct);
 
   const QIcon saveIcon =
     QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
   QAction *saveAct = new QAction(saveIcon, tr("&Save"), this);
+#ifdef USE_TOOLBAR
+  fileToolBar->addAction(saveAct);
+#endif
   saveAct->setShortcuts(QKeySequence::Save);
   saveAct->setStatusTip(tr("Save the document to disk"));
   connect(saveAct, &QAction::triggered, this, &MainWindow::save);
   fileMenu->addAction(saveAct);
-  fileToolBar->addAction(saveAct);
 
   const QIcon saveAsIcon = QIcon::fromTheme("document-save-as");
   QAction *saveAsAct =
@@ -204,7 +274,6 @@ MainWindow::create_menuBar ()
 			&MainWindow::saveAs);
   saveAsAct->setShortcuts(QKeySequence::SaveAs);
   saveAsAct->setStatusTip(tr("Save the document under a new name"));
-
   fileMenu->addSeparator();
 
   const QIcon exitIcon =
@@ -214,7 +283,9 @@ MainWindow::create_menuBar ()
     fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
   exitAct->setShortcuts(QKeySequence::Quit);
   exitAct->setStatusTip(tr("Exit the application"));
+#ifdef USE_TOOLBAR
   fileToolBar->addAction(exitAct);
+#endif
 
   QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
   QAction *aboutAct =
@@ -302,7 +373,7 @@ MainWindow::buildMenu (QString &msgs)
 
     aplwin = new QTextEdit ();
     aplwin->setReadOnly (true);
-    aplwin->setText (msgs);
+    if (!msgs.isEmpty ()) aplwin->setText (msgs);
     layout->addWidget (aplwin);
 
     aplline = new  QLineEdit ();
@@ -320,6 +391,13 @@ MainWindow::buildMenu (QString &msgs)
   {
     QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
     QGridLayout *layout = new QGridLayout;;
+    QMenuBar *mb2 = new QMenuBar ();
+    QMenu *fileMenu = mb2->addMenu(tr("&File"));
+    QAction *openAct = new QAction(tr("&Open Chart..."), this);
+    openAct->setStatusTip(tr("Open an existing vis file"));
+    connect(openAct, &QAction::triggered, this, &MainWindow::open);
+    fileMenu->addAction(openAct);
+    layout->setMenuBar (mb2);
 
     int row = 0;
     int col = 0;
@@ -464,10 +542,12 @@ MainWindow::enterChart (ChartWindow *cw)
   chartWindow = cw;
 }
 
-MainWindow::MainWindow (QString &msgs, QStringList &args, QWidget *parent)
+MainWindow::MainWindow (QString &msgs, QStringList &args,
+			QString &lp, QWidget *parent)
   : QMainWindow(parent)
 {
   history = new History ();
+  libpath = lp;
 
   if (!args.empty ()) {
     int i;

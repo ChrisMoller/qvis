@@ -115,7 +115,8 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  MainWindow (QString &msgs, QStringList &args, QWidget *parent = nullptr);
+  MainWindow (QString &msgs, QStringList &args,
+	      QString &lp, QWidget *parent = nullptr);
   ~MainWindow ();
   void 		 enterChart (ChartWindow *cw);       
   History 	*history;
@@ -135,6 +136,8 @@ private slots:
   void themeChanged(int newtheme);
   void newFile();
   void open();
+  void loadapl(bool copy);
+  void copyapl();
   bool save();
   bool saveAs();
   void about();
@@ -176,5 +179,6 @@ private:
 private:
   QTextEdit *aplwin;
   KeyPressEater *keyPressEater;
+  QString libpath;
 };
 #endif // MAINWINDOW_H

@@ -111,7 +111,9 @@ ChartWindow::saveFile (QString &fileName)
   stream.writeEndElement(); // function
   
   stream.writeStartElement (xml_tags[XML_ix].tag);
+#if 0
   stream.writeTextElement(xml_tags[XML_name].tag,  curve.ix.name);
+#endif
   stream.writeTextElement(xml_tags[XML_title].tag, curve.ix.title);
 
   stream.writeStartElement(xml_tags[XML_range].tag);
@@ -124,7 +126,9 @@ ChartWindow::saveFile (QString &fileName)
   stream.writeEndElement(); // ix
   
   stream.writeStartElement(xml_tags[XML_iz].tag);
+#if 0
   stream.writeTextElement(xml_tags[XML_name].tag,  curve.iz.name);
+#endif
   stream.writeTextElement(xml_tags[XML_title].tag, curve.iz.title);
 
   stream.writeStartElement(xml_tags[XML_range].tag);
@@ -176,9 +180,11 @@ ChartWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
     if (stream.isStartElement ()) {
       QString sn = stream.name ().toString ();
       switch (xmlhash.value (sn)) {
+#if 0
       case XML_name:
 	idx.name = stream.readElementText ();
 	break;
+#endif
       case XML_title:
 	idx.title = stream.readElementText ();
 	break;

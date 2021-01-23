@@ -22,6 +22,7 @@
 #include <QtCharts/QXYSeries>
 #include <QtCharts/QLineSeries>
 #include <QtMath>
+#include <QFile>
 
 #include <apl/libapl.h>
 
@@ -35,6 +36,29 @@ main (int argc, char *argv[])
 {
   // supress anoying messages
   qputenv("QT_LOGGING_RULES","*.debug=false;qt.qpa.*=false");
+
+  QString libpath;
+  QString pfn = QString ("%1/.gnu-apl/preferences").arg (getenv ("HOME"));
+  QFile pfile(pfn);
+  if (!pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+    QString pfn = QString ("%1/.config/gnu-apl/preferences")
+      .arg (getenv ("HOME"));
+    pfile.setFileName (pfn);
+  }
+  if (pfile.open (QIODevice::ReadOnly | QIODevice::Text)) {
+#define BUFFER_SIZE 512
+    char buffer[BUFFER_SIZE];
+    while (0 < pfile.readLine(buffer, BUFFER_SIZE)) {
+      if (strcasestr (buffer, "LIBREF-0")) {
+	char path[BUFFER_SIZE];
+	if (0 < sscanf (buffer, " %*s %s \n", path)) {
+	  libpath = QString (path);
+	}
+      }
+    }
+    pfile.close ();
+  }
+  
 
   init_libapl ("apl", 0);
 
@@ -101,7 +125,7 @@ main (int argc, char *argv[])
   }
 
   QStringList args = parser.positionalArguments();
-  MainWindow window (startupMsgs, args, nullptr);
+  MainWindow window (startupMsgs, args, libpath, nullptr);
 
   return app.exec ();
 }
