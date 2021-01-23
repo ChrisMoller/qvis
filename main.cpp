@@ -17,8 +17,6 @@
 
  ***/
 
-// does this still work?
-
 #include <QtWidgets>
 #include <QtCharts/QChartView>
 #include <QtCharts/QXYSeries>
