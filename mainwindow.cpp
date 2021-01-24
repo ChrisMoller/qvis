@@ -456,14 +456,23 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
 	      if (1 == possibles.size ()) {
 		text.chop (tok.size ());
 		text.append (possibles[0]);
-		fprintf (stderr, "text = \"%s\"\n",
-			 text.toStdString ().c_str ());
 		mainwin->aplline->setText (text);
 	      }
 	      else {
+		QDialog dialog (mainwin, Qt::Popup);
+		QVBoxLayout *layout = new QVBoxLayout ();
+		dialog.setLayout (layout);
+		QComboBox *completion_ops =  new QComboBox ();
+		completion_ops->setMaxVisibleItems (10);
+		completion_ops->showPopup ();
 		for (i = 0; i < possibles.size (); i++)
-		  fprintf (stderr, "pos %s\n",
-			   possibles[i].toStdString ().c_str ());
+		  completion_ops->addItem (possibles[i]);
+		layout->addWidget(completion_ops);
+		dialog.exec ();
+		QString sel = completion_ops->currentText ();
+		text.chop (sel.size ());
+		text.append (sel);
+		mainwin->aplline->setText (text);
 	      }
 	    }
 	  }
