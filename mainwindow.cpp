@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 
-// /old_home/Qt/Examples/Qt-5.15.1/opengl/qopenglwindow/background_renderer.cpp
+// //old_home/Qt/Examples/Qt-5.15.1/opengl/qopenglwindow/background_renderer.cpp
 
 // https://doc.qt.io/qt-5/qtdatavisualization-index.html
 
@@ -33,6 +33,9 @@
 
 #include <iostream>
 #include <sstream>
+
+#include <sys/stat.h>
+
 
 #include <apl/libapl.h>
 
@@ -120,9 +123,6 @@ MainWindow::valChangedv ()
 void
 MainWindow::newFile()
 {
-  QString     emptystring;
-  QStringList emptylist;
-  MainWindow window (emptystring, emptylist, emptystring);
 }
 
 void
@@ -132,11 +132,41 @@ MainWindow::gvimDone (int something)
 }
 
 void
+MainWindow::fileChanged(const QString &path)
+{
+  static int ct = 0;
+  fprintf (stderr, "fc: %d \"%s\"\n",
+	   ct++, path.toStdString ().c_str ());
+#if 1
+  QFileInfo info (path);
+  fprintf (stderr, "size = %d\n", (int)info.size ());
+#else
+  struct stat statbuf;
+  int statrc = stat (path.toStdString ().c_str (), &statbuf);
+  fprintf (stderr, "statrc = %d\n", statrc);
+  if (statrc == 0) {
+    off_t sz = statbuf.st_size;
+    fprintf (stderr, "size = %d\n", (int)sz);
+  }
+  else perror ("fileChanged");
+#endif
+}
+
+void
 MainWindow::edit()
 {
+  
+  /***
+      /tmp/$USER/<pid>/<fn>
+   ***/
   QString pgm = "gvim";
   QStringList args;
-  args << "dummy";
+  QString dmy ("/tmp/dummy");
+  QFileInfo info(dmy);
+  fprintf (stderr, "file %s\n",
+	   info.canonicalFilePath().toStdString ().c_str () );
+  args <<  info.canonicalFilePath();
+  watcher.addPath (info.canonicalFilePath());
   QProcess *gvim = new QProcess ();
   connect (gvim,
 	   QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -377,6 +407,9 @@ void MainWindow::returnPressed()
   history->rebase ();
 }
 
+//#define APL_VARIABLE "\\s+ | ([^a-z0-9]*)"
+#define APL_VARIABLE "([∆a-z][∆_a-z0-9])"
+
 bool
 KeyPressEater::eventFilter(QObject *obj, QEvent *event)
 {
@@ -389,10 +422,40 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
 	mainwin->aplline->setText (text);
 	return true;
       }
-      else if(keyEvent->key() == Qt::Key_Down) {
+      else if (keyEvent->key() == Qt::Key_Down) {
 	char *str = mainwin->history->next ();
 	QString text = QString (str);
 	mainwin->aplline->setText (text);
+	return true;
+      }
+      else if (keyEvent->key() == Qt::Key_Tab) {
+	QRegularExpression aplsep (APL_VARIABLE);
+	aplsep.setPatternOptions (QRegularExpression::CaseInsensitiveOption);
+	QString outString;
+	QString errString;
+	QString cmd = QString (")fns");
+	AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+	if (!outString.isEmpty ()) {
+	  QString text = mainwin->aplline->text();
+	  QRegularExpressionMatchIterator toks = aplsep.globalMatch (text);
+	  QString tok;
+	  while (toks.hasNext ()) {
+	    QRegularExpressionMatch match = toks.next(); 
+	    tok = match.captured(1);
+	  }
+	  if (!tok.isEmpty ()) {
+	    fprintf (stderr, "tok \"%s\"\n", tok.toStdString ().c_str ());
+	    int i;
+	    QStringList fns = outString.split (QRegExp ("\\s+"));
+	    for (i = 0; i < fns.size (); i++) {
+	      if (fns[i].startsWith (tok))
+		fprintf (stderr, "fcn %s\n", fns[i].toStdString ().c_str ());
+	    }
+	  }
+	}
+	else if (!errString.isEmpty ()) {
+	  fprintf (stderr, "got fns err\n");
+	}
 	return true;
       }
     }
@@ -588,6 +651,9 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 			QString &lp, QWidget *parent)
   : QMainWindow(parent)
 {
+  connect(&watcher,
+	  &QFileSystemWatcher::fileChanged,
+	  this, &MainWindow::fileChanged);
   history = new History ();
   libpath = lp;
 

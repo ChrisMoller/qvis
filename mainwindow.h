@@ -144,6 +144,7 @@ private slots:
   bool saveAs();
   void about();
   void returnPressed ();
+  void fileChanged(const QString &path);
   
 private:
   void		 openapl(bool cpy);
@@ -183,5 +184,6 @@ private:
   QTextEdit *aplwin;
   KeyPressEater *keyPressEater;
   QString libpath;
+  QFileSystemWatcher watcher;
 };
 #endif // MAINWINDOW_H
