@@ -407,8 +407,7 @@ void MainWindow::returnPressed()
   history->rebase ();
 }
 
-//#define APL_VARIABLE "\\s+ | ([^a-z0-9]*)"
-#define APL_VARIABLE "([∆a-z][∆_a-z0-9])"
+#define APL_VARIABLE "([∆a-z][∆_a-z0-9]*)"
 
 bool
 KeyPressEater::eventFilter(QObject *obj, QEvent *event)
@@ -435,7 +434,11 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
 	QString errString;
 	QString cmd = QString (")fns");
 	AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
-	if (!outString.isEmpty ()) {
+	QString vbls = outString;
+	cmd = QString (")vars");
+	AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+	vbls.append (outString);
+	if (!vbls.isEmpty ()) {
 	  QString text = mainwin->aplline->text();
 	  QRegularExpressionMatchIterator toks = aplsep.globalMatch (text);
 	  QString tok;
@@ -444,12 +447,24 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
 	    tok = match.captured(1);
 	  }
 	  if (!tok.isEmpty ()) {
-	    fprintf (stderr, "tok \"%s\"\n", tok.toStdString ().c_str ());
 	    int i;
-	    QStringList fns = outString.split (QRegExp ("\\s+"));
-	    for (i = 0; i < fns.size (); i++) {
-	      if (fns[i].startsWith (tok))
-		fprintf (stderr, "fcn %s\n", fns[i].toStdString ().c_str ());
+	    QStringList fns = vbls.split (QRegExp ("\\s+"));
+	    QStringList possibles = QStringList ();
+	    for (i = 0; i < fns.size (); i++)
+	      if (fns[i].startsWith (tok)) possibles.push_back (fns[i]);
+	    if (0 < possibles.size ()) {
+	      if (1 == possibles.size ()) {
+		text.chop (tok.size ());
+		text.append (possibles[0]);
+		fprintf (stderr, "text = \"%s\"\n",
+			 text.toStdString ().c_str ());
+		mainwin->aplline->setText (text);
+	      }
+	      else {
+		for (i = 0; i < possibles.size (); i++)
+		  fprintf (stderr, "pos %s\n",
+			   possibles[i].toStdString ().c_str ());
+	      }
 	    }
 	  }
 	}
