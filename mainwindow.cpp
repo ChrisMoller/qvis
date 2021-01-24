@@ -377,7 +377,12 @@ MainWindow::process_line(QString text)
 {
   QColor red = QColor (255, 0, 0);
   QColor black = QColor (0, 0, 0);
+  text = text.trimmed ();
   aplline->setText ("");
+
+  //  if (text.startsWith (QString ("∇")))
+  if (text.startsWith (QString ("#")))
+    fprintf (stderr, "nabla\n");
   
   aplwin->append (text);
 
@@ -470,7 +475,7 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
 		layout->addWidget(completion_ops);
 		dialog.exec ();
 		QString sel = completion_ops->currentText ();
-		text.chop (sel.size ());
+		text.chop (tok.size ());
 		text.append (sel);
 		mainwin->aplline->setText (text);
 	      }
