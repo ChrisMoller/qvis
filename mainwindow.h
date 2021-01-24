@@ -132,12 +132,14 @@ private slots:
   //  void handleSettings ();
   void byebye ();
   void valChanged(bool enabled);
+  void gvimDone(int something);
   void valChangedv();
   void themeChanged(int newtheme);
   void newFile();
   void loadapl();
   void copyapl();
   bool save();
+  void edit();
   void open();
   bool saveAs();
   void about();

@@ -15,6 +15,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 
+// /old_home/Qt/Examples/Qt-5.15.1/opengl/qopenglwindow/background_renderer.cpp
+
 // https://doc.qt.io/qt-5/qtdatavisualization-index.html
 
 #include <QtWidgets>
@@ -26,6 +28,7 @@
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 #include <QMenuBar>
+#include <QProcess>
 #include <values.h>
 
 #include <iostream>
@@ -120,6 +123,26 @@ MainWindow::newFile()
   QString     emptystring;
   QStringList emptylist;
   MainWindow window (emptystring, emptylist, emptystring);
+}
+
+void
+MainWindow::gvimDone (int something)
+{
+  fprintf (stderr, "gvimDone %d\n", something);
+}
+
+void
+MainWindow::edit()
+{
+  QString pgm = "gvim";
+  QStringList args;
+  args << "dummy";
+  QProcess *gvim = new QProcess ();
+  connect (gvim,
+	   QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+	   this,
+	   &MainWindow::gvimDone);
+  gvim->start (pgm, args);
 }
 
 void
@@ -279,6 +302,20 @@ MainWindow::create_menuBar ()
 			&MainWindow::saveAs);
   saveAsAct->setShortcuts(QKeySequence::SaveAs);
   saveAsAct->setStatusTip(tr("Save the document under a new name"));
+
+  const QIcon editIcon =
+    QIcon::fromTheme("document-save",
+		     QIcon(":/images/accessories-text-editor.png"));
+  QAction *editAct = new QAction(saveIcon, tr("&Edit"), this);
+#ifdef USE_TOOLBAR
+  fileToolBar->addAction(editAct);
+#endif
+  //  EditAct->setShortcuts(QKeySequence::Save);
+  editAct->setStatusTip(tr("Edit function"));
+  connect(editAct, &QAction::triggered, this, &MainWindow::edit);
+  fileMenu->addAction(editAct);
+
+
   fileMenu->addSeparator();
 
   const QIcon exitIcon =
