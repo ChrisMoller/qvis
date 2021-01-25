@@ -49,6 +49,9 @@ QT_CHARTS_USE_NAMESPACE
 
 #define expvar "expvarλ"
 
+static const QColor red = QColor (255, 0, 0);
+static const QColor black = QColor (0, 0, 0);
+
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
 {
@@ -134,22 +137,25 @@ MainWindow::gvimDone (int something)
 void
 MainWindow::fileChanged(const QString &path)
 {
-  static int ct = 0;
-  fprintf (stderr, "fc: %d \"%s\"\n",
-	   ct++, path.toStdString ().c_str ());
-#if 1
-  QFileInfo info (path);
-  fprintf (stderr, "size = %d\n", (int)info.size ());
-#else
-  struct stat statbuf;
-  int statrc = stat (path.toStdString ().c_str (), &statbuf);
-  fprintf (stderr, "statrc = %d\n", statrc);
-  if (statrc == 0) {
-    off_t sz = statbuf.st_size;
-    fprintf (stderr, "size = %d\n", (int)sz);
+   QFile file(path);
+  if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    QTextStream in(&file);
+    QString fcn;
+    while (!in.atEnd()) {
+      QString line = in.readLine();
+      fcn.append (line);
+      fcn.append ('\n');
+    }
+    QString outString;
+    QString errString;
+    QString cmd = QString ("⎕fx '%1'").arg (fcn);
+    fprintf (stderr, "cmd: \"%s\"\n", cmd.toStdString ().c_str ());
+    LIBAPL_error rc =
+      AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+    fprintf (stderr, "rc = %d\n", rc);
+    fprintf (stderr, "out: \"%s\"\n", outString.toStdString ().c_str ());
+    fprintf (stderr, "err: \"%s\"\n", errString.toStdString ().c_str ());
   }
-  else perror ("fileChanged");
-#endif
 }
 
 void
@@ -226,9 +232,9 @@ MainWindow::openapl(bool copy)
     }
   }
   if (!errString.isEmpty ()) {
-    aplwin->setTextColor (QColor (255, 0, 0));
+    aplwin->setTextColor (red);
     aplwin->setText (outString);
-    aplwin->setTextColor (QColor (0, 0, 0));
+    aplwin->setTextColor (black);
   }
   if (!outString.isEmpty ()) aplwin->setText (outString);
 }
@@ -369,25 +375,55 @@ MainWindow::create_menuBar ()
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
-static const QColor red = QColor (255, 0, 0);
-static const QColor black = QColor (0, 0, 0);
-
 void
 MainWindow::process_line(QString text)
 {
-  QColor red = QColor (255, 0, 0);
-  QColor black = QColor (0, 0, 0);
+  QString outString;
+  QString errString;
   text = text.trimmed ();
   aplline->setText ("");
 
-  //  if (text.startsWith (QString ("∇")))
-  if (text.startsWith (QString ("#")))
-    fprintf (stderr, "nabla\n");
+  //  if (text.startsWith (QString ("∇"))) {}
+  if (text.startsWith (QString ("#"))) {
+    QStringList args;
+    text = text.remove (0, 1).trimmed ();
+    QString editor = "gvim";
+    QString fn = QString ("/tmp/%1").arg (text);
+
+    QString cmd = QString ("⎕cr '%1'").arg(text);
+    LIBAPL_error rc =
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    if (rc == LAE_NO_ERROR) {	   
+      QFile file (fn);
+      if  (file.open (QIODevice::WriteOnly | QIODevice::Text)) {
+	QTextStream out(&file);
+	if (outString.isEmpty ())
+	  out << text;
+	else
+	  out << outString;
+	file.close ();
+
+	args << fn;
+	watcher.addPath (fn);
+	QProcess *edit = new QProcess ();
+	connect (edit,
+		 QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+		 this,
+		 &MainWindow::gvimDone);
+	edit->start (editor, args);
+      }
+      else {
+	// fixme file open error
+      }
+    }
+    else {
+      // fixme quad-cr error
+    }
+    return;
+  }
   
   aplwin->append (text);
 
-  QString outString;
-  QString errString;
   LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text,outString, errString);
 
   if (rc != LAE_NO_ERROR) {
