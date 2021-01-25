@@ -36,7 +36,6 @@
 
 #include <sys/stat.h>
 
-
 #include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
@@ -51,6 +50,17 @@ QT_CHARTS_USE_NAMESPACE
 
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
+
+void
+MainWindow::update_screen (QString &errString, QString &outString)
+{
+  if (!errString.isEmpty ()) {
+    aplwin->setTextColor (red);
+    aplwin->setText (outString);
+    aplwin->setTextColor (black);
+  }
+  if (!outString.isEmpty ()) aplwin->setText (outString);
+}
 
 void
 MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
@@ -159,11 +169,8 @@ MainWindow::fileChanged(const QString &path)
     QString outString;
     QString errString;
     QString cmd = QString ("⎕fx %1").arg (arg);
-    LIBAPL_error rc =
-      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    fprintf (stderr, "rc = %d\n", rc);
-    fprintf (stderr, "out: \"%s\"\n", outString.toStdString ().c_str ());
-    fprintf (stderr, "err: \"%s\"\n", errString.toStdString ().c_str ());
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    update_screen (errString, outString);
   }
 }
 
@@ -240,12 +247,15 @@ MainWindow::openapl(bool copy)
       msgBox.exec();
     }
   }
+  update_screen (errString, outString);
+#if 0
   if (!errString.isEmpty ()) {
     aplwin->setTextColor (red);
     aplwin->setText (outString);
     aplwin->setTextColor (black);
   }
   if (!outString.isEmpty ()) aplwin->setText (outString);
+#endif
 }
 
 void
@@ -392,8 +402,7 @@ MainWindow::process_line(QString text)
   text = text.trimmed ();
   aplline->setText ("");
 
-  //  if (text.startsWith (QString ("∇"))) {}
-  if (text.startsWith (QString ("#"))) {
+  if (text.startsWith (QString ("∇"))) {
     QStringList args;
     text = text.remove (0, 1).trimmed ();
     QString editor = "gvim";

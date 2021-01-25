@@ -185,5 +185,6 @@ private:
   KeyPressEater *keyPressEater;
   QString libpath;
   QFileSystemWatcher watcher;
+  void update_screen (QString &errString, QString &outString);
 };
 #endif // MAINWINDOW_H
