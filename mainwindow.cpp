@@ -29,6 +29,7 @@
 #include <QPolarChart>
 #include <QMenuBar>
 #include <QProcess>
+#include <QInputDialog>
 #include <values.h>
 
 #include <iostream>
@@ -175,29 +176,6 @@ MainWindow::fileChanged(const QString &path)
 }
 
 void
-MainWindow::edit()
-{
-  
-  /***
-      /tmp/$USER/<pid>/<fn>
-   ***/
-  QString pgm = "gvim";
-  QStringList args;
-  QString dmy ("/tmp/dummy");
-  QFileInfo info(dmy);
-  fprintf (stderr, "file %s\n",
-	   info.canonicalFilePath().toStdString ().c_str () );
-  args <<  info.canonicalFilePath();
-  watcher.addPath (info.canonicalFilePath());
-  QProcess *gvim = new QProcess ();
-  connect (gvim,
-	   QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-	   this,
-	   &MainWindow::gvimDone);
-  gvim->start (pgm, args);
-}
-
-void
 MainWindow::open()
 {
   ChartWindow *newchartWindow = new ChartWindow (this);
@@ -302,6 +280,44 @@ MainWindow::about()
 }
 
 void
+MainWindow::setGeneral ()
+{
+  QDialog dialog (this, Qt::Popup);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  QLabel *editorLabel = new QLabel(QString ("Editor"), this);
+  layout->addWidget (editorLabel, row, 0);
+  QLineEdit *editorSelect = new  QLineEdit ();
+  if (!editor.isEmpty ()) editorSelect->setText (editor);
+  editorSelect->setPlaceholderText ("APL");
+  layout->addWidget (editorSelect, row, 1);
+
+  row++;
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+		    &dialog, &QDialog::accept);
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
+  layout->addWidget (cancelButton, row, 0);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+		    &dialog, &QDialog::reject);
+
+  QPoint loc = this->pos ();
+  dialog.move (loc.x () + 200, loc.y () + 200);
+  int drc = dialog.exec ();
+  if (drc == QDialog::Accepted) {
+    if (!editorSelect->text ().isEmpty ())
+      editor = editorSelect->text ();
+  }
+  delete editorLabel;
+  delete editorSelect;
+  delete closeButton;
+  delete layout;
+}
+
+void
 MainWindow::create_menuBar ()
 {
   QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -358,19 +374,6 @@ MainWindow::create_menuBar ()
   saveAsAct->setShortcuts(QKeySequence::SaveAs);
   saveAsAct->setStatusTip(tr("Save the document under a new name"));
 
-  const QIcon editIcon =
-    QIcon::fromTheme("document-save",
-		     QIcon(":/images/accessories-text-editor.png"));
-  QAction *editAct = new QAction(saveIcon, tr("&Edit"), this);
-#ifdef USE_TOOLBAR
-  fileToolBar->addAction(editAct);
-#endif
-  //  EditAct->setShortcuts(QKeySequence::Save);
-  editAct->setStatusTip(tr("Edit function"));
-  connect(editAct, &QAction::triggered, this, &MainWindow::edit);
-  fileMenu->addAction(editAct);
-
-
   fileMenu->addSeparator();
 
   const QIcon exitIcon =
@@ -383,6 +386,11 @@ MainWindow::create_menuBar ()
 #ifdef USE_TOOLBAR
   fileToolBar->addAction(exitAct);
 #endif
+
+  QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
+  QAction *generalAct =
+    settingsMenu->addAction(tr("&General"), this, &MainWindow::setGeneral);
+  generalAct->setStatusTip(tr("General settings"));
 
   QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
   QAction *aboutAct =
@@ -405,7 +413,7 @@ MainWindow::process_line(QString text)
   if (text.startsWith (QString ("∇"))) {
     QStringList args;
     text = text.remove (0, 1).trimmed ();
-    QString editor = "gvim";
+    //    QString editor = "gvim";
     QString fn = QString ("/tmp/%1").arg (text);
 
     QString cmd = QString ("⎕cr '%1'").arg(text);
@@ -532,6 +540,8 @@ KeyPressEater::eventFilter(QObject *obj, QEvent *event)
 		text.chop (tok.size ());
 		text.append (sel);
 		mainwin->aplline->setText (text);
+		delete completion_ops;
+		delete layout;
 	      }
 	    }
 	  }
@@ -578,7 +588,7 @@ MainWindow::buildMenu (QString &msgs)
   }
   {
     QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
-    QGridLayout *layout = new QGridLayout;;
+    QGridLayout *layout = new QGridLayout;
     QMenuBar *mb2 = new QMenuBar ();
     QMenu *fileMenu = mb2->addMenu(tr("&File"));
     QAction *openAct = new QAction(tr("&Open Chart..."), this);

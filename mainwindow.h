@@ -139,11 +139,11 @@ private slots:
   void loadapl();
   void copyapl();
   bool save();
-  void edit();
   void open();
   bool saveAs();
   void about();
   void returnPressed ();
+  void setGeneral ();
   void fileChanged(const QString &path);
   
 private:
@@ -186,5 +186,6 @@ private:
   QString libpath;
   QFileSystemWatcher watcher;
   void update_screen (QString &errString, QString &outString);
+  QString editor;
 };
 #endif // MAINWINDOW_H
