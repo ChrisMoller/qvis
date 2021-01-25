@@ -140,18 +140,27 @@ MainWindow::fileChanged(const QString &path)
    QFile file(path);
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     QTextStream in(&file);
-    QString fcn;
+    QStringList fcn;
+    int len = 0;
     while (!in.atEnd()) {
       QString line = in.readLine();
-      fcn.append (line);
-      fcn.append ('\n');
+      if (len < line.size ()) len = line.size ();
+      fcn += line;
     }
+    
+    int i;
+    QString mtx;
+    for (i = 0; i < fcn.size (); i++) {
+      QString ln = fcn[i];
+      ln.resize (len, QChar (' '));
+      mtx.append (ln);
+    }
+    QString arg = QString ("%1 %2ρ'%3'").arg (fcn.size ()).arg (len).arg (mtx);
     QString outString;
     QString errString;
-    QString cmd = QString ("⎕fx '%1'").arg (fcn);
-    fprintf (stderr, "cmd: \"%s\"\n", cmd.toStdString ().c_str ());
+    QString cmd = QString ("⎕fx %1").arg (arg);
     LIBAPL_error rc =
-      AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
     fprintf (stderr, "rc = %d\n", rc);
     fprintf (stderr, "out: \"%s\"\n", outString.toStdString ().c_str ());
     fprintf (stderr, "err: \"%s\"\n", errString.toStdString ().c_str ());
