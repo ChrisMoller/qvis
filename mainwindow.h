@@ -174,5 +174,6 @@ private:
   QFileSystemWatcher watcher;
   void update_screen (QString &errString, QString &outString);
   QString editor;
+  QTemporaryDir tempdir;
 };
 #endif // MAINWINDOW_H

@@ -423,7 +423,7 @@ MainWindow::process_line(QString text)
   if (text.startsWith (QString ("∇"))) {
     QStringList args;
     text = text.remove (0, 1).trimmed ();
-    QString fn = QString ("/tmp/%1.apl").arg (text);
+    QString fn = QString ("%1/%2.apl").arg (tempdir.path ()).arg (text);
 
     QString cmd = QString ("⎕cr '%1'").arg(text);
     LIBAPL_error rc =
@@ -586,6 +586,7 @@ MainWindow::buildMenu (QString &msgs)
 
     aplline = new  QLineEdit ();
     aplline->setPlaceholderText ("APL");
+    aplline->grabKeyboard ();
     keyPressEater = new KeyPressEater (aplline, this);
     aplline->installEventFilter(keyPressEater);
     connect(aplline, &QLineEdit::returnPressed,
