@@ -52,8 +52,6 @@ QT_CHARTS_USE_NAMESPACE
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
-#define SETTINGS_EDITOR "Editor"
-
 void
 MainWindow::update_screen (QString &errString, QString &outString)
 {
@@ -168,14 +166,19 @@ MainWindow::fileChanged(const QString &path)
       ln.resize (len, QChar (' '));
       mtx.append (ln);
     }
-    QString arg = QString ("%1 %2ρ'%3'").arg (fcn.size ()).arg (len).arg (mtx);
     QString outString;
     QString errString;
-    QString cmd = QString ("⎕fx %1").arg (arg);
-    LIBAPL_error rc =
-      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    fprintf (stderr, "rc = %d\n", rc);
+    APL_value aplv = char_vector (toCString (mtx), "qvis");
+    set_var_value (expvar, aplv, "qvis");
+    QString cmd = QString ("%1←%2 %3ρ%4")
+      .arg (expvar).arg (fcn.size ()).arg (len).arg (expvar);
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    cmd = QString ("⎕fx %1").arg (expvar);
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
     update_screen (errString, outString);
+    release_value (aplv, "qvis");
+    cmd = QString (")erase %1").arg (expvar);
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
   }
 }
 
@@ -315,7 +318,7 @@ MainWindow::setGeneral ()
     if (!editorSelect->text ().isEmpty ()) {
       QSettings settings;
       editor = editorSelect->text ();
-      settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
+      settings.setValue (QString (EDITOR), QVariant (editor));
     }
   }
   delete editorLabel;
@@ -475,7 +478,8 @@ MainWindow::process_line(QString text)
 void MainWindow::returnPressed()
 {
   QString text = aplline->text();
-  history->insert (text.toStdString ().c_str ());
+  history->insert (toCString (text));
+  //  history->insert (text.toStdString ().c_str ());
   process_line (text);
   history->rebase ();
 }
@@ -751,7 +755,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   : QMainWindow(parent)
 {
   QSettings settings;
-  editor = settings.value (SETTINGS_EDITOR).toString ();
+  editor = settings.value (EDITOR).toString ();
   connect(&watcher,
 	  &QFileSystemWatcher::fileChanged,
 	  this, &MainWindow::fileChanged);

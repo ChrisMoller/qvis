@@ -30,24 +30,11 @@ QT_CHARTS_USE_NAMESPACE
 #include "history.h"
 
 // for settings
-#define LOAD_WS    "load_ws"
-#define CHART_TITLE "chart_title"
-#define Y_TITLE    "y_title"
-#define X_TITLE    "x_title"
-#define X_VAR_NAME "x_var_name"
-#define X_VAR_MIN  "x_var_min"
-#define X_VAR_MAX  "x_var_max"
-#define Z_TITLE    "z_title"
-#define Z_VAR_NAME "z_var_name"
-#define Z_VAR_MIN  "z_var_min"
-#define Z_VAR_MAX  "z_var_max"
-#define FUNCTION   "function"
-#define FCN_LABEL  "function_label"
-#define DO_SPLINE  "do_spline"
-#define DO_POLAR   "do_polar"
-#define THEME      "theme"
-#define WIDTH      "width"
-#define HEIGHT     "height"
+#define EDITOR     "Editor"
+#define HEIGHT     "Height"
+#define WIDTH      "Width"
+
+#define toCString(v)	((v).toStdString ().c_str ())
 
 class Function
 {
