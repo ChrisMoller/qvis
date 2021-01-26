@@ -340,7 +340,7 @@ MainWindow::setGeneral ()
     if (!editorSelect->text ().isEmpty ()) {
       QSettings settings;
       editor = editorSelect->text ();
-      settings.setValue (QString (EDITOR), QVariant (editor));
+      settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
     }
   }
   delete editorLabel;
@@ -797,7 +797,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   : QMainWindow(parent)
 {
   QSettings settings;
-  editor = settings.value (EDITOR).toString ();
+  editor = settings.value (SETTINGS_EDITOR).toString ();
   connect(&watcher,
 	  &QFileSystemWatcher::fileChanged,
 	  this, &MainWindow::fileChanged);

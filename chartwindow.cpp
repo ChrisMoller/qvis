@@ -326,8 +326,8 @@ ChartWindow::ChartWindow (MainWindow *parent)
   mainWindow = parent;
   initXmlHash ();
 
-  QVariant ww = settings.value (WIDTH);
-  QVariant hh = settings.value (HEIGHT);
+  QVariant ww = settings.value (SETTINGS_WIDTH);
+  QVariant hh = settings.value (SETTINGS_HEIGHT);
   if (ww.isValid () && hh.isValid ()) 
     this->resize (ww.toInt (), hh.toInt ());
 

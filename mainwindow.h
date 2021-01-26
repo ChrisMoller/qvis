@@ -30,9 +30,9 @@ QT_CHARTS_USE_NAMESPACE
 #include "history.h"
 
 // for settings
-#define EDITOR     "Editor"
-#define HEIGHT     "Height"
-#define WIDTH      "Width"
+#define SETTINGS_EDITOR     "Editor"
+#define SETTINGS_HEIGHT     "Height"
+#define SETTINGS_WIDTH      "Width"
 
 #define toCString(v)	((v).toStdString ().c_str ())
 
