@@ -48,6 +48,7 @@ QT_CHARTS_USE_NAMESPACE
 #include "xml.h"
 
 #define expvar "expvarλ"
+#define LAMBDA_HEADER "lambda_"
 
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
@@ -148,8 +149,10 @@ MainWindow::gvimDone (int something)
 void
 MainWindow::fileChanged(const QString &path)
 {
-   QFile file(path);
+  QFile file(path);
   if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    QString outString;
+    QString errString;
     QTextStream in(&file);
     QStringList fcn;
     int len = 0;
@@ -159,26 +162,41 @@ MainWindow::fileChanged(const QString &path)
       fcn += line;
     }
     
-    int i;
-    QString mtx;
-    for (i = 0; i < fcn.size (); i++) {
-      QString ln = fcn[i];
-      ln.resize (len, QChar (' '));
-      mtx.append (ln);
+    if (path.contains (LAMBDA_HEADER)) {
+      if (fcn.size () == 1) {
+	QFileInfo info (file);
+	QString name = info.baseName ();
+	name.remove (0, QString (LAMBDA_HEADER).size ());
+	QString stmt = fcn.last ().trimmed ();
+	QString cmd = QString ("%1←{%2}").arg (name).arg (stmt);
+	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+	update_screen (errString, outString);
+      }
+      else {
+	//fixme invalid lambda
+	return;
+      }
     }
-    QString outString;
-    QString errString;
-    APL_value aplv = char_vector (toCString (mtx), "qvis");
-    set_var_value (expvar, aplv, "qvis");
-    QString cmd = QString ("%1←%2 %3ρ%4")
-      .arg (expvar).arg (fcn.size ()).arg (len).arg (expvar);
-    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    cmd = QString ("⎕fx %1").arg (expvar);
-    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    update_screen (errString, outString);
-    release_value (aplv, "qvis");
-    cmd = QString (")erase %1").arg (expvar);
-    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    else {
+      int i;
+      QString mtx;
+      for (i = 0; i < fcn.size (); i++) {
+	QString ln = fcn[i];
+	ln.resize (len, QChar (' '));
+	mtx.append (ln);
+      }
+      APL_value aplv = char_vector (toCString (mtx), "qvis");
+      set_var_value (expvar, aplv, "qvis");
+      QString cmd = QString ("%1←%2 %3ρ%4")
+	.arg (expvar).arg (fcn.size ()).arg (len).arg (expvar);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+      cmd = QString ("⎕fx %1").arg (expvar);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+      update_screen (errString, outString);
+      release_value (aplv, "qvis");
+      cmd = QString (")erase %1").arg (expvar);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    }
   }
 }
 
@@ -420,39 +438,58 @@ MainWindow::process_line(QString text)
   text = text.trimmed ();
   aplline->setText ("");
 
-  if (text.startsWith (QString ("∇"))) {
-    QStringList args;
-    text = text.remove (0, 1).trimmed ();
-    QString fn = QString ("%1/%2.apl").arg (tempdir.path ()).arg (text);
+  if (text.startsWith (QString ("∇"))) {		// function
+    bool isLambda = text.startsWith (QString ("∇∇"));
+    bool isNew = true;
+    text = text.remove (0, (isLambda ? 2 : 1)).trimmed ();
 
     QString cmd = QString ("⎕cr '%1'").arg(text);
-    LIBAPL_error rc =
-      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    if (rc == LAE_NO_ERROR) {	   
-      QFile file (fn);
-      if  (file.open (QIODevice::WriteOnly | QIODevice::Text)) {
-	QTextStream out(&file);
-	if (outString.isEmpty ())
-	  out << text;
-	else
-	  out << outString;
-	file.close ();
-
-	args << fn;
-	watcher.addPath (fn);
-	QProcess *edit = new QProcess ();
-	connect (edit,
-		 QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-		 this,
-		 &MainWindow::gvimDone);
-	edit->start (editor, args);
-      }
-      else {
-	// fixme file open error
+    QStringList list;
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    if (!outString.isEmpty ()) {
+      list = outString.split (QChar ('\n'));
+      isLambda |= list.first ().contains (QString ("λ"));
+      isNew = false;
+    }
+    QString fn;
+    if (isLambda) {
+      if (isNew || list.size () == 2)
+	fn = QString ("%1/%2%3.apl").
+	  arg (tempdir.path ()).arg (LAMBDA_HEADER).arg (text);
+      else if ((list.size () != 0) && (list.size () != 2)){
+	// fixme invalid lambda
+	return;
       }
     }
+    else
+	fn = QString ("%1/%2.apl").arg (tempdir.path ()).arg (text);
+    QFile file (fn);
+    if  (file.open (QIODevice::WriteOnly | QIODevice::Text)) {
+      QTextStream out(&file);
+      if (outString.isEmpty ()) {
+	if (!isLambda)
+	  out << text;			// boilerplate fcn header
+      }
+      else {
+	if (isLambda && !list.isEmpty ())
+	  out << list.last ();
+	else if (!outString.isEmpty ())
+	  out << outString;
+      }	
+      file.close ();
+
+      QStringList args;
+      args << fn;
+      watcher.addPath (fn);
+      QProcess *edit = new QProcess ();
+      connect (edit,
+	       QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+	       this,
+	       &MainWindow::gvimDone);
+      edit->start (editor, args);
+    }
     else {
-      // fixme quad-cr error
+      // fixme file open error
     }
     return;
   }
