@@ -52,15 +52,17 @@ QT_CHARTS_USE_NAMESPACE
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
+#define SETTINGS_EDITOR "Editor"
+
 void
 MainWindow::update_screen (QString &errString, QString &outString)
 {
   if (!errString.isEmpty ()) {
     aplwin->setTextColor (red);
-    aplwin->setText (outString);
+    aplwin->append (outString);
     aplwin->setTextColor (black);
   }
-  if (!outString.isEmpty ()) aplwin->setText (outString);
+  if (!outString.isEmpty ()) aplwin->append (outString);
 }
 
 void
@@ -170,7 +172,9 @@ MainWindow::fileChanged(const QString &path)
     QString outString;
     QString errString;
     QString cmd = QString ("⎕fx %1").arg (arg);
-    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    LIBAPL_error rc =
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    fprintf (stderr, "rc = %d\n", rc);
     update_screen (errString, outString);
   }
 }
@@ -308,8 +312,11 @@ MainWindow::setGeneral ()
   dialog.move (loc.x () + 200, loc.y () + 200);
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
-    if (!editorSelect->text ().isEmpty ())
+    if (!editorSelect->text ().isEmpty ()) {
+      QSettings settings;
       editor = editorSelect->text ();
+      settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
+    }
   }
   delete editorLabel;
   delete editorSelect;
@@ -413,8 +420,7 @@ MainWindow::process_line(QString text)
   if (text.startsWith (QString ("∇"))) {
     QStringList args;
     text = text.remove (0, 1).trimmed ();
-    //    QString editor = "gvim";
-    QString fn = QString ("/tmp/%1").arg (text);
+    QString fn = QString ("/tmp/%1.apl").arg (text);
 
     QString cmd = QString ("⎕cr '%1'").arg(text);
     LIBAPL_error rc =
@@ -744,6 +750,8 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 			QString &lp, QWidget *parent)
   : QMainWindow(parent)
 {
+  QSettings settings;
+  editor = settings.value (SETTINGS_EDITOR).toString ();
   connect(&watcher,
 	  &QFileSystemWatcher::fileChanged,
 	  this, &MainWindow::fileChanged);
