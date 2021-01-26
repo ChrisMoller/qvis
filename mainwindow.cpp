@@ -586,7 +586,6 @@ MainWindow::buildMenu (QString &msgs)
 
     aplline = new  QLineEdit ();
     aplline->setPlaceholderText ("APL");
-    aplline->grabKeyboard ();
     keyPressEater = new KeyPressEater (aplline, this);
     aplline->installEventFilter(keyPressEater);
     connect(aplline, &QLineEdit::returnPressed,
@@ -722,7 +721,6 @@ MainWindow::buildMenu (QString &msgs)
     formGroupBox->setAlignment (Qt::AlignLeft);
     outerlayout->addWidget (formGroupBox);
   }
-  outerGroupBox->show ();
   
   this->setCentralWidget (outerGroupBox);
 }
@@ -782,6 +780,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
     }
   }
   
+  aplline->setFocus ();
   this->show ();
 
   changed = false;
