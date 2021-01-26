@@ -168,7 +168,9 @@ MainWindow::fileChanged(const QString &path)
 	QString name = info.baseName ();
 	name.remove (0, QString (LAMBDA_HEADER).size ());
 	QString stmt = fcn.last ().trimmed ();
-	QString cmd = QString ("%1←{%2}").arg (name).arg (stmt);
+	QString cmd = QString (")erase %1").arg (name);
+	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+	cmd = QString ("%1←{%2}").arg (name).arg (stmt);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
 	update_screen (errString, outString);
       }
@@ -453,7 +455,7 @@ MainWindow::process_line(QString text)
     }
     QString fn;
     if (isLambda) {
-      if (isNew || list.size () == 2)
+      if (isNew || ((list.size () == 3) && (list[2].isEmpty ()))) 
 	fn = QString ("%1/%2%3.apl").
 	  arg (tempdir.path ()).arg (LAMBDA_HEADER).arg (text);
       else if ((list.size () != 0) && (list.size () != 2)){
@@ -472,7 +474,7 @@ MainWindow::process_line(QString text)
       }
       else {
 	if (isLambda && !list.isEmpty ())
-	  out << list.last ();
+	  out << list[1];
 	else if (!outString.isEmpty ())
 	  out << outString;
       }	
