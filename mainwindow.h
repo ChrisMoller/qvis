@@ -119,7 +119,9 @@ private slots:
   //  void handleSettings ();
   void byebye ();
   void valChanged(bool enabled);
+#if 0
   void gvimDone(int something);
+#endif
   void valChangedv();
   void themeChanged(int newtheme);
   void newFile();

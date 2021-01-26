@@ -140,11 +140,13 @@ MainWindow::newFile()
 {
 }
 
+#if 0
 void
 MainWindow::gvimDone (int something)
 {
   fprintf (stderr, "gvimDone %d\n", something);
 }
+#endif
 
 void
 MainWindow::fileChanged(const QString &path)
@@ -484,10 +486,12 @@ MainWindow::process_line(QString text)
       args << fn;
       watcher.addPath (fn);
       QProcess *edit = new QProcess ();
+#if 0
       connect (edit,
 	       QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
 	       this,
 	       &MainWindow::gvimDone);
+#endif
       edit->start (editor, args);
     }
     else {
