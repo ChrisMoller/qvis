@@ -324,9 +324,8 @@ MainWindow::saveAs()
   if (button_save->isChecked ()) save_mode = SAVE_MODE_SAVE;
   else if (button_dump->isChecked ()) save_mode = SAVE_MODE_DUMP;
   else if (button_out->isChecked ())  save_mode = SAVE_MODE_OUT;
-  fprintf (stderr, "sm = %d\n", save_mode);
-  return true;
-  //  return chartWindow->saveFile(dialog.selectedFiles().first());
+  curFile = dialog.selectedFiles().first();
+  return save ();
 }
 
 void
@@ -549,35 +548,103 @@ MainWindow::process_line(QString text)
   
   if (outString.size () > 0)
     aplwin->append (outString);
+  aplwin->moveCursor (QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);
+  aplwin->ensureCursorVisible();
 }
 
 void MainWindow::returnPressed()
 {
   QString text = aplline->text();
   history->insert (toCString (text));
-  //  history->insert (text.toStdString ().c_str ());
   process_line (text);
   history->rebase ();
 }
 
-#define APL_VARIABLE "([∆a-z][∆_a-z0-9]*)"
+static void
+do_page (MainWindow  *mainwin, int dir)
+{
+  QFont font = mainwin->aplwin->currentFont ();
+  // the 12 and 20 are hacks to get the line spacing
+  int lines =  (12 * mainwin->aplwin->height ()) /
+    (20 * font.pointSize ());
+  lines = (lines > 8) ? lines -2 : 1;
+  int i;
+  if (dir > 0) {
+    for (i = 0; i < lines; i++) 
+      mainwin->aplwin->moveCursor (QTextCursor::Up,
+				   QTextCursor::MoveAnchor);
+  }
+  else {
+    for (i = 0; i < lines; i++) 
+      mainwin->aplwin->moveCursor (QTextCursor::Down,
+				   QTextCursor::MoveAnchor);
+  }
+}
 
 bool
-KeyPressEater::eventFilter(QObject *obj, QEvent *event)
+AplWinFilter::eventFilter(QObject *obj, QEvent *event)
 {
   if (obj == watched) {
-    if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::Wheel) {
+      QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+      // cw -120, ccw 120
+      int mv = (int)wheelEvent->delta ();
+      mainwin->aplwin->moveCursor (((mv > 0) ? QTextCursor::Up
+				    : QTextCursor::Down),
+				   QTextCursor::MoveAnchor);
+      return true;
+    }
+    else if (event->type() == QEvent::KeyPress) {
       QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-      if (keyEvent->key() == Qt::Key_Up) {
-	char *str = mainwin->history->previous ();
-	QString text = QString (str);
-	mainwin->aplline->setText (text);
+      if (keyEvent->key() == Qt::Key_PageUp) {
+	do_page (mainwin, 1);
+	return true;
+      }
+      else if (keyEvent->key() == Qt::Key_PageDown) {
+	do_page (mainwin, -1);
+	return true;
+      }
+    }
+  }
+  return QObject::eventFilter(obj, event);
+}
+
+#define APL_VARIABLE "([∆a-z][∆_a-z0-9]*)"
+
+static void
+lineKey (MainWindow  *mainwin, int dir)
+{
+  char *str = (dir > 0)
+    ? mainwin->history->previous () 
+    : mainwin->history->next ();
+  QString text = QString (str);
+  mainwin->aplline->setText (text);
+}
+
+bool
+AplLineFilter::eventFilter(QObject *obj, QEvent *event)
+{
+  if (obj == watched) {
+    if (event->type() == QEvent::Wheel) {
+      QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+      lineKey (mainwin, (int)wheelEvent->delta ());
+    }
+    else if (event->type() == QEvent::KeyPress) {
+      QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+      if (keyEvent->key() == Qt::Key_PageUp) {
+	do_page (mainwin, 1);
+	return true;
+      }
+      else if (keyEvent->key() == Qt::Key_PageDown) {
+	do_page (mainwin, -1);
+	return true;
+      }
+      else if (keyEvent->key() == Qt::Key_Up) {
+	lineKey (mainwin, 1);
 	return true;
       }
       else if (keyEvent->key() == Qt::Key_Down) {
-	char *str = mainwin->history->next ();
-	QString text = QString (str);
-	mainwin->aplline->setText (text);
+	lineKey (mainwin, -1);
 	return true;
       }
       else if (keyEvent->key() == Qt::Key_Tab) {
@@ -656,14 +723,18 @@ MainWindow::buildMenu (QString &msgs)
     QVBoxLayout *layout = new QVBoxLayout ();
 
     aplwin = new QTextEdit ();
+    aplWinFilter = new AplWinFilter (aplwin, this);
     aplwin->setReadOnly (true);
+    aplwin->setEnabled (true);
+    aplwin->installEventFilter(aplWinFilter);
     if (!msgs.isEmpty ()) aplwin->setText (msgs);
     layout->addWidget (aplwin);
 
     aplline = new  QLineEdit ();
     aplline->setPlaceholderText ("APL");
-    keyPressEater = new KeyPressEater (aplline, this);
-    aplline->installEventFilter(keyPressEater);
+    aplLineFilter = new AplLineFilter (aplline, this);
+    aplline->setEnabled (true);
+    aplline->installEventFilter(aplLineFilter);
     connect(aplline, &QLineEdit::returnPressed,
 	    this, &MainWindow::returnPressed);
     layout->addWidget (aplline);
@@ -831,7 +902,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 {
   QSettings settings;
   editor = settings.value (SETTINGS_EDITOR).toString ();
-  save_mode = SAVE_MODE_NONE;
+  save_mode = SAVE_MODE_SAVE;
   connect(&watcher,
 	  &QFileSystemWatcher::fileChanged,
 	  this, &MainWindow::fileChanged);

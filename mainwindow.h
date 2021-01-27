@@ -22,6 +22,7 @@
 #include <QMainWindow>
 #include <QtCharts/QChartView>
 #include <QPolarChart>
+#include <QTextEdit>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -86,12 +87,12 @@ typedef struct {
 
 class MainWindow;
 
-class KeyPressEater : public QObject
+class AplLineFilter : public QObject
 {
     Q_OBJECT
   
 public:
-  KeyPressEater (QLineEdit *obj, MainWindow *mw)
+  AplLineFilter (QLineEdit *obj, MainWindow *mw)
   {watched = obj; mainwin = mw;}
 
 protected:
@@ -100,6 +101,22 @@ protected:
 private:
   MainWindow *mainwin;
   QLineEdit *watched;
+};
+
+class AplWinFilter : public QObject
+{
+    Q_OBJECT
+  
+public:
+  AplWinFilter (QTextEdit *obj, MainWindow *mw)
+  {watched = obj; mainwin = mw;}
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+private:
+  MainWindow *mainwin;
+  QTextEdit *watched;
 };
 
 class ChartWindow;
@@ -115,6 +132,7 @@ public:
   void 		 enterChart (ChartWindow *cw);       
   History 	*history;
   QLineEdit	*aplline;
+  QTextEdit *aplwin;
 									  
 public slots:
 
@@ -126,14 +144,8 @@ private slots:
   //  void handleSettings ();
   void byebye ();
   void valChanged(bool enabled);
-#if 0
-  void gvimDone(int something);
-#endif
   void valChangedv();
   void themeChanged(int newtheme);
-#if 0
-  void newFile();
-#endif
   void loadapl();
   void copyapl();
   bool save();
@@ -179,8 +191,8 @@ private:
   ChartWindow	 *chartWindow;
 
 private:
-  QTextEdit *aplwin;
-  KeyPressEater *keyPressEater;
+  AplLineFilter *aplLineFilter;
+  AplWinFilter *aplWinFilter;
   QString libpath;
   QFileSystemWatcher watcher;
   void update_screen (QString &errString, QString &outString);
