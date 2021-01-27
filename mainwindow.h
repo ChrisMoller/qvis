@@ -124,7 +124,9 @@ private slots:
 #endif
   void valChangedv();
   void themeChanged(int newtheme);
+#if 0
   void newFile();
+#endif
   void loadapl();
   void copyapl();
   bool save();

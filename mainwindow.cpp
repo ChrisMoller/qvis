@@ -135,10 +135,12 @@ MainWindow::valChangedv ()
   valChanged (true);
 }
 
+#if 0
 void
 MainWindow::newFile()
 {
 }
+#endif
 
 #if 0
 void
@@ -291,11 +293,29 @@ bool
 MainWindow::saveAs()
 {
   QFileDialog dialog(this);
+  QLayout *layout = dialog.layout ();
+  QGroupBox *gbox = new QGroupBox ("Save mode");
+  QHBoxLayout *btnlayout = new QHBoxLayout ();
+  gbox->setLayout (btnlayout);
+  QRadioButton *button_save = new QRadioButton("Save", this);
+  QRadioButton *button_dump = new QRadioButton("Dump", this);
+  QRadioButton *button_out  = new QRadioButton("Out", this);
+  btnlayout->addWidget (button_save);
+  btnlayout->addWidget (button_dump);
+  btnlayout->addWidget (button_out);
+  button_save->setChecked (true);
+  layout->addWidget (gbox);
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   if (dialog.exec() != QDialog::Accepted)
     return false;
-  return chartWindow->saveFile(dialog.selectedFiles().first());
+  int save_mode = 0;
+  if (button_save->isChecked ()) save_mode = 1;
+  else if (button_dump->isChecked ()) save_mode = 2;
+  else if (button_out->isChecked ())  save_mode = 3;
+  fprintf (stderr, "sm = %d\n", save_mode);
+  return true;
+  //  return chartWindow->saveFile(dialog.selectedFiles().first());
 }
 
 void
@@ -356,7 +376,8 @@ MainWindow::create_menuBar ()
 #ifdef USE_TOOLBAR
   QToolBar *fileToolBar = addToolBar(tr("File"));
 #endif
-  
+
+#if 0
   const QIcon newIcon =
     QIcon::fromTheme("document-new", QIcon(":/images/new.png"));
   QAction *newAct = new QAction(newIcon, tr("&New"), this);
@@ -367,6 +388,7 @@ MainWindow::create_menuBar ()
   newAct->setStatusTip(tr("Create a new file"));
   connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
   fileMenu->addAction(newAct);
+#endif
 
   const QIcon openIcon =
     QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
