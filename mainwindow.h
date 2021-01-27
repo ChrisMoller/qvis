@@ -36,6 +36,13 @@ QT_CHARTS_USE_NAMESPACE
 
 #define toCString(v)	((v).toStdString ().c_str ())
 
+typedef enum {
+  SAVE_MODE_NONE,
+  SAVE_MODE_SAVE,
+  SAVE_MODE_DUMP,
+  SAVE_MODE_OUT
+} save_mode_e;
+
 class Function
 {
 public:
@@ -179,5 +186,6 @@ private:
   void update_screen (QString &errString, QString &outString);
   QString editor;
   QTemporaryDir tempdir;
+  save_mode_e save_mode;
 };
 #endif // MAINWINDOW_H

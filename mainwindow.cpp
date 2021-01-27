@@ -53,13 +53,6 @@ QT_CHARTS_USE_NAMESPACE
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
-typedef enum {
-  SAVE_MODE_NONE,
-  SAVE_MODE_SAVE,
-  SAVE_MODE_DUMP,
-  SAVE_MODE_OUT
-} save_mode_e;
-
 void
 MainWindow::update_screen (QString &errString, QString &outString)
 {
@@ -310,13 +303,24 @@ MainWindow::saveAs()
   btnlayout->addWidget (button_save);
   btnlayout->addWidget (button_dump);
   btnlayout->addWidget (button_out);
-  button_save->setChecked (true);
+  switch (save_mode) {
+  case  SAVE_MODE_NONE:
+    break;
+  case  SAVE_MODE_SAVE:
+    button_save->setChecked (true);
+    break;
+  case  SAVE_MODE_DUMP:
+    button_dump->setChecked (true);
+    break;
+  case  SAVE_MODE_OUT:
+    button_out->setChecked (true);
+    break;
+  }
   layout->addWidget (gbox);
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   if (dialog.exec() != QDialog::Accepted)
     return false;
-  save_mode_e save_mode = SAVE_MODE_NONE;
   if (button_save->isChecked ()) save_mode = SAVE_MODE_SAVE;
   else if (button_dump->isChecked ()) save_mode = SAVE_MODE_DUMP;
   else if (button_out->isChecked ())  save_mode = SAVE_MODE_OUT;
@@ -827,6 +831,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 {
   QSettings settings;
   editor = settings.value (SETTINGS_EDITOR).toString ();
+  save_mode = SAVE_MODE_NONE;
   connect(&watcher,
 	  &QFileSystemWatcher::fileChanged,
 	  this, &MainWindow::fileChanged);
