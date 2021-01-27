@@ -53,6 +53,13 @@ QT_CHARTS_USE_NAMESPACE
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
+typedef enum {
+  SAVE_MODE_NONE,
+  SAVE_MODE_SAVE,
+  SAVE_MODE_DUMP,
+  SAVE_MODE_OUT
+} save_mode_e;
+
 void
 MainWindow::update_screen (QString &errString, QString &outString)
 {
@@ -309,10 +316,10 @@ MainWindow::saveAs()
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   if (dialog.exec() != QDialog::Accepted)
     return false;
-  int save_mode = 0;
-  if (button_save->isChecked ()) save_mode = 1;
-  else if (button_dump->isChecked ()) save_mode = 2;
-  else if (button_out->isChecked ())  save_mode = 3;
+  save_mode_e save_mode = SAVE_MODE_NONE;
+  if (button_save->isChecked ()) save_mode = SAVE_MODE_SAVE;
+  else if (button_dump->isChecked ()) save_mode = SAVE_MODE_DUMP;
+  else if (button_out->isChecked ())  save_mode = SAVE_MODE_OUT;
   fprintf (stderr, "sm = %d\n", save_mode);
   return true;
   //  return chartWindow->saveFile(dialog.selectedFiles().first());
