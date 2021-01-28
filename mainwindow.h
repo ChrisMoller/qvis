@@ -149,7 +149,9 @@ private slots:
   void loadapl();
   void copyapl();
   bool save();
+#if 0
   void open();
+#endif
   bool saveAs();
   void about();
   void returnPressed ();

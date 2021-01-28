@@ -206,6 +206,7 @@ MainWindow::fileChanged(const QString &path)
   }
 }
 
+#if 0
 void
 MainWindow::open()
 {
@@ -218,6 +219,7 @@ MainWindow::open()
     newchartWindow->readFile(dialog.selectedFiles().first());
   chartWindow = newchartWindow;
 }
+#endif
 
 void
 MainWindow::openapl(bool copy)
@@ -232,21 +234,40 @@ MainWindow::openapl(bool copy)
       
    ***/
 
+  static bool protect = false;
   QString filter = copy ? QString ("*.xml") :  QString ("*.xml *.atf");
   QFileDialog dialog(this, QString ("Open APL file"), libpath, filter);
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
+  QLayout *layout = dialog.layout ();
+
+  QGroupBox *gbox = new QGroupBox ();
+  QHBoxLayout *btnlayout = new QHBoxLayout ();
+  gbox->setLayout (btnlayout);
+  QCheckBox *button_protected  = new QCheckBox ("Protected", this);
+  button_protected->setCheckState (protect ? Qt::Checked : Qt::Unchecked);
+  btnlayout->addWidget (button_protected);
+  layout->addWidget (gbox);
+  
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptOpen);
   QString outString;
   QString errString;
   if (dialog.exec() == QDialog::Accepted) {
+    protect =
+      (button_protected->checkState() == Qt::Checked) ? true : false;
     QString fn =  dialog.selectedFiles().first();
     if (fn.endsWith (QString (".xml"),Qt::CaseInsensitive)) {
-      QString op = copy ? QString (")copy") : QString (")load");
+      QString op =
+	copy
+	? (protect ? QString (")pcopy") : QString (")copy"))
+	: QString (")load");
       QString cmd = QString ("%1 %2").arg (op).arg (fn);
       AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
     }
     else if (!copy && fn.endsWith (QString (".atf"),Qt::CaseInsensitive)) {
-      QString cmd = QString (")in %1").arg (fn);
+      QString op =
+	protect ? QString (")pin") : QString (")in");
+      QString cmd = QString ("%1 %2").arg(op).arg (fn);
       AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
     }
     else {
@@ -257,14 +278,7 @@ MainWindow::openapl(bool copy)
     }
   }
   update_screen (errString, outString);
-#if 0
-  if (!errString.isEmpty ()) {
-    aplwin->setTextColor (red);
-    aplwin->setText (outString);
-    aplwin->setTextColor (black);
-  }
-  if (!outString.isEmpty ()) aplwin->setText (outString);
-#endif
+  delete gbox;
 }
 
 void
@@ -293,6 +307,7 @@ bool
 MainWindow::saveAs()
 {
   QFileDialog dialog(this);
+  dialog.setOption (QFileDialog::DontUseNativeDialog);
   QLayout *layout = dialog.layout ();
   QGroupBox *gbox = new QGroupBox ("Save mode");
   QHBoxLayout *btnlayout = new QHBoxLayout ();
@@ -317,15 +332,19 @@ MainWindow::saveAs()
     break;
   }
   layout->addWidget (gbox);
+  //  gbox->show ();
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptSave);
-  if (dialog.exec() != QDialog::Accepted)
-    return false;
-  if (button_save->isChecked ()) save_mode = SAVE_MODE_SAVE;
-  else if (button_dump->isChecked ()) save_mode = SAVE_MODE_DUMP;
-  else if (button_out->isChecked ())  save_mode = SAVE_MODE_OUT;
-  curFile = dialog.selectedFiles().first();
-  return save ();
+  int drc = dialog.exec();
+  delete gbox;
+  if (drc == QDialog::Accepted) {
+    if (button_save->isChecked ()) save_mode = SAVE_MODE_SAVE;
+    else if (button_dump->isChecked ()) save_mode = SAVE_MODE_DUMP;
+    else if (button_out->isChecked ())  save_mode = SAVE_MODE_OUT;
+    curFile = dialog.selectedFiles().first();
+    return save ();
+  }
+  else return false;
 }
 
 void
@@ -750,7 +769,7 @@ MainWindow::buildMenu (QString &msgs)
     QMenu *fileMenu = mb2->addMenu(tr("&File"));
     QAction *openAct = new QAction(tr("&Open Chart..."), this);
     openAct->setStatusTip(tr("Open an existing vis file"));
-    connect(openAct, &QAction::triggered, this, &MainWindow::open);
+    //    connect(openAct, &QAction::triggered, this, &MainWindow::open);
     fileMenu->addAction(openAct);
     layout->setMenuBar (mb2);
 
