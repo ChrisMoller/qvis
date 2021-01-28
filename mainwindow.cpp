@@ -296,16 +296,38 @@ MainWindow::loadapl()
 bool
 MainWindow::save()
 {
-  if (curFile.isEmpty()) {
-    return saveAs();
-  } else {
-    return chartWindow->saveFile(curFile);
+/***
+    )save and )dump need wsid or argument
+    )out always needs argument
+ ***/
+  bool rc = false;
+  QString op;
+  switch(save_mode) {
+  case SAVE_MODE_NONE:
+    break;
+  case SAVE_MODE_SAVE:
+    op = QString (")save");
+    break;
+  case SAVE_MODE_DUMP:
+    op = QString (")save");
+    break;
+  case SAVE_MODE_OUT:
+    break;
   }
+  if (!op.isEmpty ()) {
+    QString outString;
+    QString errString;
+    AplExec::aplExec (APL_OP_EXEC, op, outString, errString);
+    update_screen (errString, outString);
+    rc = true;
+  }
+  return rc;
 }
 
 bool
 MainWindow::saveAs()
 {
+  bool rc = false;
   QFileDialog dialog(this);
   dialog.setOption (QFileDialog::DontUseNativeDialog);
   QLayout *layout = dialog.layout ();
@@ -338,13 +360,36 @@ MainWindow::saveAs()
   int drc = dialog.exec();
   delete gbox;
   if (drc == QDialog::Accepted) {
-    if (button_save->isChecked ()) save_mode = SAVE_MODE_SAVE;
-    else if (button_dump->isChecked ()) save_mode = SAVE_MODE_DUMP;
-    else if (button_out->isChecked ())  save_mode = SAVE_MODE_OUT;
+    QString op;
     curFile = dialog.selectedFiles().first();
-    return save ();
+    if (button_save->isChecked ()) {
+      if (!curFile.endsWith (".xml", Qt::CaseInsensitive))
+	curFile.append (".xml");
+      save_mode = SAVE_MODE_SAVE;
+      op = QString (")save");
+    }
+    else if (button_dump->isChecked ()) {
+      save_mode = SAVE_MODE_DUMP;
+      if (!curFile.endsWith (".apl", Qt::CaseInsensitive))
+	curFile.append (".apl");
+      op = QString (")dump");
+    }
+    else if (button_out->isChecked ()) {
+      save_mode = SAVE_MODE_OUT;
+      if (!curFile.endsWith (".atf", Qt::CaseInsensitive))
+	curFile.append (".atf");
+      op = QString (")out");
+    }
+    if (!op.isEmpty ()) {
+      QString outString;
+      QString errString;
+      QString cmd = QString ("%1 %2").arg (op).arg (curFile);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+      update_screen (errString, outString);
+      rc = true;
+    }
   }
-  else return false;
+  return rc;
 }
 
 void
