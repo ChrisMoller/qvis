@@ -132,7 +132,7 @@ public:
   void 		 enterChart (ChartWindow *cw);       
   History 	*history;
   QLineEdit	*aplline;
-  QTextEdit *aplwin;
+  QTextEdit 	*aplwin;
 									  
 public slots:
 
@@ -147,7 +147,6 @@ private slots:
   void valChangedv();
   void themeChanged(int newtheme);
   void loadapl();
-  void copyapl();
   bool save();
 #if 0
   void open();
@@ -193,13 +192,13 @@ private:
   ChartWindow	 *chartWindow;
 
 private:
-  AplLineFilter *aplLineFilter;
-  AplWinFilter *aplWinFilter;
-  QString libpath;
-  QFileSystemWatcher watcher;
+  AplLineFilter		*aplLineFilter;
+  AplWinFilter		*aplWinFilter;
+  QString		libpath;
+  QFileSystemWatcher	watcher;
   void update_screen (QString &errString, QString &outString);
-  QString editor;
-  QTemporaryDir tempdir;
-  save_mode_e save_mode;
+  QString		editor;
+  QTemporaryDir		tempdir;
+  save_mode_e		save_mode;
 };
 #endif // MAINWINDOW_H

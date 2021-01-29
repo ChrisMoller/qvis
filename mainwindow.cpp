@@ -222,7 +222,7 @@ MainWindow::open()
 #endif
 
 void
-MainWindow::openapl(bool copy)
+MainWindow::loadapl()
 {
   /***
       xml )load )copy
@@ -235,7 +235,8 @@ MainWindow::openapl(bool copy)
    ***/
 
   static bool protect = false;
-  QString filter = copy ? QString ("*.xml") :  QString ("*.xml *.atf");
+  static bool do_load = true;
+  QString filter = QString ("*.xml *.atf");
   QFileDialog dialog(this, QString ("Open APL file"), libpath, filter);
   dialog.setOption (QFileDialog::DontUseNativeDialog);
   QLayout *layout = dialog.layout ();
@@ -244,8 +245,12 @@ MainWindow::openapl(bool copy)
   QHBoxLayout *btnlayout = new QHBoxLayout ();
   gbox->setLayout (btnlayout);
   QCheckBox *button_protected  = new QCheckBox ("Protected", this);
-  button_protected->setCheckState (protect ? Qt::Checked : Qt::Unchecked);
+  QRadioButton *button_load    = new QRadioButton ("Load", this);
+  QRadioButton *button_copy    = new QRadioButton ("Copy", this);
+  button_load->setChecked (do_load);
   btnlayout->addWidget (button_protected);
+  btnlayout->addWidget (button_load);
+  btnlayout->addWidget (button_copy);
   layout->addWidget (gbox);
   
   dialog.setWindowModality(Qt::WindowModal);
@@ -253,18 +258,27 @@ MainWindow::openapl(bool copy)
   QString outString;
   QString errString;
   if (dialog.exec() == QDialog::Accepted) {
+    do_load = button_load->isChecked();
     protect =
       (button_protected->checkState() == Qt::Checked) ? true : false;
     QString fn =  dialog.selectedFiles().first();
     if (fn.endsWith (QString (".xml"),Qt::CaseInsensitive)) {
-      QString op =
-	copy
-	? (protect ? QString (")pcopy") : QString (")copy"))
-	: QString (")load");
-      QString cmd = QString ("%1 %2").arg (op).arg (fn);
-      AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+      if (do_load && protect) {
+	QMessageBox msgBox;
+	msgBox.setText("Loaded workspaces cannot be protected.  Use )copy instead..");
+	msgBox.setIcon (QMessageBox::Warning);
+	msgBox.exec();
+      }
+      else {
+	QString op =
+	  do_load
+	  ? QString (")load")
+	  : (protect ? QString (")pcopy") : QString (")copy"));
+	QString cmd = QString ("%1 %2").arg (op).arg (fn);
+	AplExec::aplExec (APL_OP_COMMAND, cmd, outString, errString);
+      }
     }
-    else if (!copy && fn.endsWith (QString (".atf"),Qt::CaseInsensitive)) {
+    else if (fn.endsWith (QString (".atf"),Qt::CaseInsensitive)) {
       QString op =
 	protect ? QString (")pin") : QString (")in");
       QString cmd = QString ("%1 %2").arg(op).arg (fn);
@@ -281,6 +295,7 @@ MainWindow::openapl(bool copy)
   delete gbox;
 }
 
+#if 0
 void
 MainWindow::copyapl()
 {
@@ -292,6 +307,7 @@ MainWindow::loadapl()
 {
   openapl(false);
 }
+#endif
 
 bool
 MainWindow::save()
@@ -475,6 +491,7 @@ MainWindow::create_menuBar ()
   connect(loadAct, &QAction::triggered, this, &MainWindow::loadapl);
   fileMenu->addAction(loadAct);
 
+#if 0
   QAction *copyAct = new QAction(openIcon, tr("&Copy..."), this);
 #ifdef USE_TOOLBAR
   fileToolBar->addAction(copyAct);
@@ -483,6 +500,7 @@ MainWindow::create_menuBar ()
   copyAct->setStatusTip(tr("Copy an existing workspace"));
   connect(copyAct, &QAction::triggered, this, &MainWindow::copyapl);
   fileMenu->addAction(copyAct);
+#endif
 
   const QIcon saveIcon =
     QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
