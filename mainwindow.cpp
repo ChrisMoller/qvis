@@ -53,6 +53,9 @@ QT_CHARTS_USE_NAMESPACE
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
+// these are all known to work
+// #define DEFAULT_EDITOR "emacs -f \"global-display-line-numbers-mode\""
+// #define DEFAULT_EDITOR "gvim \"+set number\""
 #define DEFAULT_EDITOR "gvim -c \"set nu\""
 
 void
@@ -144,7 +147,7 @@ MainWindow::newFile()
 }
 #endif
 
-#if 0
+#if 1
 void
 MainWindow::gvimDone (int something)
 {
@@ -629,21 +632,20 @@ MainWindow::process_line(QString text)
       
       QStringList args;
       QString real_ed;
-      if (editor.isEmpty ()) 
-	real_ed = editor;
-      else {
-	QRegularExpressionMatch match = cre.match (editor);
+      {
+	QString editor_copy = editor;
+	QRegularExpressionMatch match = cre.match (editor_copy);
 	if (match.hasMatch ()) {
 	  QStringList matches = match.capturedTexts ();
 	  int offset = match.capturedLength (0);
-	  editor.remove (0, offset);
+	  editor_copy.remove (0, offset);
 	  real_ed = matches[2];
-	  while (!editor.isEmpty ()) {
-	    match = are.match (editor);
+	  while (!editor_copy.isEmpty ()) {
+	    match = are.match (editor_copy);
 	    if (match.hasMatch ()) {
 	      matches = match.capturedTexts ();
 	      offset = match.capturedLength (0);
-	      editor.remove (0, offset);
+	      editor_copy.remove (0, offset);
 	      if (!matches[2].isEmpty ()) {	// -opt version
 		args << matches[3];
 		args << ((matches[5].isEmpty ()) ? matches[6] : matches[5]);
@@ -658,7 +660,7 @@ MainWindow::process_line(QString text)
       args << fn;
 
       QProcess *edit = new QProcess ();
-#if 0
+#if 1
       connect (edit,
 	       &QProcess::errorOccurred,
 	       this,
@@ -669,6 +671,10 @@ MainWindow::process_line(QString text)
 	       &MainWindow::gvimDone);
 #endif
       watcher.addPath (fn);
+      fprintf (stderr, "ed \"%s\"\n", toCString (real_ed));
+      int j;
+      for (j = 0; j < args.size (); j++)
+	fprintf (stderr, "a[%d] \"%s\"\n", j, toCString (args[j]));
       edit->start (real_ed, args);
     }
     else {
