@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 
-// //old_home/Qt/Examples/Qt-5.15.1/opengl/qopenglwindow/background_renderer.cpp
+// /old_home/Qt/Examples/Qt-5.15.1/opengl/qopenglwindow/background_renderer.cpp
 
 // https://doc.qt.io/qt-5/qtdatavisualization-index.html
 
@@ -147,6 +147,12 @@ void
 MainWindow::gvimDone (int something)
 {
   fprintf (stderr, "gvimDone %d\n", something);
+}
+
+void
+MainWindow::gvimErr (QProcess::ProcessError error)
+{
+  fprintf (stderr, "gvimErr %d\n", (int)error);
 }
 #endif
 
@@ -597,23 +603,6 @@ MainWindow::process_line(QString text)
       }	
       file.close ();
 
-
-#if 0
-      // working
-
-      // 0 whole thing
-      // 1 command
-      // 2 option flag
-      // 3 option, quoted or unquoted
-      // 4 quoted option
-      // 5 unquoted option
-#define CLINE_RE "([[:alpha:]][[:alnum:]]*)\\s+\
-((\\-[[:alpha:]][[:alnum:]]*)\\s+\
-(\"([^\"]*)\"|([[:alnum:]]*))?\\s*)*"
-
-((\\+[[:alpha:]][[:alnum:]]*)\\s+
-#endif
-
 #define CLINE_RE "(([[:alpha:]][[:alnum:]]*)\\s*)"
       // 0 = whole thing
       // 1 = cmd
@@ -627,6 +616,7 @@ MainWindow::process_line(QString text)
       // 3 = option val
       // 4 = quoted val
       // 5 = unquoted val
+
       
       QStringList args;
       QString real_ed;
@@ -642,17 +632,11 @@ MainWindow::process_line(QString text)
 	  QStringList matches = match.capturedTexts ();
 	  int offset = match.capturedLength (0);
 	  editor.remove (0, offset);
-	  real_ed = matches[1];
-	  //	  args << real_ed;
+	  real_ed = matches[2];
 	  while (!editor.isEmpty ()) {
-	    fprintf (stderr, "working o = \"%s\"\n", toCString (editor));
 	    match = are.match (editor);
 	    if (match.hasMatch ()) {
 	      matches = match.capturedTexts ();
-	      int i;
-	      for (i = 0; i < matches.size (); i++)
-		fprintf (stderr, "match[%d] = \"%s\"\n",
-			 i, toCString (matches[i]));
 	      offset = match.capturedLength (0);
 	      editor.remove (0, offset);
 	      if (!matches[2].isEmpty ()) {	// -opt version
@@ -671,17 +655,16 @@ MainWindow::process_line(QString text)
       QProcess *edit = new QProcess ();
 #if 0
       connect (edit,
+	       &QProcess::errorOccurred,
+	       this,
+	       &MainWindow::gvimErr);
+      connect (edit,
 	       QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
 	       this,
 	       &MainWindow::gvimDone);
 #endif
-      int i;
-      fprintf (stderr, "re = %s\n", toCString (real_ed));
-      for (i = 0; i < args.size (); i++)
-	fprintf (stderr, "args[%d] = %s\n", i, toCString (args[i]));
       watcher.addPath (fn);
       edit->start (real_ed, args);
- edit->write ("set nu")
     }
     else {
       // fixme file open error
