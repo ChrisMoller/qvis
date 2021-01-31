@@ -556,6 +556,7 @@ MainWindow::create_menuBar ()
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
+/*******  WARNING:  TINKER WITH THESE ONLY IF YOU'RE A MASOCHIST!!  *******/
 #define CLINE_RE "(([[:alpha:]][[:alnum:]]*)\\s*)"
       // 0 = whole thing
       // 1 = cmd with trailing spaces
