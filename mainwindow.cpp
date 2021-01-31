@@ -556,6 +556,27 @@ MainWindow::create_menuBar ()
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
 }
 
+#define CLINE_RE "(([[:alpha:]][[:alnum:]]*)\\s*)"
+      // 0 = whole thing
+      // 1 = cmd with trailing spaces
+      // 2 = cmd
+
+#define ARG_RE "(((-[[:alpha:]][[:alnum:]]*)\\s+\
+(\"([^\"]*)\"|([[:alnum:]]*))?\\s*)|\
+(\"([^\"]*)\")\\s*)"
+      // 0 = whole thing
+      // 1 = whole thing
+      // 2 = option flag
+      // 3 = option val
+      // 4 = quoted val
+      // 5 = unquoted val
+      // 6 = +cmd
+
+static const QRegularExpression cre (CLINE_RE,
+			       QRegularExpression::CaseInsensitiveOption);
+static const QRegularExpression are (ARG_RE,
+			       QRegularExpression::CaseInsensitiveOption);
+
 void
 MainWindow::process_line(QString text)
 {
@@ -604,31 +625,12 @@ MainWindow::process_line(QString text)
 	  out << outString;
       }	
       file.close ();
-
-#define CLINE_RE "(([[:alpha:]][[:alnum:]]*)\\s*)"
-      // 0 = whole thing
-      // 1 = cmd
-
-#define ARG_RE "(((-[[:alpha:]][[:alnum:]]*)\\s+\
-(\"([^\"]*)\"|([[:alnum:]]*))?\\s*)|\
-(\"([^\"]*)\")\\s*)"
-      // 0 = whole thing
-      // 1 = whole thing
-      // 2 = option flag
-      // 3 = option val
-      // 4 = quoted val
-      // 5 = unquoted val
-
       
       QStringList args;
       QString real_ed;
       if (editor.isEmpty ()) 
 	real_ed = editor;
       else {
-	QRegularExpression cre (CLINE_RE,
-			       QRegularExpression::CaseInsensitiveOption);
-	QRegularExpression are (ARG_RE,
-			       QRegularExpression::CaseInsensitiveOption);
 	QRegularExpressionMatch match = cre.match (editor);
 	if (match.hasMatch ()) {
 	  QStringList matches = match.capturedTexts ();
