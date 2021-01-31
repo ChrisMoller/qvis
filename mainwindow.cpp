@@ -147,7 +147,7 @@ MainWindow::newFile()
 }
 #endif
 
-#if 1
+#if 0
 void
 MainWindow::gvimDone (int something)
 {
@@ -660,7 +660,7 @@ MainWindow::process_line(QString text)
       args << fn;
 
       QProcess *edit = new QProcess ();
-#if 1
+#if 0
       connect (edit,
 	       &QProcess::errorOccurred,
 	       this,

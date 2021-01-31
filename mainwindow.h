@@ -156,7 +156,7 @@ private slots:
   void returnPressed ();
   void setGeneral ();
   void fileChanged(const QString &path);
-#if 1
+#if 0
   void gvimDone (int something);
   void gvimErr (QProcess::ProcessError error);
 #endif
