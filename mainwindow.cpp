@@ -671,10 +671,12 @@ MainWindow::process_line(QString text)
 	       &MainWindow::gvimDone);
 #endif
       watcher.addPath (fn);
+#if 0
       fprintf (stderr, "ed \"%s\"\n", toCString (real_ed));
       int j;
       for (j = 0; j < args.size (); j++)
 	fprintf (stderr, "a[%d] \"%s\"\n", j, toCString (args[j]));
+#endif
       edit->start (real_ed, args);
     }
     else {
