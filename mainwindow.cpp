@@ -265,7 +265,7 @@ MainWindow::loadapl()
     if (fn.endsWith (QString (".xml"),Qt::CaseInsensitive)) {
       if (do_load && protect) {
 	QMessageBox msgBox;
-	msgBox.setText("Loaded workspaces cannot be protected.  Use )copy instead..");
+  msgBox.setText("Loaded workspaces cannot be protected.  Use )copy instead..");
 	msgBox.setIcon (QMessageBox::Warning);
 	msgBox.exec();
       }
@@ -556,7 +556,8 @@ MainWindow::process_line(QString text)
   text = text.trimmed ();
   aplline->setText ("");
 
-  if (text.startsWith (QString ("∇"))) {		// function
+  if (text.startsWith (QString ("∇")) &&
+      !text.endsWith (QString ("∇"))) {		// function
     bool isLambda = text.startsWith (QString ("∇∇"));
     bool isNew = true;
     text = text.remove (0, (isLambda ? 2 : 1)).trimmed ();
@@ -596,9 +597,77 @@ MainWindow::process_line(QString text)
       }	
       file.close ();
 
+
+#if 0
+      // working
+
+      // 0 whole thing
+      // 1 command
+      // 2 option flag
+      // 3 option, quoted or unquoted
+      // 4 quoted option
+      // 5 unquoted option
+#define CLINE_RE "([[:alpha:]][[:alnum:]]*)\\s+\
+((\\-[[:alpha:]][[:alnum:]]*)\\s+\
+(\"([^\"]*)\"|([[:alnum:]]*))?\\s*)*"
+
+((\\+[[:alpha:]][[:alnum:]]*)\\s+
+#endif
+
+#define CLINE_RE "(([[:alpha:]][[:alnum:]]*)\\s*)"
+      // 0 = whole thing
+      // 1 = cmd
+
+#define ARG_RE "(((-[[:alpha:]][[:alnum:]]*)\\s+\
+(\"([^\"]*)\"|([[:alnum:]]*))?\\s*)|\
+(\"([^\"]*)\")\\s*)"
+      // 0 = whole thing
+      // 1 = whole thing
+      // 2 = option flag
+      // 3 = option val
+      // 4 = quoted val
+      // 5 = unquoted val
+      
       QStringList args;
+      QString real_ed;
+      if (editor.isEmpty ()) 
+	real_ed = editor;
+      else {
+	QRegularExpression cre (CLINE_RE,
+			       QRegularExpression::CaseInsensitiveOption);
+	QRegularExpression are (ARG_RE,
+			       QRegularExpression::CaseInsensitiveOption);
+	QRegularExpressionMatch match = cre.match (editor);
+	if (match.hasMatch ()) {
+	  QStringList matches = match.capturedTexts ();
+	  int offset = match.capturedLength (0);
+	  editor.remove (0, offset);
+	  real_ed = matches[1];
+	  //	  args << real_ed;
+	  while (!editor.isEmpty ()) {
+	    fprintf (stderr, "working o = \"%s\"\n", toCString (editor));
+	    match = are.match (editor);
+	    if (match.hasMatch ()) {
+	      matches = match.capturedTexts ();
+	      int i;
+	      for (i = 0; i < matches.size (); i++)
+		fprintf (stderr, "match[%d] = \"%s\"\n",
+			 i, toCString (matches[i]));
+	      offset = match.capturedLength (0);
+	      editor.remove (0, offset);
+	      if (!matches[2].isEmpty ()) {	// -opt version
+		args << matches[3];
+		args << ((matches[5].isEmpty ()) ? matches[6] : matches[5]);
+	      }
+	      else {				// +opt version
+		args << matches[8];
+	      }
+	    }
+	  }
+	}
+      }
       args << fn;
-      watcher.addPath (fn);
+
       QProcess *edit = new QProcess ();
 #if 0
       connect (edit,
@@ -606,7 +675,13 @@ MainWindow::process_line(QString text)
 	       this,
 	       &MainWindow::gvimDone);
 #endif
-      edit->start (editor, args);
+      int i;
+      fprintf (stderr, "re = %s\n", toCString (real_ed));
+      for (i = 0; i < args.size (); i++)
+	fprintf (stderr, "args[%d] = %s\n", i, toCString (args[i]));
+      watcher.addPath (fn);
+      edit->start (real_ed, args);
+ edit->write ("set nu")
     }
     else {
       // fixme file open error
