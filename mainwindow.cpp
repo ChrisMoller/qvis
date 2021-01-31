@@ -53,6 +53,8 @@ QT_CHARTS_USE_NAMESPACE
 static const QColor red = QColor (255, 0, 0);
 static const QColor black = QColor (0, 0, 0);
 
+#define DEFAULT_EDITOR "gvim -c \"set nu\""
+
 void
 MainWindow::update_screen (QString &errString, QString &outString)
 {
@@ -1042,6 +1044,8 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 {
   QSettings settings;
   editor = settings.value (SETTINGS_EDITOR).toString ();
+  if (editor.isEmpty ()) 
+    editor = QString (DEFAULT_EDITOR);
   save_mode = SAVE_MODE_SAVE;
   connect(&watcher,
 	  &QFileSystemWatcher::fileChanged,
