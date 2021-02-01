@@ -67,6 +67,8 @@ MainWindow::update_screen (QString &errString, QString &outString)
     aplwin->setTextColor (black);
   }
   if (!outString.isEmpty ()) aplwin->append (outString);
+  QScrollBar *sb = aplwin->verticalScrollBar();
+  sb->setValue (sb->maximum ());
 }
 
 void
@@ -703,6 +705,8 @@ MainWindow::process_line(QString text)
     aplwin->append (outString);
   aplwin->moveCursor (QTextCursor::EndOfBlock, QTextCursor::MoveAnchor);
   aplwin->ensureCursorVisible();
+  QScrollBar *sb = aplwin->verticalScrollBar();
+  sb->setValue (sb->maximum ());
 }
 
 void MainWindow::returnPressed()
