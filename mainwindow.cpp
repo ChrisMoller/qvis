@@ -323,6 +323,20 @@ MainWindow::addCurve()
   QObject::connect (curve_colour_button, &QPushButton::clicked,
 		    this, &MainWindow::colour_sel);
 
+  QComboBox *linestyle_combo = new QComboBox ();
+  linestyle_combo->addItem ("Solid Line",
+			    QVariant(QPen (Qt::SolidLine)));
+  linestyle_combo->addItem ("Dash Line,",
+			    QVariant(QPen (Qt::DashLine)));
+  linestyle_combo->addItem ("Dot Line,",
+			    QVariant(QPen (Qt::DotLine)));
+  linestyle_combo->addItem ("Dash Dot Line,",
+			    QVariant(QPen (Qt::DashDotLine)));
+  linestyle_combo->addItem ("Dash Dot Dot Line",
+			    QVariant(QPen (Qt::DashDotDotLine)));
+  linestyle_combo->setCurrentIndex (3);
+  layout->addWidget (linestyle_combo, row, col++);
+  
   row++;
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   layout->addWidget (closeButton, row, 1);
