@@ -144,10 +144,12 @@ private slots:
   void loadapl();
   bool save();
   bool saveAs();
+  void addCurve();
   void about();
   void returnPressed ();
   void setGeneral ();
   void fileChanged(const QString &path);
+  void colour_sel ();
   
 private:
   void		 openapl(bool cpy);

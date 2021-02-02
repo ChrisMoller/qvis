@@ -279,6 +279,70 @@ MainWindow::save()
   return rc;
 }
 
+void
+MainWindow::colour_sel ()
+{
+  QColorDialog *colour_dialogue = new QColorDialog ();
+  QPoint loc = this->pos ();
+  colour_dialogue->move (loc.x () + 200, loc.y () + 200);
+  int drc = colour_dialogue->exec ();
+  if (drc == QDialog::Accepted) {
+    QColor colour = colour_dialogue->currentColor ();
+    fprintf (stderr, "%d %d %d\n",
+	     colour.red (), colour.green (), colour.blue ());
+  }
+  delete colour_dialogue;
+}
+  
+void
+MainWindow::addCurve()
+{
+  QDialog dialog (this, Qt::Popup);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+  
+  int row = 0;
+  int col = 0;
+
+  QLineEdit *curve_name = new QLineEdit ();
+  curve_name->setPlaceholderText ("Curve name");
+  layout->addWidget (curve_name, row, col++);
+
+  QLineEdit *curve_function = new QLineEdit ();
+  curve_name->setPlaceholderText ("Curve function");
+  layout->addWidget (curve_function, row, col++);
+
+  QPushButton *curve_colour_button
+    = new QPushButton (QObject::tr ("Curve colour"));
+  QString style =
+    QString ("QPushButton {background-color: rgb(%1,%2,%3) }")
+    .arg (255).arg (0).arg (0);
+  curve_colour_button->setStyleSheet(style);
+  
+  layout->addWidget (curve_colour_button, row, col++);
+  QObject::connect (curve_colour_button, &QPushButton::clicked,
+		    this, &MainWindow::colour_sel);
+
+  row++;
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+		    &dialog, &QDialog::accept);
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
+  layout->addWidget (cancelButton, row, 0);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+		    &dialog, &QDialog::reject);
+
+  QPoint loc = this->pos ();
+  dialog.move (loc.x () + 200, loc.y () + 200);
+  int drc = dialog.exec ();
+  if (drc == QDialog::Accepted) {
+  }
+  
+  delete closeButton;
+  delete layout;
+}
+
 bool
 MainWindow::saveAs()
 {
@@ -436,6 +500,12 @@ MainWindow::create_menuBar ()
   saveAsAct->setStatusTip(tr("Save the document under a new name"));
 
   fileMenu->addSeparator();
+  
+  QAction *addCurveAct =
+    fileMenu->addAction(tr("Add Curve"), this, &MainWindow::addCurve);
+  addCurveAct->setStatusTip(tr("Add a curve specification"));
+
+  fileMenu->addSeparator();
 
   const QIcon exitIcon =
     QIcon::fromTheme("application-exit",
@@ -448,11 +518,13 @@ MainWindow::create_menuBar ()
   fileToolBar->addAction(exitAct);
 #endif
 
+  /********** settings ****************/
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
   QAction *generalAct =
     settingsMenu->addAction(tr("&General"), this, &MainWindow::setGeneral);
   generalAct->setStatusTip(tr("General settings"));
 
+  /********** help ****************/
   QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
   QAction *aboutAct =
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
@@ -807,6 +879,7 @@ MainWindow::buildMenu (QString &msgs)
     
 
     formGroupBox->setLayout (layout);
+    formGroupBox->setAlignment (Qt::AlignLeft);
     formGroupBox->setAlignment (Qt::AlignLeft);
     outerlayout->addWidget (formGroupBox);
   }
