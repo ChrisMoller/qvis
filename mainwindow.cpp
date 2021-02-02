@@ -43,6 +43,7 @@ QT_CHARTS_USE_NAMESPACE
 
 #include "mainwindow.h"
 #include "chartwindow.h"
+#include "chartcontrols.h"
 #include "history.h"
 #include "aplexec.h"
 #include "xml.h"
@@ -77,12 +78,14 @@ MainWindow::closeEvent(QCloseEvent *event __attribute__((unused)))
   byebye ();
 }
 
+#if 0
 void
 MainWindow::themeChanged (int newtheme __attribute__((unused)))
 {
   theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
   chartWindow->handleExpression ();
 }
+#endif
 
 bool
 MainWindow::maybeSave()
@@ -114,54 +117,6 @@ MainWindow::handleExpression ()
   chartWindow->handleExpression ();
 }
 
-void
-MainWindow::valChanged (bool enabled __attribute__((unused)))
-{
-  chartWindow->curve.polar  = (Qt::Checked == do_polar->checkState());
-  chartWindow->curve.spline = (Qt::Checked == do_spline->checkState());
-  //  curve.shorttitle
-  chartWindow->curve.title			= chart_title->text ();
-  chartWindow->curve.function.title		= y_title->text ();
-  chartWindow->curve.function.label		= fcn_label->text ();
-  chartWindow->curve.function.expression	= apl_expression->text ();
-  chartWindow->curve.ix.name			= x_var_name->text ();
-  chartWindow->curve.ix.title			= x_title->text ();
-  chartWindow->curve.ix.range.min		= x_var_min->value ();
-  chartWindow->curve.ix.range.max		= x_var_max->value ();
-  chartWindow->curve.iz.name			= z_var_name->text ();
-  chartWindow->curve.iz.title			= z_title->text ();
-  chartWindow->curve.iz.range.min 		= z_var_min->value ();
-  chartWindow->curve.iz.range.max 		= z_var_max->value ();
-  chartWindow->changed = true;
-  chartWindow->handleExpression ();
-}
-
-void
-MainWindow::valChangedv ()
-{
-  valChanged (true);
-}
-
-#if 0
-void
-MainWindow::newFile()
-{
-}
-#endif
-
-#if 0
-void
-MainWindow::gvimDone (int something)
-{
-  fprintf (stderr, "gvimDone %d\n", something);
-}
-
-void
-MainWindow::gvimErr (QProcess::ProcessError error)
-{
-  fprintf (stderr, "gvimErr %d\n", (int)error);
-}
-#endif
 
 void
 MainWindow::fileChanged(const QString &path)
@@ -218,21 +173,6 @@ MainWindow::fileChanged(const QString &path)
     }
   }
 }
-
-#if 0
-void
-MainWindow::open()
-{
-  ChartWindow *newchartWindow = new ChartWindow (this);
-  QFileDialog dialog(this);
-  dialog.setWindowModality(Qt::WindowModal);
-  dialog.setAcceptMode(QFileDialog::AcceptOpen);
-  dialog.setNameFilter("*.vis");
-  if (dialog.exec() == QDialog::Accepted)
-    newchartWindow->readFile(dialog.selectedFiles().first());
-  chartWindow = newchartWindow;
-}
-#endif
 
 void
 MainWindow::loadapl()
@@ -307,20 +247,6 @@ MainWindow::loadapl()
   update_screen (errString, outString);
   delete gbox;
 }
-
-#if 0
-void
-MainWindow::copyapl()
-{
-  openapl(true);
-}
-
-void
-MainWindow::loadapl()
-{
-  openapl(false);
-}
-#endif
 
 bool
 MainWindow::save()
@@ -480,19 +406,6 @@ MainWindow::create_menuBar ()
   QToolBar *fileToolBar = addToolBar(tr("File"));
 #endif
 
-#if 0
-  const QIcon newIcon =
-    QIcon::fromTheme("document-new", QIcon(":/images/new.png"));
-  QAction *newAct = new QAction(newIcon, tr("&New"), this);
-#ifdef USE_TOOLBAR
-  fileToolBar->addAction(newAct);
-#endif
-  newAct->setShortcuts(QKeySequence::New);
-  newAct->setStatusTip(tr("Create a new file"));
-  connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
-  fileMenu->addAction(newAct);
-#endif
-
   const QIcon openIcon =
     QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
   QAction *loadAct = new QAction(openIcon, tr("&Load..."), this);
@@ -503,17 +416,6 @@ MainWindow::create_menuBar ()
   loadAct->setStatusTip(tr("Load an existing workspace"));
   connect(loadAct, &QAction::triggered, this, &MainWindow::loadapl);
   fileMenu->addAction(loadAct);
-
-#if 0
-  QAction *copyAct = new QAction(openIcon, tr("&Copy..."), this);
-#ifdef USE_TOOLBAR
-  fileToolBar->addAction(copyAct);
-#endif
-  //  copyAct->setShortcuts(QKeySequence::Copy);
-  copyAct->setStatusTip(tr("Copy an existing workspace"));
-  connect(copyAct, &QAction::triggered, this, &MainWindow::copyapl);
-  fileMenu->addAction(copyAct);
-#endif
 
   const QIcon saveIcon =
     QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
@@ -662,23 +564,7 @@ MainWindow::process_line(QString text)
       args << fn;
 
       QProcess *edit = new QProcess ();
-#if 0
-      connect (edit,
-	       &QProcess::errorOccurred,
-	       this,
-	       &MainWindow::gvimErr);
-      connect (edit,
-	       QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-	       this,
-	       &MainWindow::gvimDone);
-#endif
       watcher.addPath (fn);
-#if 0
-      fprintf (stderr, "ed \"%s\"\n", toCString (real_ed));
-      int j;
-      for (j = 0; j < args.size (); j++)
-	fprintf (stderr, "a[%d] \"%s\"\n", j, toCString (args[j]));
-#endif
       edit->start (real_ed, args);
     }
     else {
@@ -866,6 +752,7 @@ AplLineFilter::eventFilter(QObject *obj, QEvent *event)
   return QObject::eventFilter(obj, event);
 }
 
+
 void
 MainWindow::buildMenu (QString &msgs)
 {
@@ -902,7 +789,7 @@ MainWindow::buildMenu (QString &msgs)
   }
   {
     QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
-    QGridLayout *layout = new QGridLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
     QMenuBar *mb2 = new QMenuBar ();
     QMenu *fileMenu = mb2->addMenu(tr("&File"));
     QAction *openAct = new QAction(tr("&Open Chart..."), this);
@@ -911,146 +798,20 @@ MainWindow::buildMenu (QString &msgs)
     fileMenu->addAction(openAct);
     layout->setMenuBar (mb2);
 
-    int row = 0;
-    int col = 0;
-
-    chart_title = new  QLineEdit ();
-    chart_title->setPlaceholderText ("chart title");
-    layout->addWidget (chart_title, row, 0, 1, 3);
-
-    y_title = new  QLineEdit ();
-    y_title->setPlaceholderText ("y axix label");
-    layout->addWidget (y_title, row, 3);
-
-
-    row++;
-    col = 0;
-
-    /*  x indep vbl */
-  
-    x_var_name = new  QLineEdit ();
-    x_var_name->setPlaceholderText ("x variable name");
-    layout->addWidget (x_var_name, row, col++);
-  
-    x_var_min = new  QDoubleSpinBox ();
-    x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
-    x_var_min->setToolTip ("x minimum value");
-    QObject::connect (x_var_min,
-		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		      this,
-		      &MainWindow::valChanged);
-    layout->addWidget (x_var_min, row, col++);
-
-    x_var_max = new  QDoubleSpinBox ();
-    x_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
-    x_var_max->setToolTip ("x maximum value");
-    QObject::connect (x_var_max,
-		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		      this,
-		      &MainWindow::valChanged);
-    layout->addWidget (x_var_max, row, col++);
-  
-    x_title = new  QLineEdit ();
-    x_title->setPlaceholderText ("x axix label");
-    layout->addWidget (x_title, row, col++);
-
-    /*  z indep vbl */
-
-    row++;
-    col = 0;
-
-    z_var_name = new  QLineEdit ();
-    z_var_name->setPlaceholderText ("z variable name");
-    layout->addWidget (z_var_name, row, col++);
-
-    z_var_min = new  QDoubleSpinBox ();
-    z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
-    z_var_min->setToolTip ("z minimum value");
-    QObject::connect (z_var_min,
-		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		      this,
-		      &MainWindow::valChanged);
-    layout->addWidget (z_var_min, row, col++);
-
-    z_var_max = new  QDoubleSpinBox ();
-    z_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
-    z_var_max->setToolTip ("z maximum value");
-    QObject::connect (z_var_max,
-		      QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		      this,
-		      &MainWindow::valChanged);
-    layout->addWidget (z_var_max, row, col++);
-  
-    z_title = new  QLineEdit ();
-    z_title->setPlaceholderText ("z axix label");
-    layout->addWidget (z_title, row, col++);
+    QTabWidget *tabs = new QTabWidget ();
+    layout->addWidget (tabs);
+    ChartControls *tab1 = new ChartControls (this);
+    ChartControls *tab2 = new ChartControls (this);
+    tabs->addTab (tab1, "LL 1");
+    tabs->addTab (tab2, "LL 2");
     
-    /*  APL expression */
 
-    row++;
-    col = 0;
-
-    fcn_label = new  QLineEdit ();
-    fcn_label->setPlaceholderText ("curve label");
-    layout->addWidget (fcn_label, row, col++);
-
-    apl_expression = new  QLineEdit ();
-    apl_expression->setPlaceholderText ("function");
-    layout->addWidget (apl_expression, row, col, 1, 3);
-    QObject::connect (apl_expression,
-		      &QLineEdit::editingFinished,
-		      this,
-		      &MainWindow::valChangedv);
-
-    /*  toggles */
-  
-    row++;
-    col = 0;
-  
-    do_spline = new QCheckBox ("Spline");
-    layout->addWidget (do_spline, row, col++);
-    connect(do_spline,
-	    &QCheckBox::stateChanged,
-	    this,
-	    &MainWindow::valChanged);
-  
-    do_polar = new QCheckBox ("Polar");
-    layout->addWidget (do_polar, row, col++);
-    connect(do_polar,
-	    &QCheckBox::stateChanged,
-	    this,
-	    &MainWindow::valChanged);
-    
     formGroupBox->setLayout (layout);
     formGroupBox->setAlignment (Qt::AlignLeft);
     outerlayout->addWidget (formGroupBox);
   }
   
   this->setCentralWidget (outerGroupBox);
-}
-
-void
-MainWindow::enterChart (ChartWindow *cw)
-{
-  chart_title->setText (cw->curve.title);
-  y_title->setText (cw->curve.function.label);
-
-  x_var_name->setText (cw->curve.ix.name);
-  x_var_min->setValue (cw->curve.ix.range.min);
-  x_var_max->setValue (cw->curve.ix.range.max);
-  x_title->setText (cw->curve.ix.title);
-
-  z_var_name->setText (cw->curve.iz.name);
-  z_var_min->setValue (cw->curve.iz.range.min);
-  z_var_max->setValue (cw->curve.iz.range.max);
-  z_title->setText (cw->curve.iz.title);
-
-  fcn_label->setText (chartWindow->curve.function.title);
-  apl_expression->setText (cw->curve.function.expression);
-
-  do_spline->setCheckState (cw->curve.spline ? Qt::Checked : Qt::Unchecked);
-  do_polar->setCheckState (cw->curve.polar   ? Qt::Checked : Qt::Unchecked);
-  chartWindow = cw;
 }
 
 MainWindow::MainWindow (QString &msgs, QStringList &args,
@@ -1080,12 +841,14 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   
   buildMenu (msgs);
 
+#if 0
   if (!args.empty ()) {
     int i;
     for (i = 0; i < args.count (); i++) {
       enterChart (chartWindow);
     }
   }
+#endif
   
   aplline->setFocus ();
   this->show ();

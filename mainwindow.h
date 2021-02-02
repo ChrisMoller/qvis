@@ -129,7 +129,6 @@ public:
   MainWindow (QString &msgs, QStringList &args,
 	      QString &lp, QWidget *parent = nullptr);
   ~MainWindow ();
-  void 		 enterChart (ChartWindow *cw);       
   History 	*history;
   QLineEdit	*aplline;
   QTextEdit 	*aplwin;
@@ -141,25 +140,14 @@ protected:
 
 private slots:
   void handleExpression ();
-  //  void handleSettings ();
   void byebye ();
-  void valChanged(bool enabled);
-  void valChangedv();
-  void themeChanged(int newtheme);
   void loadapl();
   bool save();
-#if 0
-  void open();
-#endif
   bool saveAs();
   void about();
   void returnPressed ();
   void setGeneral ();
   void fileChanged(const QString &path);
-#if 0
-  void gvimDone (int something);
-  void gvimErr (QProcess::ProcessError error);
-#endif
   
 private:
   void		 openapl(bool cpy);
@@ -169,26 +157,7 @@ private:
   void		 create_menuBar ();
   bool		 maybeSave();
   void 		 buildMenu (QString &msgs);
-  
-  QLineEdit	 *chart_title;
-  
-  QLineEdit	 *y_title;
-  QLineEdit 	 *apl_expression;
-  QLineEdit 	 *fcn_label;
-
-  QLineEdit	 *x_title;
-  QLineEdit 	 *x_var_name;
-  QDoubleSpinBox *x_var_min;
-  QDoubleSpinBox *x_var_max;
-
-  QLineEdit 	 *z_title;
-  QLineEdit 	 *z_var_name;
-  QDoubleSpinBox *z_var_min;
-  QDoubleSpinBox *z_var_max;
-
-  QCheckBox 	 *do_spline;
-  QCheckBox 	 *do_polar;
-
+  QGroupBox *	 chartControls ();
   QComboBox 	 *themebox;
   bool		  changed;
   QString 	  curFile;

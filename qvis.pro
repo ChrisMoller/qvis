@@ -15,12 +15,14 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     chartwindow.cpp \
+    chartcontrols.cpp \
     history.cpp \
     aplexec.cpp \
     xml.cpp
 
 HEADERS += \
     chartwindow.h \
+    chartcontrols.h \
     mainwindow.h \
     xml.h \
     history.h \
