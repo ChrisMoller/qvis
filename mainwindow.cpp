@@ -284,6 +284,7 @@ MainWindow::colour_sel ()
 {
   QColorDialog *colour_dialogue = new QColorDialog ();
   QPoint loc = this->pos ();
+  colour_dialogue->setOption (QColorDialog::DontUseNativeDialog, true);
   colour_dialogue->move (loc.x () + 200, loc.y () + 200);
   int drc = colour_dialogue->exec ();
   if (drc == QDialog::Accepted) {
@@ -297,7 +298,7 @@ MainWindow::colour_sel ()
 void
 MainWindow::addCurve()
 {
-  QDialog dialog (this, Qt::Popup);
+  QDialog dialog (this, Qt::Dialog);
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
   
@@ -309,7 +310,7 @@ MainWindow::addCurve()
   layout->addWidget (curve_name, row, col++);
 
   QLineEdit *curve_function = new QLineEdit ();
-  curve_name->setPlaceholderText ("Curve function");
+  curve_function->setPlaceholderText ("Curve function");
   layout->addWidget (curve_function, row, col++);
 
   QPushButton *curve_colour_button
@@ -338,7 +339,7 @@ MainWindow::addCurve()
   layout->addWidget (linestyle_combo, row, col++);
   
   row++;
-  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
   layout->addWidget (closeButton, row, 1);
   QObject::connect (closeButton, &QPushButton::clicked,
 		    &dialog, &QDialog::accept);
