@@ -285,6 +285,7 @@ MainWindow::save()
 }
 
 
+
 void
 MainWindow::addCurve()
 {
@@ -294,6 +295,38 @@ MainWindow::addCurve()
   
   int row = 0;
   int col = 0;
+
+  if (!curves.isEmpty ()) {
+     QTableWidget *curvesTable       = new QTableWidget (this);
+     
+     curvesTable->setColumnCount (4);
+     curvesTable->setRowCount (curves.size ());
+     QTableWidgetItem *column_name   = new QTableWidgetItem(tr("Name"));
+     QTableWidgetItem *column_fcn    = new QTableWidgetItem(tr("Function"));
+     QTableWidgetItem *column_colour = new QTableWidgetItem(tr("Colour"));
+     QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
+     curvesTable->setHorizontalHeaderItem (0, column_name);
+     curvesTable->setHorizontalHeaderItem (1, column_fcn);
+     curvesTable->setHorizontalHeaderItem (2, column_colour);
+     curvesTable->setHorizontalHeaderItem (3, column_pen);
+     int i;
+     for (i = 0; i < curves.size (); i++) {
+       QTableWidgetItem *item_name =
+	 new QTableWidgetItem(tr("%1").arg(curves[i].getName ()));
+       QTableWidgetItem *item_fcn =
+	 new QTableWidgetItem(tr("%1").arg(curves[i].getFunction ()));
+       QTableWidgetItem *item_colour =
+	 new QTableWidgetItem(tr("%1").arg(curves[i].getColour ().name ()));
+       QTableWidgetItem *item_pen =
+	 new QTableWidgetItem(tr("%1").arg(curves[i].getPenName ()));
+       curvesTable->setItem(i, 0, item_name);
+       curvesTable->setItem(i, 1, item_fcn);
+       curvesTable->setItem(i, 2, item_colour);
+       curvesTable->setItem(i, 3, item_pen);
+     }
+     layout->addWidget (curvesTable, 0, 0, 3, 4);
+     row += 3;
+  }
 
   QLineEdit *curve_name = new QLineEdit ();
   curve_name->setPlaceholderText ("Curve name");
@@ -338,11 +371,9 @@ MainWindow::addCurve()
     QString name	= curve_name->text ();
     QString function	= curve_function->text ();
     QVariant pen	= linestyle_combo->currentData ();
-    std::cout << pen.toInt ()  << std::endl;
     QColor  colour = curve_colour.color ();
     Curve   curve = Curve (name, function, pen.toInt (), colour);
     curves.append (curve);
-    curve.showCurve ();
   }
   
   delete closeButton;

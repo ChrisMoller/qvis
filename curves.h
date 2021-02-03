@@ -44,6 +44,19 @@ class Curve
     fprintf (stderr, "colour: %d %d %d\n",
 	     colour.red (), colour.green (), colour.blue ());
   }
+
+  QString getName ()     { return name; }
+  QString getFunction () { return fcn; }
+  int     getPen ()      { return pen; }
+  QColor  getColour ()   { return colour; }
+
+  QString getPenName ()
+  {
+    QString name ("Unknown");
+    if (pen >=0 && pen < penNames.size ()) 
+      name = penNames[pen];
+    return name;
+  }
       
 
  private:
@@ -51,6 +64,14 @@ class Curve
   QString fcn;
   int pen;
   QColor colour;
+  QStringList penNames = {
+    "No Pen",
+    "Solid Line",
+    "Dash Line",
+    "Dot Line",
+    "Dash Dot Line",
+    "Dash DotDot Line"
+  };
 };
 
 #endif // CURVES_H
