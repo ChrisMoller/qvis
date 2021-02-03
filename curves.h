@@ -15,22 +15,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 
-#ifndef APLEXEC_H
-#define APLEXEC_H
+#ifndef CURVES_H
+#define CURVES_H
 
 #include <QtWidgets>
 
-typedef enum {
-  APL_OP_EXEC,
-  APL_OP_COMMAND
-} apl_op_e;
-
-class AplExec
+class Curve
 {
  public:
-  static LIBAPL_error
-  aplExec (apl_op_e apl_op, QString &cmd,
-	   QString &outString, QString &errString);
-};
-#endif // APLEEXEC_H
+  Curve (QString &rname, QString &rfcn, QPen rpen, QColor rcolour)
+    {
+      name	= rname;
+      fcn	= rfcn;
+      pen	= rpen;
+      colour	= rcolour;
+    }
+  Curve (QString &rname, QString &rfcn)
+    {
+      name	= rname;
+      fcn	= rfcn;
+    }
+      
 
+ private:
+  QString name;
+  QString fcn;
+  QPen pen;
+  QColor colour;
+};
+
+#endif // CURVES_H

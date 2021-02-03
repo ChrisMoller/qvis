@@ -56,8 +56,8 @@ public:
   QChartView	*chartView;
   QChart	*chart;
   QPolarChart	*polarchart;
-  std::vector<Curve> curves;
-  Curve		 curve;
+  std::vector<OldCurve> curves;
+  OldCurve		 curve;
   bool		 changed;
   bool 		 saveFile (QString &fileName);
   void 		 readFile (QString &fileName);
@@ -77,12 +77,12 @@ private:
   QFont titlefont;
   QChart::ChartTheme theme;
   MainWindow	*mainWindow;
-  bool parseCurve (Curve &curve, QXmlStreamReader &stream);
-  bool parseFunction (Curve &curve, QXmlStreamReader &stream);
+  bool parseCurve (OldCurve &curve, QXmlStreamReader &stream);
+  bool parseFunction (OldCurve &curve, QXmlStreamReader &stream);
   bool parseRange (Range &rng, QXmlStreamReader &stream);
   bool parseIdx (Index &idx, QXmlStreamReader &stream);
-  bool parseIx (Curve &curve, QXmlStreamReader &stream);
-  bool parseIz (Curve &curve, QXmlStreamReader &stream);
+  bool parseIx (OldCurve &curve, QXmlStreamReader &stream);
+  bool parseIz (OldCurve &curve, QXmlStreamReader &stream);
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);

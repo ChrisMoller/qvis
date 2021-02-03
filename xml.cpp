@@ -202,19 +202,19 @@ ChartWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
 }
 
 bool
-ChartWindow::parseIx (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseIx (OldCurve &curve, QXmlStreamReader &stream)
 {
   return parseIdx (curve.ix, stream);
 }
 
 bool
-ChartWindow::parseIz (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseIz (OldCurve &curve, QXmlStreamReader &stream)
 {
   return parseIdx (curve.iz, stream);
 }
 
 bool
-ChartWindow::parseFunction (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseFunction (OldCurve &curve, QXmlStreamReader &stream)
 {
   bool rc = true;
   while (rc && stream.readNextStartElement()) {
@@ -241,7 +241,7 @@ ChartWindow::parseFunction (Curve &curve, QXmlStreamReader &stream)
 }
 
 bool
-ChartWindow::parseCurve (Curve &curve, QXmlStreamReader &stream)
+ChartWindow::parseCurve (OldCurve &curve, QXmlStreamReader &stream)
 {
   bool rc = true;
   stream.readNextStartElement();

@@ -29,6 +29,7 @@ QT_CHARTS_USE_NAMESPACE
 #include <apl/libapl.h>
 
 #include "history.h"
+#include "curves.h"
 
 // for settings
 #define SETTINGS_EDITOR     "Editor"
@@ -67,7 +68,8 @@ public:
   Range   range;
 };
 
-class Curve
+#if 1
+class OldCurve
 {
 public:
   bool polar;
@@ -78,6 +80,7 @@ public:
   Index ix;
   Index iz;
 };
+#endif
 
 typedef struct {
   QString tag;
@@ -175,5 +178,6 @@ private:
   QString		editor;
   QTemporaryDir		tempdir;
   save_mode_e		save_mode;
+  QList<Curve>		curves;
 };
 #endif // MAINWINDOW_H

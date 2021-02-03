@@ -21,6 +21,7 @@ SOURCES += \
     xml.cpp
 
 HEADERS += \
+    curves.h \
     chartwindow.h \
     chartcontrols.h \
     mainwindow.h \

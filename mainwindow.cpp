@@ -43,6 +43,7 @@ QT_CHARTS_USE_NAMESPACE
 
 #include "mainwindow.h"
 #include "chartwindow.h"
+#include "curves.h"
 #include "chartcontrols.h"
 #include "history.h"
 #include "aplexec.h"
@@ -352,6 +353,9 @@ MainWindow::addCurve()
   dialog.move (loc.x () + 200, loc.y () + 200);
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
+    QString name	= curve_name->text ();
+    QString function	= curve_function->text ();
+    Curve   curve = Curve (name, function);
   }
   
   delete closeButton;
