@@ -309,15 +309,15 @@ MainWindow::addCurve()
 
   QComboBox *linestyle_combo = new QComboBox ();
   linestyle_combo->addItem ("Solid Line",
-			    QVariant(QPen (Qt::SolidLine)));
+			    QVariant((int)Qt::SolidLine));
   linestyle_combo->addItem ("Dash Line,",
-			    QVariant(QPen (Qt::DashLine)));
+			    QVariant((int)Qt::DashLine));
   linestyle_combo->addItem ("Dot Line,",
-			    QVariant(QPen (Qt::DotLine)));
+			    QVariant((int)Qt::DotLine));
   linestyle_combo->addItem ("Dash Dot Line,",
-			    QVariant(QPen (Qt::DashDotLine)));
+			    QVariant((int)Qt::DashDotLine));
   linestyle_combo->addItem ("Dash Dot Dot Line",
-			    QVariant(QPen (Qt::DashDotDotLine)));
+			    QVariant((int)Qt::DashDotDotLine));
   linestyle_combo->setCurrentIndex (3);
   layout->addWidget (linestyle_combo, row, col++);
   
