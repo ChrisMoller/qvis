@@ -32,6 +32,10 @@ HEADERS += \
 
 FORMS +=
 
+#RESOURCES = Qt-Color-Widgets/resources/QtColorWidgets/color_widgets.qrc
+
+include(./Qt-Color-Widgets/color_widgets.pri)
+
 #else: unix:!android: target.path = /opt/$${TARGET}/bin
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

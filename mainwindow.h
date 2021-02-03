@@ -152,7 +152,6 @@ private slots:
   void returnPressed ();
   void setGeneral ();
   void fileChanged(const QString &path);
-  void colour_sel ();
   
 private:
   void		 openapl(bool cpy);

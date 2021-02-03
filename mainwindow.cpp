@@ -32,6 +32,10 @@
 #include <QInputDialog>
 #include <values.h>
 
+#include "QtColorWidgets/color_selector.hpp"
+
+using namespace color_widgets;
+
 #include <iostream>
 #include <sstream>
 
@@ -280,22 +284,7 @@ MainWindow::save()
   return rc;
 }
 
-void
-MainWindow::colour_sel ()
-{
-  QColorDialog *colour_dialogue = new QColorDialog ();
-  QPoint loc = this->pos ();
-  colour_dialogue->setOption (QColorDialog::DontUseNativeDialog, true);
-  colour_dialogue->move (loc.x () + 200, loc.y () + 200);
-  int drc = colour_dialogue->exec ();
-  if (drc == QDialog::Accepted) {
-    QColor colour = colour_dialogue->currentColor ();
-    fprintf (stderr, "%d %d %d\n",
-	     colour.red (), colour.green (), colour.blue ());
-  }
-  delete colour_dialogue;
-}
-  
+
 void
 MainWindow::addCurve()
 {
@@ -314,16 +303,9 @@ MainWindow::addCurve()
   curve_function->setPlaceholderText ("Curve function");
   layout->addWidget (curve_function, row, col++);
 
-  QPushButton *curve_colour_button
-    = new QPushButton (QObject::tr ("Curve colour"));
-  QString style =
-    QString ("QPushButton {background-color: rgb(%1,%2,%3) }")
-    .arg (255).arg (0).arg (0);
-  curve_colour_button->setStyleSheet(style);
-  
-  layout->addWidget (curve_colour_button, row, col++);
-  QObject::connect (curve_colour_button, &QPushButton::clicked,
-		    this, &MainWindow::colour_sel);
+  ColorSelector curve_colour;
+  curve_colour.setUpdateMode (ColorSelector::Confirm);
+  layout->addWidget (&curve_colour, row, col++);
 
   QComboBox *linestyle_combo = new QComboBox ();
   linestyle_combo->addItem ("Solid Line",
@@ -341,11 +323,11 @@ MainWindow::addCurve()
   
   row++;
   QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
-  layout->addWidget (closeButton, row, 1);
+  layout->addWidget (closeButton, row, 3);
   QObject::connect (closeButton, &QPushButton::clicked,
 		    &dialog, &QDialog::accept);
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
-  layout->addWidget (cancelButton, row, 0);
+  layout->addWidget (cancelButton, row, 2);
   QObject::connect (cancelButton, &QPushButton::clicked,
 		    &dialog, &QDialog::reject);
 
@@ -355,7 +337,12 @@ MainWindow::addCurve()
   if (drc == QDialog::Accepted) {
     QString name	= curve_name->text ();
     QString function	= curve_function->text ();
-    Curve   curve = Curve (name, function);
+    QVariant pen	= linestyle_combo->currentData ();
+    std::cout << pen.toInt ()  << std::endl;
+    QColor  colour = curve_colour.color ();
+    Curve   curve = Curve (name, function, pen.toInt (), colour);
+    curves.append (curve);
+    curve.showCurve ();
   }
   
   delete closeButton;
@@ -722,7 +709,7 @@ AplWinFilter::eventFilter(QObject *obj, QEvent *event)
     if (event->type() == QEvent::Wheel) {
       QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
       // cw -120, ccw 120
-      int mv = (int)wheelEvent->delta ();
+      int mv = wheelEvent->angleDelta ().y ();
       mainwin->aplwin->moveCursor (((mv > 0) ? QTextCursor::Up
 				    : QTextCursor::Down),
 				   QTextCursor::MoveAnchor);
@@ -761,7 +748,7 @@ AplLineFilter::eventFilter(QObject *obj, QEvent *event)
   if (obj == watched) {
     if (event->type() == QEvent::Wheel) {
       QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
-      lineKey (mainwin, (int)wheelEvent->delta ());
+      lineKey (mainwin, wheelEvent->angleDelta ().y ());
     }
     else if (event->type() == QEvent::KeyPress) {
       QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);

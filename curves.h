@@ -20,27 +20,36 @@
 
 #include <QtWidgets>
 
+#ifndef toCString
+#define toCString(v) ((v).toStdString ().c_str ())
+#endif
+
 class Curve
 {
  public:
-  Curve (QString &rname, QString &rfcn, QPen rpen, QColor rcolour)
+  Curve (QString &rname, QString &rfcn, int rpen, QColor rcolour)
     {
       name	= rname;
       fcn	= rfcn;
       pen	= rpen;
       colour	= rcolour;
     }
-  Curve (QString &rname, QString &rfcn)
-    {
-      name	= rname;
-      fcn	= rfcn;
-    }
+
+  void showCurve ()
+  {
+    fprintf (stderr, "%s: %s\n",
+	     toCString (name),
+	     toCString (fcn));
+    fprintf (stderr, "pen: %d\n", pen);
+    fprintf (stderr, "colour: %d %d %d\n",
+	     colour.red (), colour.green (), colour.blue ());
+  }
       
 
  private:
   QString name;
   QString fcn;
-  QPen pen;
+  int pen;
   QColor colour;
 };
 
