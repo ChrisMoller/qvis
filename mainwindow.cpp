@@ -561,12 +561,6 @@ MainWindow::create_menuBar ()
   saveAsAct->setStatusTip(tr("Save the document under a new name"));
 
   fileMenu->addSeparator();
-  
-  QAction *addCurveAct =
-    fileMenu->addAction(tr("Add Curve"), this, &MainWindow::addCurve);
-  addCurveAct->setStatusTip(tr("Add a curve specification"));
-
-  fileMenu->addSeparator();
 
   const QIcon exitIcon =
     QIcon::fromTheme("application-exit",
@@ -924,11 +918,18 @@ MainWindow::buildMenu (QString &msgs)
     QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
     QVBoxLayout *layout = new QVBoxLayout;
     QMenuBar *mb2 = new QMenuBar ();
-    QMenu *fileMenu = mb2->addMenu(tr("&File"));
+    
+    QMenu *fileMenu = mb2->addMenu(tr("File"));
+    
     QAction *openAct = new QAction(tr("&Open Chart..."), this);
     openAct->setStatusTip(tr("Open an existing vis file"));
     //    connect(openAct, &QAction::triggered, this, &MainWindow::open);
     fileMenu->addAction(openAct);
+  
+    QAction *addCurveAct =
+    fileMenu->addAction(tr("Edit Curve"), this, &MainWindow::addCurve);
+    addCurveAct->setStatusTip(tr("Add a curve specification"));
+
     layout->setMenuBar (mb2);
 
     QTabWidget *tabs = new QTabWidget ();
