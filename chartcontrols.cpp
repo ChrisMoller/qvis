@@ -25,6 +25,47 @@
 
 //QT_CHARTS_USE_NAMESPACE
 
+
+void
+ChartControls::selectCurves ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *dialog_layout = new QGridLayout;
+  dialog.setLayout (dialog_layout);
+  
+  QTableWidget *curvesTable = new QTableWidget (this);
+  curvesTable->setColumnCount (1);
+  curvesTable->setRowCount (mainWindow->getCurveCount ());
+
+  QTableWidgetItem *column_label    = new QTableWidgetItem(tr("Label"));
+  curvesTable->setHorizontalHeaderItem (0, column_label);
+
+  int i;
+  for (i = 0; i < mainWindow->getCurveCount (); i++) {
+    QTableWidgetItem *item_lbl =
+      new QTableWidgetItem (mainWindow->getCurve (i).getLabel ());
+    item_lbl->setCheckState(Qt::Unchecked);
+    curvesTable->setItem (i, 0, item_lbl);
+  }
+
+  dialog_layout->addWidget (curvesTable, 0, 0, 1, 2);
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
+  dialog_layout->addWidget (closeButton, 1, 0);
+  QObject::connect (closeButton, &QPushButton::clicked,
+		    &dialog, &QDialog::accept);
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
+  dialog_layout->addWidget (cancelButton, 1, 1);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+		    &dialog, &QDialog::reject);
+
+  QPoint loc = this->pos ();
+  dialog.move (loc.x () + 200, loc.y () + 200);
+  int drc = dialog.exec ();
+  if (drc == QDialog::Accepted) {
+  }
+}
+
 ChartControls::ChartControls (int index, MainWindow *parent)
   : QWidget(parent)
 {
@@ -46,6 +87,14 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 
   col +=2; 
 
+#if 1
+  //  QLabel *Label = new QLabel(QString ("Global font"), this);
+  //  layout->addWidget (fontLabel, row, 0);
+  QPushButton *curvesButton = new QPushButton (QObject::tr ("Curves"));
+  layout->addWidget (curvesButton, row, col);
+  QObject::connect (curvesButton, SIGNAL (clicked ()),
+		    this, SLOT (selectCurves ()));
+#else
   curves_combo = new QComboBox ();
   {
     int i;
@@ -54,6 +103,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
     }
   }
   layout->addWidget (curves_combo, row, col++);
+#endif
 
   row++;
   col = 0;

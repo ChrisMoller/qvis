@@ -412,6 +412,7 @@ MainWindow::addCurve()
       QColor  colour = curve_colour.color ();
       Curve   curve = Curve (name, label, function, pen.toInt (), colour);
       curves.append (curve);
+#if 0
       {
 	int i;
 	
@@ -426,6 +427,7 @@ MainWindow::addCurve()
 	  }
 	}
       }
+#endif
       int nextRow = curvesTable->rowCount();
       curvesTable->setRowCount (1 + nextRow);
       insertItem (nextRow, curvesTable);

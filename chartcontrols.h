@@ -55,6 +55,7 @@ private slots:
   void valChanged(bool enabled);
   void valChangedv();
   void titleChangedv ();
+  void selectCurves ();
 };
 
 #endif //  CHARTCONTROLS_H
