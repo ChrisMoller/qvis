@@ -483,6 +483,16 @@ MainWindow::about()
 }
 
 void
+MainWindow::setGlobalFont ()
+{
+  QFontDialog dialog ();
+  bool ok;
+  QFont newfont = QFontDialog::getFont(&ok, this);
+  if (ok) 
+    QApplication::setFont (newfont);
+}
+
+void
 MainWindow::setGeneral ()
 {
   QDialog dialog (this, Qt::Popup);
@@ -496,6 +506,15 @@ MainWindow::setGeneral ()
   if (!editor.isEmpty ()) editorSelect->setText (editor);
   editorSelect->setPlaceholderText ("APL");
   layout->addWidget (editorSelect, row, 1);
+  
+  row++;
+  
+  QLabel *fontLabel = new QLabel(QString ("Global font"), this);
+  layout->addWidget (fontLabel, row, 0);
+  QPushButton *fontButton = new QPushButton (QObject::tr ("Select"));
+  layout->addWidget (fontButton, row, 1);
+  QObject::connect (fontButton, SIGNAL (clicked ()),
+		    this, SLOT (setGlobalFont ()));
 
   row++;
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
@@ -575,6 +594,7 @@ MainWindow::create_menuBar ()
 
   /********** settings ****************/
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
+
   QAction *generalAct =
     settingsMenu->addAction(tr("&General"), this, &MainWindow::setGeneral);
   generalAct->setStatusTip(tr("General settings"));
