@@ -378,6 +378,9 @@ MainWindow::addCurve()
   QPoint loc = this->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
   int drc = dialog.exec ();
+
+  // add accept and loop
+  
   if (drc == QDialog::Accepted) {
     QString name	= curve_name->text ();
     QString function	= curve_function->text ();
