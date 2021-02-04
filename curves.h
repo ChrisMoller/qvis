@@ -27,9 +27,11 @@
 class Curve
 {
  public:
-  Curve (QString &rname, QString &rfcn, int rpen, QColor rcolour)
+  Curve (QString &rname, QString &rlabel,
+	 QString &rfcn, int rpen, QColor rcolour)
     {
       name	= rname;
+      label	= rlabel;
       fcn	= rfcn;
       pen	= rpen;
       colour	= rcolour;
@@ -37,8 +39,9 @@ class Curve
 
   void showCurve ()
   {
-    fprintf (stderr, "%s: %s\n",
+    fprintf (stderr, "\"%s\": \"%s\" \"%s\"\n",
 	     toCString (name),
+	     toCString (label),
 	     toCString (fcn));
     fprintf (stderr, "pen: %d\n", pen);
     fprintf (stderr, "colour: %d %d %d\n",
@@ -46,6 +49,7 @@ class Curve
   }
 
   QString getName ()     { return name; }
+  QString getLabel ()    { return label; }
   QString getFunction () { return fcn; }
   int     getPen ()      { return pen; }
   QColor  getColour ()   { return colour; }
@@ -60,7 +64,8 @@ class Curve
       
 
  private:
-  QString name;
+  QString name;			// key 
+  QString label;		// y-axis key
   QString fcn;
   int pen;
   QColor colour;

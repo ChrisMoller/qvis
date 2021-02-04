@@ -21,18 +21,16 @@
 #include <values.h>
 
 #include "chartcontrols.h"
+#include "curves.h"
 
 //QT_CHARTS_USE_NAMESPACE
 
-ChartControls::ChartControls (QWidget *parent)
+ChartControls::ChartControls (int index, MainWindow *parent)
   : QWidget(parent)
 {
+  mainWindow = parent;
+  tabIndex = index;
   // /old_home/Qt/Examples/Qt-5.15.1/widgets/dialogs/tabdialog/tabdialog.cpp
-#if 0
-  QVBoxLayout *outer = new QVBoxLayout ();
-  QGroupBox *formGroupBox = new QGroupBox ("Controls");
-  outer->addWidget (formGroupBox);
-#endif
   QGridLayout *layout = new QGridLayout ();
   
   int row = 0;
@@ -40,12 +38,22 @@ ChartControls::ChartControls (QWidget *parent)
 
   chart_title = new  QLineEdit ();
   chart_title->setPlaceholderText ("chart title");
-  layout->addWidget (chart_title, row, 0, 1, 3);
+  layout->addWidget (chart_title, row, 0, 1, 2);
+  QObject::connect (chart_title,
+		    &QLineEdit::editingFinished,
+		    this,
+		    &ChartControls::titleChangedv);
 
-  y_title = new  QLineEdit ();
-  y_title->setPlaceholderText ("y axix label");
-  layout->addWidget (y_title, row, 3);
+  col +=2; 
 
+  curves_combo = new QComboBox ();
+  {
+    int i;
+    for (i = 0; i < mainWindow->getCurveCount (); i++) {
+      curves_combo->addItem (mainWindow->getCurve (i).getName ());
+    }
+  }
+  layout->addWidget (curves_combo, row, col++);
 
   row++;
   col = 0;
@@ -113,11 +121,8 @@ ChartControls::ChartControls (QWidget *parent)
 
   row++;
   col = 0;
-    
-  fcn_label = new  QLineEdit ();
-  fcn_label->setPlaceholderText ("curve label");
-  layout->addWidget (fcn_label, row, col++);
 
+#if 0
   apl_expression = new  QLineEdit ();
   apl_expression->setPlaceholderText ("function");
   layout->addWidget (apl_expression, row, col, 1, 3);
@@ -125,6 +130,7 @@ ChartControls::ChartControls (QWidget *parent)
 		    &QLineEdit::editingFinished,
 		    this,
 		    &ChartControls::valChangedv);
+#endif
 
   /*  toggles */
   
@@ -145,13 +151,7 @@ ChartControls::ChartControls (QWidget *parent)
 	  this,
 	  &ChartControls::valChanged);
 
-  //  formGroupBox->show ();
-  //  return formGroupBox;
-#if 0
-  setLayout (outer);
-#else
   setLayout (layout);
-#endif
 }
 
 void
@@ -161,8 +161,8 @@ ChartControls::valChanged (bool enabled __attribute__((unused)))
   chartWindow->curve.spline = (Qt::Checked == do_spline->checkState());
   //  curve.shorttitle
   chartWindow->curve.title			= chart_title->text ();
-  chartWindow->curve.function.title		= y_title->text ();
-  chartWindow->curve.function.label		= fcn_label->text ();
+  //  chartWindow->curve.function.title		= y_title->text ();
+  // chartWindow->curve.function.label		= fcn_label->text ();
   chartWindow->curve.function.expression	= apl_expression->text ();
   chartWindow->curve.ix.name			= x_var_name->text ();
   chartWindow->curve.ix.title			= x_title->text ();
@@ -180,6 +180,13 @@ void
 ChartControls::valChangedv ()
 {
   valChanged (true);
+}
+
+void
+ChartControls::titleChangedv ()
+{
+  QString title = chart_title->text ();
+  mainWindow->setTabTitle (tabIndex, title);
 }
 
 #if 0

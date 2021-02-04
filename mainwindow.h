@@ -135,6 +135,10 @@ public:
   History 	*history;
   QLineEdit	*aplline;
   QTextEdit 	*aplwin;
+  int 		 getCurveCount () { return curves.size (); }
+  Curve		 getCurve (int i) { return curves[i]; }
+  void 		 setTabTitle (int ix, QString &title)
+      { tabs->setTabText (ix, title); }
 									  
 public slots:
 
@@ -148,6 +152,7 @@ private slots:
   bool save();
   bool saveAs();
   void addCurve();
+  void newChart();
   void about();
   void returnPressed ();
   void setGeneral ();
@@ -181,5 +186,6 @@ private:
   QTemporaryDir		tempdir;
   save_mode_e		save_mode;
   QList<Curve>		curves;
+  QTabWidget 		*tabs;
 };
 #endif // MAINWINDOW_H

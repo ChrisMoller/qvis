@@ -27,13 +27,15 @@ class ChartControls : public QWidget
   Q_OBJECT
 
 public:
-  ChartControls (QWidget *parent);
+  ChartControls (int index, MainWindow *parent);
   ~ChartControls ();
+  QComboBox 	 *curves_combo;
   //  void 		 enterChart (ChartWindow *cw); 
 
  private:
+  int		  tabIndex;
   QLineEdit	 *chart_title;
-  QLineEdit	 *y_title;
+  //  QLineEdit	 *y_title;
   QLineEdit 	 *x_var_name;
   QLineEdit	 *x_title;
   QDoubleSpinBox *x_var_min;
@@ -43,14 +45,16 @@ public:
   QDoubleSpinBox *z_var_min;
   QDoubleSpinBox *z_var_max;
   QLineEdit 	 *apl_expression;
-  QLineEdit 	 *fcn_label;
+  //  QLineEdit 	 *fcn_label;
   QCheckBox 	 *do_spline;
   QCheckBox 	 *do_polar;
   ChartWindow	 *chartWindow;
+  MainWindow     *mainWindow;
 
-  private slots:
-    void valChanged(bool enabled);
-    void valChangedv();
+private slots:
+  void valChanged(bool enabled);
+  void valChangedv();
+  void titleChangedv ();
 };
 
 #endif //  CHARTCONTROLS_H

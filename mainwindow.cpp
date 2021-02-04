@@ -289,6 +289,8 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 {
   QTableWidgetItem *item_name =
     new QTableWidgetItem (curves[i].getName ());
+  QTableWidgetItem *item_lbl =
+    new QTableWidgetItem (curves[i].getLabel ());
   QTableWidgetItem *item_fcn =
     new QTableWidgetItem (curves[i].getFunction ());
   QTableWidgetItem *item_colour =
@@ -298,9 +300,19 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
   QTableWidgetItem *item_pen =
     new QTableWidgetItem (curves[i].getPenName ());
   curvesTable->setItem (i, 0, item_name);
-  curvesTable->setItem (i, 1, item_fcn);
-  curvesTable->setItem (i, 2, item_colour);
-  curvesTable->setItem (i, 3, item_pen);
+  curvesTable->setItem (i, 1, item_lbl);
+  curvesTable->setItem (i, 2, item_fcn);
+  curvesTable->setItem (i, 3, item_colour);
+  curvesTable->setItem (i, 4, item_pen);
+}
+
+void
+MainWindow::newChart()
+{
+  int tcnt = tabs->count ();
+  ChartControls *tab1 = new ChartControls (tcnt, this);
+  tabs->addTab (tab1, "New tab");
+  tabs->setCurrentIndex (tcnt);  
 }
 
 void
@@ -318,17 +330,19 @@ MainWindow::addCurve()
   gbox->setLayout (curvesLayout);
   dialog_layout->addWidget (gbox);
     
-  curvesTable->setColumnCount (4);
+  curvesTable->setColumnCount (5);
   curvesTable->setRowCount (curves.size ());
   QTableWidgetItem *column_name   = new QTableWidgetItem(tr("Name"));
+  QTableWidgetItem *column_label  = new QTableWidgetItem(tr("Label"));
   QTableWidgetItem *column_fcn    = new QTableWidgetItem(tr("Function"));
   QTableWidgetItem *column_colour = new QTableWidgetItem(tr("Colour"));
   QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
   QString colour_style_style ("background-color: yellow; color: red;");
   curvesTable->setHorizontalHeaderItem (0, column_name);
-  curvesTable->setHorizontalHeaderItem (1, column_fcn);
-  curvesTable->setHorizontalHeaderItem (2, column_colour);
-  curvesTable->setHorizontalHeaderItem (3, column_pen);
+  curvesTable->setHorizontalHeaderItem (1, column_label);
+  curvesTable->setHorizontalHeaderItem (2, column_fcn);
+  curvesTable->setHorizontalHeaderItem (3, column_colour);
+  curvesTable->setHorizontalHeaderItem (4, column_pen);
   int i;
   for (i = 0; i < curves.size (); i++)
     insertItem (i, curvesTable);
@@ -336,7 +350,7 @@ MainWindow::addCurve()
 
   /***** new curves *****/
 
-  QGroupBox *formGroupBox = new QGroupBox (QString ("New curvs"));
+  QGroupBox *formGroupBox = new QGroupBox (QString ("New curve"));
   QGridLayout *layout = new QGridLayout ();
   formGroupBox->setLayout (layout);
   dialog_layout->addWidget (formGroupBox);
@@ -347,6 +361,10 @@ MainWindow::addCurve()
   QLineEdit *curve_name = new QLineEdit ();
   curve_name->setPlaceholderText ("Curve name");
   layout->addWidget (curve_name, row, col++);
+
+  QLineEdit *curve_label = new QLineEdit ();
+  curve_label->setPlaceholderText ("Curve label");
+  layout->addWidget (curve_label, row, col++);
 
   QLineEdit *curve_function = new QLineEdit ();
   curve_function->setPlaceholderText ("Curve function");
@@ -375,7 +393,7 @@ MainWindow::addCurve()
   layout->addWidget (closeButton, row, 3);
   QObject::connect (closeButton, &QPushButton::clicked,
 		    &dialog, &QDialog::accept);
-  QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
   layout->addWidget (cancelButton, row, 2);
   QObject::connect (cancelButton, &QPushButton::clicked,
 		    &dialog, &QDialog::reject);
@@ -388,11 +406,26 @@ MainWindow::addCurve()
 
     if (drc == QDialog::Accepted) {
       QString name	= curve_name->text ();
+      QString label	= curve_label->text ();
       QString function	= curve_function->text ();
       QVariant pen	= linestyle_combo->currentData ();
       QColor  colour = curve_colour.color ();
-      Curve   curve = Curve (name, function, pen.toInt (), colour);
+      Curve   curve = Curve (name, label, function, pen.toInt (), colour);
       curves.append (curve);
+      {
+	int i;
+	
+	for (i = 0; i < tabs->count (); i++) {
+	  QWidget *widg = tabs->widget (i);
+	  ChartControls *cc = (ChartControls *)widg;
+	  QComboBox *cbox = cc->curves_combo;
+	  cbox->clear ();
+	  int j;
+	  for (j = 0; j < curves.size (); j++) {
+	    cbox->addItem (curves[j].getName ());
+	  }
+	}
+      }
       int nextRow = curvesTable->rowCount();
       curvesTable->setRowCount (1 + nextRow);
       insertItem (nextRow, curvesTable);
@@ -993,19 +1026,24 @@ MainWindow::buildMenu (QString &msgs)
     openAct->setStatusTip(tr("Open an existing vis file"));
     //    connect(openAct, &QAction::triggered, this, &MainWindow::open);
     fileMenu->addAction(openAct);
+    
+    QAction *newChartAct = new QAction(tr("&New Chart..."), this);
+    newChartAct->setStatusTip(tr("New chart"));
+    connect(newChartAct, &QAction::triggered, this, &MainWindow::newChart);
+    fileMenu->addAction (newChartAct);
   
     QAction *addCurveAct =
-    fileMenu->addAction(tr("Edit Curve"), this, &MainWindow::addCurve);
+    fileMenu->addAction(tr("Edit Curves"), this, &MainWindow::addCurve);
     addCurveAct->setStatusTip(tr("Add a curve specification"));
 
     layout->setMenuBar (mb2);
 
-    QTabWidget *tabs = new QTabWidget ();
+    tabs = new QTabWidget ();
     layout->addWidget (tabs);
-    ChartControls *tab1 = new ChartControls (this);
-    ChartControls *tab2 = new ChartControls (this);
+    ChartControls *tab1 = new ChartControls (0, this);
     tabs->addTab (tab1, "LL 1");
-    tabs->addTab (tab2, "LL 2");
+    //    ChartControls *tab2 = new ChartControls (this);
+    //    tabs->addTab (tab2, "LL 2");
     
 
     formGroupBox->setLayout (layout);
