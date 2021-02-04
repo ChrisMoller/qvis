@@ -306,6 +306,7 @@ MainWindow::addCurve()
     QTableWidgetItem *column_fcn    = new QTableWidgetItem(tr("Function"));
     QTableWidgetItem *column_colour = new QTableWidgetItem(tr("Colour"));
     QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
+    QString colour_style_style ("background-color: yellow; color: red;");
     curvesTable->setHorizontalHeaderItem (0, column_name);
     curvesTable->setHorizontalHeaderItem (1, column_fcn);
     curvesTable->setHorizontalHeaderItem (2, column_colour);
@@ -318,6 +319,8 @@ MainWindow::addCurve()
 	new QTableWidgetItem(tr("%1").arg(curves[i].getFunction ()));
       QTableWidgetItem *item_colour =
 	new QTableWidgetItem(tr("%1").arg(curves[i].getColour ().name ()));
+      QBrush brush (curves[i].getColour ());
+      item_colour->setBackground (brush);
       QTableWidgetItem *item_pen =
 	new QTableWidgetItem(tr("%1").arg(curves[i].getPenName ()));
       curvesTable->setItem(i, 0, item_name);
