@@ -311,30 +311,32 @@ MainWindow::addCurve()
   dialog.setLayout (dialog_layout);
   QTableWidget *curvesTable       = new QTableWidget (this);
 
-  //  if (!curves.isEmpty ()) {
-    QGroupBox *gbox = new QGroupBox ("Curves");
-    QHBoxLayout *curvesLayout = new QHBoxLayout ();
-    gbox->setLayout (curvesLayout);
-    dialog_layout->addWidget (gbox);
+  /***** existing curves *****/
+  
+  QGroupBox *gbox = new QGroupBox ("Curves");
+  QHBoxLayout *curvesLayout = new QHBoxLayout ();
+  gbox->setLayout (curvesLayout);
+  dialog_layout->addWidget (gbox);
     
-    curvesTable->setColumnCount (4);
-    curvesTable->setRowCount (curves.size ());
-    QTableWidgetItem *column_name   = new QTableWidgetItem(tr("Name"));
-    QTableWidgetItem *column_fcn    = new QTableWidgetItem(tr("Function"));
-    QTableWidgetItem *column_colour = new QTableWidgetItem(tr("Colour"));
-    QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
-    QString colour_style_style ("background-color: yellow; color: red;");
-    curvesTable->setHorizontalHeaderItem (0, column_name);
-    curvesTable->setHorizontalHeaderItem (1, column_fcn);
-    curvesTable->setHorizontalHeaderItem (2, column_colour);
-    curvesTable->setHorizontalHeaderItem (3, column_pen);
-    int i;
-    for (i = 0; i < curves.size (); i++)
-      insertItem (i, curvesTable);
-    curvesLayout->addWidget (curvesTable);
-    //  }
+  curvesTable->setColumnCount (4);
+  curvesTable->setRowCount (curves.size ());
+  QTableWidgetItem *column_name   = new QTableWidgetItem(tr("Name"));
+  QTableWidgetItem *column_fcn    = new QTableWidgetItem(tr("Function"));
+  QTableWidgetItem *column_colour = new QTableWidgetItem(tr("Colour"));
+  QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
+  QString colour_style_style ("background-color: yellow; color: red;");
+  curvesTable->setHorizontalHeaderItem (0, column_name);
+  curvesTable->setHorizontalHeaderItem (1, column_fcn);
+  curvesTable->setHorizontalHeaderItem (2, column_colour);
+  curvesTable->setHorizontalHeaderItem (3, column_pen);
+  int i;
+  for (i = 0; i < curves.size (); i++)
+    insertItem (i, curvesTable);
+  curvesLayout->addWidget (curvesTable);
 
-  QGroupBox *formGroupBox = new QGroupBox (QString ("New curves"));
+  /***** new curves *****/
+
+  QGroupBox *formGroupBox = new QGroupBox (QString ("New curvs"));
   QGridLayout *layout = new QGridLayout ();
   formGroupBox->setLayout (layout);
   dialog_layout->addWidget (formGroupBox);
@@ -365,7 +367,7 @@ MainWindow::addCurve()
 			    QVariant((int)Qt::DashDotLine));
   linestyle_combo->addItem ("Dash Dot Dot Line",
 			    QVariant((int)Qt::DashDotDotLine));
-  linestyle_combo->setCurrentIndex ((int)Qt::SolidLine);
+  linestyle_combo->setCurrentIndex (0);
   layout->addWidget (linestyle_combo, row, col++);
   
   row++;
@@ -493,9 +495,46 @@ MainWindow::setGlobalFont ()
 }
 
 void
+MainWindow::setGlobalStyle ()
+{
+  // https://qss-stock.devsecstudio.com/templates.php
+  
+  QDialog dialog (this, Qt::Widget);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  
+  QComboBox *style_combo = new QComboBox ();
+  int i;
+  QStringList keys = QStyleFactory::keys();
+  for (i = 0; i < keys.size (); i++) {
+    style_combo->addItem (keys[i]);
+  }
+  layout->addWidget (style_combo, 0, 0, 1, 2);
+  
+  row++;
+
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
+  layout->addWidget (closeButton, row, 1);
+  QObject::connect (closeButton, &QPushButton::clicked,
+		    &dialog, &QDialog::accept);
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
+  layout->addWidget (cancelButton, row, 0);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+		    &dialog, &QDialog::reject);
+
+  QPoint loc = this->pos ();
+  dialog.move (loc.x () + 200, loc.y () + 200);
+  int drc = dialog.exec ();
+  if (drc == QDialog::Accepted) 
+    QApplication::setStyle(QStyleFactory::create (style_combo->currentText ()));
+}
+
+void
 MainWindow::setGeneral ()
 {
-  QDialog dialog (this, Qt::Popup);
+  QDialog dialog (this, Qt::Widget);
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
 
@@ -515,6 +554,15 @@ MainWindow::setGeneral ()
   layout->addWidget (fontButton, row, 1);
   QObject::connect (fontButton, SIGNAL (clicked ()),
 		    this, SLOT (setGlobalFont ()));
+  
+  row++;
+  
+  QLabel *styleLabel = new QLabel(QString ("Global style"), this);
+  layout->addWidget (styleLabel, row, 0);
+  QPushButton *styleButton = new QPushButton (QObject::tr ("Select"));
+  layout->addWidget (styleButton, row, 1);
+  QObject::connect (styleButton, SIGNAL (clicked ()),
+		    this, SLOT (setGlobalStyle ()));
 
   row++;
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));

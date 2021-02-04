@@ -152,6 +152,7 @@ private slots:
   void returnPressed ();
   void setGeneral ();
   void setGlobalFont ();
+  void setGlobalStyle ();
   void fileChanged(const QString &path);
   
 private:
