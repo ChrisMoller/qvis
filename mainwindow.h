@@ -167,6 +167,7 @@ private:
   QString 	  curFile;
   QChart::ChartTheme theme;	// fixme--copy to chartwin
   ChartWindow	 *chartWindow;
+  void		  insertItem (int i, QTableWidget* &curvesTable);
 
 private:
   AplLineFilter		*aplLineFilter;

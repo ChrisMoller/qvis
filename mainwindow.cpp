@@ -284,7 +284,24 @@ MainWindow::save()
   return rc;
 }
 
-
+void
+MainWindow::insertItem (int i, QTableWidget* &curvesTable)
+{
+  QTableWidgetItem *item_name =
+    new QTableWidgetItem (curves[i].getName ());
+  QTableWidgetItem *item_fcn =
+    new QTableWidgetItem (curves[i].getFunction ());
+  QTableWidgetItem *item_colour =
+    new QTableWidgetItem (curves[i].getColour ().name ());
+  QBrush brush (curves[i].getColour ());
+  item_colour->setBackground (brush);
+  QTableWidgetItem *item_pen =
+    new QTableWidgetItem (curves[i].getPenName ());
+  curvesTable->setItem (i, 0, item_name);
+  curvesTable->setItem (i, 1, item_fcn);
+  curvesTable->setItem (i, 2, item_colour);
+  curvesTable->setItem (i, 3, item_pen);
+}
 
 void
 MainWindow::addCurve()
@@ -292,14 +309,14 @@ MainWindow::addCurve()
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *dialog_layout = new QGridLayout;
   dialog.setLayout (dialog_layout);
+  QTableWidget *curvesTable       = new QTableWidget (this);
 
-   if (!curves.isEmpty ()) {
+  //  if (!curves.isEmpty ()) {
     QGroupBox *gbox = new QGroupBox ("Curves");
     QHBoxLayout *curvesLayout = new QHBoxLayout ();
     gbox->setLayout (curvesLayout);
     dialog_layout->addWidget (gbox);
     
-    QTableWidget *curvesTable       = new QTableWidget (this);
     curvesTable->setColumnCount (4);
     curvesTable->setRowCount (curves.size ());
     QTableWidgetItem *column_name   = new QTableWidgetItem(tr("Name"));
@@ -312,24 +329,10 @@ MainWindow::addCurve()
     curvesTable->setHorizontalHeaderItem (2, column_colour);
     curvesTable->setHorizontalHeaderItem (3, column_pen);
     int i;
-    for (i = 0; i < curves.size (); i++) {
-      QTableWidgetItem *item_name =
-	new QTableWidgetItem(tr("%1").arg(curves[i].getName ()));
-      QTableWidgetItem *item_fcn =
-	new QTableWidgetItem(tr("%1").arg(curves[i].getFunction ()));
-      QTableWidgetItem *item_colour =
-	new QTableWidgetItem(tr("%1").arg(curves[i].getColour ().name ()));
-      QBrush brush (curves[i].getColour ());
-      item_colour->setBackground (brush);
-      QTableWidgetItem *item_pen =
-	new QTableWidgetItem(tr("%1").arg(curves[i].getPenName ()));
-      curvesTable->setItem(i, 0, item_name);
-      curvesTable->setItem(i, 1, item_fcn);
-      curvesTable->setItem(i, 2, item_colour);
-      curvesTable->setItem(i, 3, item_pen);
-    }
+    for (i = 0; i < curves.size (); i++)
+      insertItem (i, curvesTable);
     curvesLayout->addWidget (curvesTable);
-   }
+    //  }
 
   QGroupBox *formGroupBox = new QGroupBox (QString ("New curves"));
   QGridLayout *layout = new QGridLayout ();
@@ -362,7 +365,7 @@ MainWindow::addCurve()
 			    QVariant((int)Qt::DashDotLine));
   linestyle_combo->addItem ("Dash Dot Dot Line",
 			    QVariant((int)Qt::DashDotDotLine));
-  linestyle_combo->setCurrentIndex (3);
+  linestyle_combo->setCurrentIndex ((int)Qt::SolidLine);
   layout->addWidget (linestyle_combo, row, col++);
   
   row++;
@@ -377,17 +380,22 @@ MainWindow::addCurve()
 
   QPoint loc = this->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
-  int drc = dialog.exec ();
+  bool run = true;
+  while(run) {
+    int drc = dialog.exec ();
 
-  // add accept and loop
-  
-  if (drc == QDialog::Accepted) {
-    QString name	= curve_name->text ();
-    QString function	= curve_function->text ();
-    QVariant pen	= linestyle_combo->currentData ();
-    QColor  colour = curve_colour.color ();
-    Curve   curve = Curve (name, function, pen.toInt (), colour);
-    curves.append (curve);
+    if (drc == QDialog::Accepted) {
+      QString name	= curve_name->text ();
+      QString function	= curve_function->text ();
+      QVariant pen	= linestyle_combo->currentData ();
+      QColor  colour = curve_colour.color ();
+      Curve   curve = Curve (name, function, pen.toInt (), colour);
+      curves.append (curve);
+      int nextRow = curvesTable->rowCount();
+      curvesTable->setRowCount (1 + nextRow);
+      insertItem (nextRow, curvesTable);
+    }
+    else run = false;
   }
   
   delete closeButton;
