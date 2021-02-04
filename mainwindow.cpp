@@ -463,7 +463,9 @@ MainWindow::about()
 		     tr("About qvis"),
 	     tr("<b>qvis</b> allows APL expressions to be interactively "
 		"visualised with respect axes minima and maxima and"
-                "dynamically variable parameters."));
+                "dynamically variable parameters.\n\n"
+		"(With thanks to Mattia Basaglia for the colour selection"
+		"widgets)"));
 }
 
 void
@@ -690,7 +692,7 @@ MainWindow::process_line(QString text)
     return;
   }
   
-  aplwin->append (text);
+  aplwin->append ("      " + text);
 
   LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text,outString, errString);
 
