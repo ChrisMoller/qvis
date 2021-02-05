@@ -137,6 +137,7 @@ public:
   QTextEdit 	*aplwin;
   int 		 getCurveCount () { return curves.size (); }
   Curve		 getCurve (int i) { return curves[i]; }
+  void		 initXmlHash ();
   void 		 setTabTitle (int ix, QString &title)
       { tabs->setTabText (ix, title); }
 									  
@@ -163,6 +164,9 @@ private slots:
   void fileChanged(const QString &path);
   void cellPressed (int row, int column);
   bool writeVis (QString &fileName);
+  void readVis (QString &fileName);
+  void openVis ();
+  
   
 private:
   void		 openapl(bool cpy);
@@ -179,7 +183,9 @@ private:
   QChart::ChartTheme theme;	// fixme--copy to chartwin
   ChartWindow	 *chartWindow;
   void		  insertItem (int i, QTableWidget* &curvesTable);
-
+  bool 		  parseCurves (QXmlStreamReader &stream);
+  bool 		  parseCurve (int idx, QXmlStreamReader &stream);
+  
 private:
   AplLineFilter		*aplLineFilter;
   AplWinFilter		*aplWinFilter;

@@ -180,6 +180,17 @@ MainWindow::fileChanged(const QString &path)
 }
 
 void
+MainWindow::openVis()
+{
+  QFileDialog dialog (this, QString ("Open Vis file"));
+  dialog.setNameFilter(tr("Vis (*.vis)"));
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptOpen);
+  if (dialog.exec() == QDialog::Accepted)
+    readVis (dialog.selectedFiles().first());
+}
+
+void
 MainWindow::loadapl()
 {
   /***
@@ -1099,10 +1110,10 @@ MainWindow::buildMenu (QString &msgs)
 
     const QIcon openIcon =
       QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
-    QAction *loadAct = new QAction(openIcon, tr("&Load..."), this);
+    QAction *loadAct = new QAction(openIcon, tr("&Open..."), this);
     loadAct->setShortcuts(QKeySequence::Open);
-    loadAct->setStatusTip(tr("Load an existing workspace"));
-    //    connect(loadAct, &QAction::triggered, this, &MainWindow::loadvis);
+    loadAct->setStatusTip(tr("Load an existing vis file"));
+    connect(loadAct, &QAction::triggered, this, &MainWindow::openVis);
     fileMenu->addAction(loadAct);
 
     const QIcon saveIcon =
@@ -1175,6 +1186,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   history = new History ();
   libpath = lp;
 
+#if 0
   if (!args.empty ()) {
     int i;
     for (i = 0; i < args.count (); i++) {
@@ -1184,14 +1196,17 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
       chartWindow = newchartWindow;
     }
   }
+#endif
   
   buildMenu (msgs);
 
-#if 0
+  initXmlHash ();
+
+#if 1
   if (!args.empty ()) {
     int i;
     for (i = 0; i < args.count (); i++) {
-      enterChart (chartWindow);
+      readVis (args[i]);
     }
   }
 #endif

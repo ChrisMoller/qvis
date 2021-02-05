@@ -324,7 +324,6 @@ ChartWindow::ChartWindow (MainWindow *parent)
   : QMainWindow(parent)
 {
   mainWindow = parent;
-  initXmlHash ();
 
   QVariant ww = settings.value (SETTINGS_WIDTH);
   QVariant hh = settings.value (SETTINGS_HEIGHT);

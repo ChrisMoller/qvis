@@ -60,8 +60,8 @@ public:
   OldCurve		 curve;
   bool		 changed;
   //  bool 		 saveFile (QString &fileName);
-  void 		 readFile (QString &fileName);
-  void		 initXmlHash ();
+  //void 		 readFile (QString &fileName);
+  //  void		 initXmlHash ();
   QSettings 	 settings;
 
 private slots:
@@ -77,7 +77,7 @@ private:
   QFont titlefont;
   QChart::ChartTheme theme;
   MainWindow	*mainWindow;
-  bool parseCurve (OldCurve &curve, QXmlStreamReader &stream);
+  //  bool parseCurve (OldCurve &curve, QXmlStreamReader &stream);
   bool parseFunction (OldCurve &curve, QXmlStreamReader &stream);
   bool parseRange (Range &rng, QXmlStreamReader &stream);
   bool parseIdx (Index &idx, QXmlStreamReader &stream);
