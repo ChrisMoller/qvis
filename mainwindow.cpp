@@ -437,8 +437,12 @@ MainWindow::addCurve()
       QVariant pen	= linestyle_combo->currentData ();
       QColor  colour = curve_colour.color ();
       Curve   curve = Curve (name, label, function, pen.toInt (), colour);
-      if (!name.isEmpty () && !label.isEmpty () && !function.isEmpty ())
+      if (!name.isEmpty () && !label.isEmpty () && !function.isEmpty ()) {
 	curves.append (curve);
+	int nextRow = curvesTable->rowCount();
+	curvesTable->setRowCount (1 + nextRow);
+	insertItem (nextRow, curvesTable);
+      }
       curve_name->clear ();
       curve_label->clear ();
       curve_function->clear ();
@@ -458,9 +462,6 @@ MainWindow::addCurve()
 	}
       }
 #endif
-      int nextRow = curvesTable->rowCount();
-      curvesTable->setRowCount (1 + nextRow);
-      insertItem (nextRow, curvesTable);
     }
     else run = false;
   }
@@ -1031,6 +1032,27 @@ AplLineFilter::eventFilter(QObject *obj, QEvent *event)
   return QObject::eventFilter(obj, event);
 }
 
+bool
+MainWindow::saveAsVis()
+{
+  QFileDialog dialog(this);
+  dialog.setNameFilter(tr("Vis (*.vis)"));
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.setAcceptMode(QFileDialog::AcceptSave);
+  if (dialog.exec() != QDialog::Accepted)
+    return false;
+  return writeVis (dialog.selectedFiles().first());
+}
+
+bool
+MainWindow::saveVis()
+{
+  if (curFile.isEmpty()) {
+    return saveAs();
+  } else {
+    return writeVis (curFile);
+  }
+}
 
 void
 MainWindow::buildMenu (QString &msgs)
@@ -1088,7 +1110,7 @@ MainWindow::buildMenu (QString &msgs)
     QAction *saveAct = new QAction(saveIcon, tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
-    //connect(saveAct, &QAction::triggered, this, &MainWindow::savevis);
+    connect(saveAct, &QAction::triggered, this, &MainWindow::saveVis);
     fileMenu->addAction(saveAct);
 
     const QIcon saveAsIcon = QIcon::fromTheme("document-save-as");
@@ -1096,7 +1118,7 @@ MainWindow::buildMenu (QString &msgs)
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
     fileMenu->addAction (saveAsAct);
-    //connect(saveAsAct, &QAction::triggered, this, &MainWindow::saveasvis);
+    connect(saveAsAct, &QAction::triggered, this, &MainWindow::saveAsVis);
 
     /** endfile menu *****/
 

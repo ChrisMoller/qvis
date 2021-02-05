@@ -59,7 +59,7 @@ public:
   std::vector<OldCurve> curves;
   OldCurve		 curve;
   bool		 changed;
-  bool 		 saveFile (QString &fileName);
+  //  bool 		 saveFile (QString &fileName);
   void 		 readFile (QString &fileName);
   void		 initXmlHash ();
   QSettings 	 settings;

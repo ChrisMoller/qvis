@@ -151,6 +151,8 @@ private slots:
   void loadapl();
   bool save();
   bool saveAs();
+  bool saveVis();
+  bool saveAsVis();
   void addCurve();
   void newChart();
   void about();
@@ -160,6 +162,7 @@ private slots:
   void setGlobalStyle ();
   void fileChanged(const QString &path);
   void cellPressed (int row, int column);
+  bool writeVis (QString &fileName);
   
 private:
   void		 openapl(bool cpy);

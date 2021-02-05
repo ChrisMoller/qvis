@@ -15,42 +15,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 /***
-  <qvis height="." width=".">
-    <curve id="." polar="." spline="."> <!-- any number of repeats -->
-      <shorttitle>.....</shorttitle>
-      <title>.....</title>
-      <function>
-        <label>...</label>
-	<expression>...</expression>
-      </function>
-    </curve>
-    <chart>		<!-- any number of repeats -->
-      <ix>
-	<label>...</label>
-	<var>...</var>
-	<range>
-	  <min>...</min>
-	  <max>...</max>
-	</range>
-      </ix>
-      <iz>
-	<label>...</label>
-	<var>...</var>
-	<range>
-	  <min>...</min>
-	  <max>...</max>
-	</range>
-      </iz>
-      <parameter>		<!-- any number of repeats -->
-        <var>...</var>
-	<value>...</value>
-      </parameter>
-      <curves>		<!-- any number of repeats -->
-        <id>.</id>
-        <id>.</id>
-        <id>.</id>
-      </curves>
-    </chart>
+  <qvis>
+    <curves>
+      <curve idx=".">
+        <name>.</name>
+        <label>.</label>
+        <function>.</function>
+        <pen idx=".">.</pen>
+        <colour red=".' green="." blue = "."/>
+      </curve>
+    </curves>
   </qvis>
  ***/
 
@@ -72,7 +46,7 @@ xml_tag_s xml_tags[] = {
 static QHash<const QString, int> xmlhash;
 
 bool
-ChartWindow::saveFile (QString &fileName)
+MainWindow::writeVis (QString &fileName)
 {
   QFile file (fileName);
   file.open (QIODevice::WriteOnly | QIODevice::Text);
@@ -81,13 +55,42 @@ ChartWindow::saveFile (QString &fileName)
   stream.writeStartDocument();
 
   stream.writeStartElement(xml_tags[XML_qvis].tag);
-  stream.writeAttribute(xml_tags[XML_height].tag,
-			QString::number (chartView->height ()));
-  stream.writeAttribute(xml_tags[XML_width].tag,
-			QString::number (chartView->width ()));
-  stream.writeAttribute(xml_tags[XML_theme].tag,
-			QString::number ((int)theme));
   
+  stream.writeStartElement(xml_tags[XML_curves].tag);
+
+  int i;
+  for (i = 0; i < curves.size (); i++) {
+    stream.writeStartElement(xml_tags[XML_curve].tag);
+    stream.writeAttribute(xml_tags[XML_idx].tag, QString::number (i));
+    
+    stream.writeTextElement(xml_tags[XML_name].tag,
+			    curves[i].getName ());
+    
+    stream.writeTextElement(xml_tags[XML_label].tag,
+			    curves[i].getLabel ());
+    
+    stream.writeTextElement(xml_tags[XML_function].tag,
+			    curves[i].getFunction ());
+    
+    stream.writeStartElement(xml_tags[XML_pen].tag);
+    stream.writeAttribute(xml_tags[XML_idx].tag,
+			  QString::number (curves[i].getPen ()));
+    stream.writeCharacters(curves[i].getPenName ());
+    stream.writeEndElement(); // pen
+    
+    stream.writeStartElement(xml_tags[XML_colour].tag);
+    stream.writeAttribute(xml_tags[XML_red].tag,
+			  QString::number (curves[i].getColour ().red ()));
+    stream.writeAttribute(xml_tags[XML_green].tag,
+			  QString::number (curves[i].getColour ().green ()));
+    stream.writeAttribute(xml_tags[XML_blue].tag,
+			  QString::number (curves[i].getColour ().blue ()));
+    
+    stream.writeEndElement(); // colour
+    stream.writeEndElement(); // curve
+  }
+
+#if 0
   stream.writeStartElement(xml_tags[XML_curve].tag);
   stream.writeAttribute(xml_tags[XML_polar].tag,
 			curve.polar ?
@@ -139,7 +142,8 @@ ChartWindow::saveFile (QString &fileName)
   stream.writeEndElement(); // range
 
   stream.writeEndElement(); // iz
-  
+
+#endif
   stream.writeEndElement(); // curve
   
   stream.writeEndElement(); // qvis
