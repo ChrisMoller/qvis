@@ -49,6 +49,7 @@ class Curve
   }
 
   QString getName ()     { return name; }
+  void setName (QString &newname)     { name = newname; }
   QString getLabel ()    { return label; }
   QString getFunction () { return fcn; }
   int     getPen ()      { return pen; }

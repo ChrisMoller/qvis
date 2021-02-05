@@ -289,30 +289,46 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 {
   QTableWidgetItem *item_name =
     new QTableWidgetItem (curves[i].getName ());
+  item_name->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
   QTableWidgetItem *item_lbl =
     new QTableWidgetItem (curves[i].getLabel ());
+  item_lbl->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
   QTableWidgetItem *item_fcn =
     new QTableWidgetItem (curves[i].getFunction ());
+  item_fcn->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
   QTableWidgetItem *item_colour =
     new QTableWidgetItem (curves[i].getColour ().name ());
   QBrush brush (curves[i].getColour ());
   item_colour->setBackground (brush);
   QTableWidgetItem *item_pen =
     new QTableWidgetItem (curves[i].getPenName ());
+  QTableWidgetItem *item_delete =
+    new QTableWidgetItem ("X");
   curvesTable->setItem (i, 0, item_name);
   curvesTable->setItem (i, 1, item_lbl);
   curvesTable->setItem (i, 2, item_fcn);
   curvesTable->setItem (i, 3, item_colour);
   curvesTable->setItem (i, 4, item_pen);
+  curvesTable->setItem (i, 5, item_delete);
 }
 
 void
-MainWindow::newChart()
+MainWindow::cellPressed (int row, int column)
 {
-  int tcnt = tabs->count ();
-  ChartControls *tab1 = new ChartControls (tcnt, this);
-  tabs->addTab (tab1, "New tab");
-  tabs->setCurrentIndex (tcnt);  
+  if (column == 5) {
+    fprintf (stderr, "cell pressed %d %d\n", row, column);
+    if (row >= 0 && row < curves.size ()) {
+      QMessageBox msgBox;
+      msgBox.setText ("Did you really mean that?");
+      msgBox.setStandardButtons (QMessageBox::Yes |
+				 QMessageBox::Cancel);
+      msgBox.setDefaultButton (QMessageBox::Cancel);
+      if (msgBox.exec() == QMessageBox::Yes) {
+	curves.removeAt (row);
+	curvesTable->removeRow (row);
+      }
+    }
+  }
 }
 
 void
@@ -321,7 +337,6 @@ MainWindow::addCurve()
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *dialog_layout = new QGridLayout;
   dialog.setLayout (dialog_layout);
-  QTableWidget *curvesTable       = new QTableWidget (this);
 
   /***** existing curves *****/
   
@@ -330,19 +345,25 @@ MainWindow::addCurve()
   gbox->setLayout (curvesLayout);
   dialog_layout->addWidget (gbox);
     
-  curvesTable->setColumnCount (5);
+  curvesTable       = new QTableWidget (this);
+  connect (curvesTable, &QTableWidget::cellPressed,
+	   this, &MainWindow::cellPressed);
+  
+  curvesTable->setColumnCount (6);
   curvesTable->setRowCount (curves.size ());
   QTableWidgetItem *column_name   = new QTableWidgetItem(tr("Name"));
   QTableWidgetItem *column_label  = new QTableWidgetItem(tr("Label"));
   QTableWidgetItem *column_fcn    = new QTableWidgetItem(tr("Function"));
   QTableWidgetItem *column_colour = new QTableWidgetItem(tr("Colour"));
   QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
+  QTableWidgetItem *column_x      = new QTableWidgetItem(tr("Delete"));
   QString colour_style_style ("background-color: yellow; color: red;");
   curvesTable->setHorizontalHeaderItem (0, column_name);
   curvesTable->setHorizontalHeaderItem (1, column_label);
   curvesTable->setHorizontalHeaderItem (2, column_fcn);
   curvesTable->setHorizontalHeaderItem (3, column_colour);
   curvesTable->setHorizontalHeaderItem (4, column_pen);
+  curvesTable->setHorizontalHeaderItem (5, column_x);
   int i;
   for (i = 0; i < curves.size (); i++)
     insertItem (i, curvesTable);
@@ -389,21 +410,26 @@ MainWindow::addCurve()
   layout->addWidget (linestyle_combo, row, col++);
   
   row++;
-  QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
-  layout->addWidget (closeButton, row, 3);
-  QObject::connect (closeButton, &QPushButton::clicked,
-		    &dialog, &QDialog::accept);
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
-  layout->addWidget (cancelButton, row, 2);
+  cancelButton->setAutoDefault (false);
+  cancelButton->setDefault (false);
+  layout->addWidget (cancelButton, row, 3);
   QObject::connect (cancelButton, &QPushButton::clicked,
 		    &dialog, &QDialog::reject);
+  QPushButton *acceptButton = new QPushButton (QObject::tr ("Accept"));
+  acceptButton->setAutoDefault (true);
+  acceptButton->setDefault (true);
+  layout->addWidget (acceptButton, row, 4);
+  QObject::connect (acceptButton, &QPushButton::clicked,
+		    &dialog, &QDialog::accept);
 
   QPoint loc = this->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
   bool run = true;
   while(run) {
+    curve_name->setFocus ();
     int drc = dialog.exec ();
-
+    
     if (drc == QDialog::Accepted) {
       QString name	= curve_name->text ();
       QString label	= curve_label->text ();
@@ -411,7 +437,11 @@ MainWindow::addCurve()
       QVariant pen	= linestyle_combo->currentData ();
       QColor  colour = curve_colour.color ();
       Curve   curve = Curve (name, label, function, pen.toInt (), colour);
-      curves.append (curve);
+      if (!name.isEmpty () && !label.isEmpty () && !function.isEmpty ())
+	curves.append (curve);
+      curve_name->clear ();
+      curve_label->clear ();
+      curve_function->clear ();
 #if 0
       {
 	int i;
@@ -434,9 +464,28 @@ MainWindow::addCurve()
     }
     else run = false;
   }
+
+  int j;
+  for (j = 0; j < curves.size (); j++) {
+    QTableWidgetItem *item = curvesTable->item (j, 0);
+    QString name = item->data (Qt::EditRole).toString ();
+    QString oldname = curves[j].getName ();
+    if (name.compare (oldname))
+      curves[j].setName (name);
+  }
   
-  delete closeButton;
+  
+  delete acceptButton;
   delete layout;
+}
+
+void
+MainWindow::newChart()
+{
+  int tcnt = tabs->count ();
+  ChartControls *tab1 = new ChartControls (tcnt, this);
+  tabs->addTab (tab1, "New tab");
+  tabs->setCurrentIndex (tcnt);  
 }
 
 bool

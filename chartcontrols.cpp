@@ -30,7 +30,7 @@ void
 ChartControls::selectCurves ()
 {
   QDialog dialog (this, Qt::Dialog);
-  QGridLayout *dialog_layout = new QGridLayout;
+  QVBoxLayout *dialog_layout = new QVBoxLayout;
   dialog.setLayout (dialog_layout);
   
   QTableWidget *curvesTable = new QTableWidget (this);
@@ -48,22 +48,16 @@ ChartControls::selectCurves ()
     curvesTable->setItem (i, 0, item_lbl);
   }
 
-  dialog_layout->addWidget (curvesTable, 0, 0, 1, 2);
+  dialog_layout->addWidget (curvesTable);
 
   QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
-  dialog_layout->addWidget (closeButton, 1, 0);
+  dialog_layout->addWidget (closeButton);
   QObject::connect (closeButton, &QPushButton::clicked,
 		    &dialog, &QDialog::accept);
-  QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
-  dialog_layout->addWidget (cancelButton, 1, 1);
-  QObject::connect (cancelButton, &QPushButton::clicked,
-		    &dialog, &QDialog::reject);
 
   QPoint loc = this->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
-  int drc = dialog.exec ();
-  if (drc == QDialog::Accepted) {
-  }
+  dialog.exec ();
 }
 
 ChartControls::ChartControls (int index, MainWindow *parent)
@@ -167,12 +161,12 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   z_title->setPlaceholderText ("z axix label");
   layout->addWidget (z_title, row, col++);
     
+#if 0
   /*  APL expression */
 
   row++;
   col = 0;
 
-#if 0
   apl_expression = new  QLineEdit ();
   apl_expression->setPlaceholderText ("function");
   layout->addWidget (apl_expression, row, col, 1, 3);

@@ -159,6 +159,7 @@ private slots:
   void setGlobalFont ();
   void setGlobalStyle ();
   void fileChanged(const QString &path);
+  void cellPressed (int row, int column);
   
 private:
   void		 openapl(bool cpy);
@@ -187,5 +188,6 @@ private:
   save_mode_e		save_mode;
   QList<Curve>		curves;
   QTabWidget 		*tabs;
+  QTableWidget 		*curvesTable;
 };
 #endif // MAINWINDOW_H
