@@ -1070,22 +1070,55 @@ MainWindow::buildMenu (QString &msgs)
     QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
     QVBoxLayout *layout = new QVBoxLayout;
     QMenuBar *mb2 = new QMenuBar ();
+
+    /** file menu *****/
     
     QMenu *fileMenu = mb2->addMenu(tr("File"));
+
+    const QIcon openIcon =
+      QIcon::fromTheme("document-open", QIcon(":/images/open.png"));
+    QAction *loadAct = new QAction(openIcon, tr("&Load..."), this);
+    loadAct->setShortcuts(QKeySequence::Open);
+    loadAct->setStatusTip(tr("Load an existing workspace"));
+    //    connect(loadAct, &QAction::triggered, this, &MainWindow::loadvis);
+    fileMenu->addAction(loadAct);
+
+    const QIcon saveIcon =
+      QIcon::fromTheme("document-save", QIcon(":/images/save.png"));
+    QAction *saveAct = new QAction(saveIcon, tr("&Save"), this);
+    saveAct->setShortcuts(QKeySequence::Save);
+    saveAct->setStatusTip(tr("Save the document to disk"));
+    //connect(saveAct, &QAction::triggered, this, &MainWindow::savevis);
+    fileMenu->addAction(saveAct);
+
+    const QIcon saveAsIcon = QIcon::fromTheme("document-save-as");
+    QAction *saveAsAct = new QAction(saveAsIcon, tr("Save &As..."), this);
+    saveAsAct->setShortcuts(QKeySequence::SaveAs);
+    saveAsAct->setStatusTip(tr("Save the document under a new name"));
+    fileMenu->addAction (saveAsAct);
+    //connect(saveAsAct, &QAction::triggered, this, &MainWindow::saveasvis);
+
+    /** endfile menu *****/
+
+    /** chart menu *****/
+    
+    QMenu *chartMenu = mb2->addMenu(tr("Chart"));
     
     QAction *openAct = new QAction(tr("&Open Chart..."), this);
     openAct->setStatusTip(tr("Open an existing vis file"));
     //    connect(openAct, &QAction::triggered, this, &MainWindow::open);
-    fileMenu->addAction(openAct);
+    chartMenu->addAction(openAct);
     
     QAction *newChartAct = new QAction(tr("&New Chart..."), this);
     newChartAct->setStatusTip(tr("New chart"));
     connect(newChartAct, &QAction::triggered, this, &MainWindow::newChart);
-    fileMenu->addAction (newChartAct);
+    chartMenu->addAction (newChartAct);
   
     QAction *addCurveAct =
-    fileMenu->addAction(tr("Edit Curves"), this, &MainWindow::addCurve);
+    chartMenu->addAction(tr("Edit Curves"), this, &MainWindow::addCurve);
     addCurveAct->setStatusTip(tr("Add a curve specification"));
+
+    /***** end chart menu ****/
 
     layout->setMenuBar (mb2);
 
