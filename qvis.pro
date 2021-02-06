@@ -2,9 +2,6 @@ QT += core gui widgets charts
 
 CONFIG += c++11
 
-DEL_DIR = echo
-
-#LIBS += -L/usr/local/lib/apl -lapl
 LIBS += -L`apl --show_lib_dir` -lapl -lreadline
 
 # You can make your code fail to compile if it uses deprecated APIs.
@@ -32,14 +29,18 @@ HEADERS += \
 
 FORMS +=
 
-#RESOURCES = Qt-Color-Widgets/resources/QtColorWidgets/color_widgets.qrc
+PREFIX = /usr/local
 
 include(./Qt-Color-Widgets/color_widgets.pri)
 
-#else: unix:!android: target.path = /opt/$${TARGET}/bin
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /usr/local/bin
+unix {
+   target.path = $$PREFIX/bin
+   extra.path = $$PREFIX/share/qvis
+   extra.files = styles/*.qss
+}
 
-!isEmpty(target.path): INSTALLS += target
+!isEmpty(target.path): INSTALLS += target extra
 
+DEFINES += PREFIX=$$PREFIX
+
+message("prefix = " + $$PREFIX)
