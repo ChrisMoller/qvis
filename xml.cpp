@@ -73,42 +73,46 @@ MainWindow::writeVis (QString &fileName)
 
   stream.writeStartElement(xml_tags[XML_qvis].tag);
   
-  stream.writeStartElement(xml_tags[XML_curves].tag);
-
-  int i;
-  for (i = 0; i < curves.size (); i++) {
-    stream.writeStartElement(xml_tags[XML_curve].tag);
-    stream.writeAttribute(xml_tags[XML_idx].tag, QString::number (i));
+  if (curves.size () > 0) {
+    stream.writeStartElement(xml_tags[XML_curves].tag);
+    int i;
+    for (i = 0; i < curves.size (); i++) {
+      stream.writeStartElement(xml_tags[XML_curve].tag);
+      stream.writeAttribute(xml_tags[XML_idx].tag, QString::number (i));
     
-    stream.writeTextElement(xml_tags[XML_name].tag,
-			    curves[i].getName ());
+      stream.writeTextElement(xml_tags[XML_name].tag,
+			      curves[i].getName ());
     
-    stream.writeTextElement(xml_tags[XML_label].tag,
-			    curves[i].getLabel ());
+      stream.writeTextElement(xml_tags[XML_label].tag,
+			      curves[i].getLabel ());
     
-    stream.writeTextElement(xml_tags[XML_function].tag,
-			    curves[i].getFunction ());
+      stream.writeTextElement(xml_tags[XML_function].tag,
+			      curves[i].getFunction ());
     
-    stream.writeStartElement(xml_tags[XML_pen].tag);
-    stream.writeAttribute(xml_tags[XML_idx].tag,
-			  QString::number (curves[i].getPen ()));
-    stream.writeCharacters(curves[i].getPenName ());
-    stream.writeEndElement(); // pen
+      stream.writeStartElement(xml_tags[XML_pen].tag);
+      stream.writeAttribute(xml_tags[XML_idx].tag,
+			    QString::number (curves[i].getPen ()));
+      stream.writeCharacters(curves[i].getPenName ());
+      stream.writeEndElement(); // pen
     
-    stream.writeStartElement(xml_tags[XML_colour].tag);
-    stream.writeAttribute(xml_tags[XML_red].tag,
-			  QString::number (curves[i].getColour ().red ()));
-    stream.writeAttribute(xml_tags[XML_green].tag,
-			  QString::number (curves[i].getColour ().green ()));
-    stream.writeAttribute(xml_tags[XML_blue].tag,
-			  QString::number (curves[i].getColour ().blue ()));
+      stream.writeStartElement(xml_tags[XML_colour].tag);
+      stream.writeAttribute(xml_tags[XML_red].tag,
+			    QString::number (curves[i].getColour ().red ()));
+      stream.writeAttribute(xml_tags[XML_green].tag,
+			    QString::number (curves[i].getColour ().green ()));
+      stream.writeAttribute(xml_tags[XML_blue].tag,
+			    QString::number (curves[i].getColour ().blue ()));
+      stream.writeCharacters(curves[i].getColour ().name ());
+      stream.writeEndElement(); // colour
     
-    stream.writeEndElement(); // colour
-    stream.writeEndElement(); // curve
+      stream.writeEndElement(); // curve
+    }
+    stream.writeEndElement(); // curves
   }
 
   if (tabs->count () > 0) {
     stream.writeStartElement(xml_tags[XML_charts].tag);
+    int i;
     for (i = 0; i < tabs->count (); i++) {
       QWidget *widg = tabs->widget (i);
       ChartControls *cc = (ChartControls *)widg; 
@@ -116,10 +120,10 @@ MainWindow::writeVis (QString &fileName)
       stream.writeStartElement(xml_tags[XML_chart].tag);
       bool spline =  (Qt::Checked == cc->do_spline->checkState());
       stream.writeAttribute(xml_tags[XML_spline].tag,
-			    QString (spline ? "true" : "false"));
+			    QString (spline ? XML_true : XML_false));
       bool polar =  (Qt::Checked == cc->do_polar->checkState());
       stream.writeAttribute(xml_tags[XML_polar].tag,
-			    QString (polar ? "true" : "false"));
+			    QString (polar ? XML_true : XML_false));
 
       stream.writeTextElement(xml_tags[XML_title].tag,
 			      cc->chart_title->text ());
@@ -309,54 +313,6 @@ ChartWindow::parseFunction (OldCurve &curve, QXmlStreamReader &stream)
   return rc;
 }
 
-#if 0
-bool
-ChartWindow::parseCurve (OldCurve &curve, QXmlStreamReader &stream)
-{
-  bool rc = true;
-  stream.readNextStartElement();
-  if (stream.isStartElement ()) {
-    QString sn = stream.name ().toString ();
-    if (0 == QString::compare (sn, xml_tags[XML_curve].tag)) {
-      QXmlStreamAttributes attrs = stream.attributes();
-      if (!attrs.isEmpty ()) {
-	curve.polar  = (attrs.value (xml_tags[XML_polar].tag)).toInt ();
-	curve.spline = (attrs.value (xml_tags[XML_spline].tag)).toInt ();
-	while (stream.readNextStartElement()) {
-	  if (stream.isStartElement ()) {
-	    sn = stream.name ().toString ();
-	    switch (xmlhash.value (sn)) {
-	    case XML_shorttitle:
-	      curve.shorttitle = stream.readElementText ();
-	      break;
-	    case XML_title:
-	      curve.title = stream.readElementText ();
-	      break;
-	    case XML_function:
-	      rc = parseFunction (curve, stream);
-	      break;
-	    case XML_ix:
-	      rc = parseIx (curve, stream);
-	      break;
-	    case XML_iz:
-	      rc = parseIz (curve, stream);
-	      break;
-	    default:
-	      rc = false;
-	      break;
-	    }
-	  }
-	  else break;
-	}
-      }
-      else rc = false;
-    }
-  }
-  else rc = false;
-
-  return rc;
-}
-#endif
 
 bool
 MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
@@ -373,44 +329,46 @@ MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
     QString sn = stream.name ().toString ();
     switch(tt) {
     case QXmlStreamReader::StartElement:
-      {
-	switch (xmlhash.value (sn)) {
-	case XML_name:
-	  name = stream.readElementText ();
-	  break;
-	case XML_label:
-	  label = stream.readElementText ();
-	  break;
-	case XML_function:
-	  function = stream.readElementText ();
-	  break;
-	case XML_pen:
-	  {
-	    QXmlStreamAttributes attrs = stream.attributes();
-	    if (!attrs.isEmpty ())
-	      pen = (attrs.value (xml_tags[XML_idx].tag)).toInt ();
-	    stream.readElementText ();  // throw away the text
-	  }
-	  break;
-	case XML_colour:
-	  {
-	    QXmlStreamAttributes attrs = stream.attributes();
-	    int red   = -1;
-	    int green = -1;
-	    int blue  = -1;
-	    if (!attrs.isEmpty ()) {
-	      red   = (attrs.value (xml_tags[XML_red].tag)).toInt ();
-	      green = (attrs.value (xml_tags[XML_green].tag)).toInt ();
-	      blue  = (attrs.value (xml_tags[XML_blue].tag)).toInt ();
-	    }
-	    stream.readNext ();		// throw away the </colour>
-	    colour.setRgb (red, green, blue);
-	  }
-	  break;
+      switch (xmlhash.value (sn)) {
+      case XML_name:
+	name = stream.readElementText ();
+	break;
+      case XML_label:
+	label = stream.readElementText ();
+	break;
+      case XML_function:
+	function = stream.readElementText ();
+	break;
+      case XML_pen:
+	{
+	  QXmlStreamAttributes attrs = stream.attributes();
+	  if (!attrs.isEmpty ())
+	    pen = (attrs.value (xml_tags[XML_idx].tag)).toInt ();
+	  stream.readElementText ();
 	}
+	break;
+      case XML_colour:
+	{
+	  QXmlStreamAttributes attrs = stream.attributes();
+	  int red   = 0;
+	  int green = 0;
+	  int blue  = 0;
+	  if (!attrs.isEmpty ()) {
+	    red   = (attrs.value (xml_tags[XML_red].tag)).toInt ();
+	    green = (attrs.value (xml_tags[XML_green].tag)).toInt ();
+	    blue  = (attrs.value (xml_tags[XML_blue].tag)).toInt ();
+	  }
+	  stream.readElementText ();
+	  //	  stream.readNext ();		// throw away the </colour>
+	  colour.setRgb (red, green, blue);
+	}
+	break;
       }
       break;
     case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    case QXmlStreamReader::EndDocument:
       run = false;
       break;
     default:
@@ -418,7 +376,7 @@ MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
     }
   }
 
-  Curve curve = Curve (name, label, function, pen, colour);
+  Curve   curve = Curve (name, label, function, pen, colour);
   curves.insert (idx, curve);
   return rc;
 }
@@ -427,35 +385,124 @@ bool
 MainWindow::parseCurves (QXmlStreamReader &stream)
 {
   bool rc = false;
-  stream.readNextStartElement();
-  if (stream.isStartElement ()) {
+  bool run = true;
+  while (run) {
+    QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
-    if (0 == QString::compare (sn, xml_tags[XML_curves].tag)) {
-      bool run = true;
-      while (run) {
-	QXmlStreamReader::TokenType tt = stream.readNext ();
-	QString sn = stream.name ().toString ();
-	if (tt == QXmlStreamReader::StartElement) {
-	  if (0 == QString::compare (sn, xml_tags[XML_curve].tag)) {
-	    QXmlStreamAttributes  attrs = stream.attributes();
-	    if (!attrs.isEmpty ()) {
-	      int idx = (attrs.value (xml_tags[XML_idx].tag)).toInt ();
-	      rc = parseCurve (idx, stream);
-	    }
-	  }
-	  else run = false;
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_curve:
+	QXmlStreamAttributes attrs = stream.attributes();
+	if (!attrs.isEmpty ()) {
+	  int idx = (attrs.value (xml_tags[XML_idx].tag)).toInt ();
+	  parseCurve (idx, stream);
 	}
-	else if (tt == QXmlStreamReader::EndElement) run = false;
+	break;
       }
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    default:
+      break;
     }
   }
-#if 0
+#if 1
   int i;
   for (i = 0; i < curves.size (); i++) {
     fprintf (stderr, "\ncurve %d\n", i);
     curves[i].showCurve ();
   }
 #endif
+  return rc;
+}
+
+bool
+MainWindow::parseChart (bool spline, bool polar, QXmlStreamReader &stream)
+{
+  bool rc = true;
+  bool run = true;
+  QString title;
+#if 0
+  QString x_name;
+  QString x_label;
+  double  x_min;
+  double  x_max;
+  QString z_name;
+  QString z_label;
+  double  z_min;
+  double  z_max;
+#endif
+
+  while (run) {
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch(tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_title:
+	title = stream.readElementText ();
+	break;
+      }
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    default:
+      break;
+    }
+  }
+
+  fprintf (stderr, "s = %d, p = %d\n", spline, polar);
+  fprintf (stderr, "title = %s\n", toCString(title));
+  //  Curve   curve = Curve (name, label, function, pen, colour);
+  //  curves.insert (idx, curve);
+  return rc;
+}
+
+bool
+MainWindow::parseCharts (QXmlStreamReader &stream)
+{
+  bool rc = false;
+  bool run = true;
+  while (run) {
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_chart:
+	{
+	  QXmlStreamAttributes attrs = stream.attributes();
+	  if (!attrs.isEmpty ()) {
+	    QString spline =
+	      (attrs.value (xml_tags[XML_spline].tag)).toString ();
+	    QString polar  =
+	      ((attrs.value (xml_tags[XML_polar].tag))).toString ();
+	    parseChart (spline.compare (XML_true),
+			polar.compare (XML_false), stream);
+	  }
+	}
+	break;
+      }
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    default:
+      break;
+    }
+  }
   return rc;
 }
 
@@ -479,23 +526,34 @@ MainWindow::readVis (QString &fileName)
   file.open (QIODevice::ReadOnly | QIODevice::Text);
   QXmlStreamReader stream(&file);
 
-  //  Curve curve;
-
-  stream.readNextStartElement();
-  if (stream.isStartElement ()) {
+  static int ct = 0;
+  bool run = true;
+  while (run) {
+    QXmlStreamReader::TokenType tt = stream.readNext();
     QString sn = stream.name ().toString ();
-    if (0 == QString::compare (sn, xml_tags[XML_qvis].tag)) {
-      parseCurves (stream);
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_curves:
+	parseCurves (stream);
+	break;
+      case XML_charts:
+	parseCharts (stream);
+	break;
+      }
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    case QXmlStreamReader::Invalid:
+      break;
+    default:
+      break;
     }
   }
-
-#if 0
-    // show_curve (curve);
-  if (rc)  handleExpression ();
-  else { // fixme
-    fprintf (stderr, "Error line %d\n", (int)stream.lineNumber ());
-  }
-#endif
 }
 
 void

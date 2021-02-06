@@ -185,6 +185,9 @@ private:
   void		  insertItem (int i, QTableWidget* &curvesTable);
   bool 		  parseCurves (QXmlStreamReader &stream);
   bool 		  parseCurve (int idx, QXmlStreamReader &stream);
+  bool 		  parseCharts (QXmlStreamReader &stream);
+  bool 		  parseChart (bool spline, bool polar,
+			      QXmlStreamReader &stream);
   
 private:
   AplLineFilter		*aplLineFilter;
