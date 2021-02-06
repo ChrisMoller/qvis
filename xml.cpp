@@ -25,6 +25,21 @@
         <colour red=".' green="." blue = "."/>
       </curve>
     </curves>
+    <charts>
+      <chart spline="." polar=".">
+        <title>.</title>
+        <ix>
+          <name>.</name>
+          <label>.</label>
+	  <range min="." max="."/>
+        </ix>
+        <iz>
+          <name>.</name>
+          <label>.</label>
+	  <range min="." max="."/>
+        </iz>
+      </chart>
+    </charts>
   </qvis>
  ***/
 
@@ -36,6 +51,7 @@
 
 #include "mainwindow.h"
 #include "chartwindow.h"
+#include "chartcontrols.h"
 #include "curves.h"
 #include "xml.h"
 
@@ -89,6 +105,54 @@ MainWindow::writeVis (QString &fileName)
     
     stream.writeEndElement(); // colour
     stream.writeEndElement(); // curve
+  }
+
+  if (tabs->count () > 0) {
+    stream.writeStartElement(xml_tags[XML_charts].tag);
+    for (i = 0; i < tabs->count (); i++) {
+      QWidget *widg = tabs->widget (i);
+      ChartControls *cc = (ChartControls *)widg; 
+      
+      stream.writeStartElement(xml_tags[XML_chart].tag);
+      bool spline =  (Qt::Checked == cc->do_spline->checkState());
+      stream.writeAttribute(xml_tags[XML_spline].tag,
+			    QString (spline ? "true" : "false"));
+      bool polar =  (Qt::Checked == cc->do_polar->checkState());
+      stream.writeAttribute(xml_tags[XML_polar].tag,
+			    QString (polar ? "true" : "false"));
+
+      stream.writeTextElement(xml_tags[XML_title].tag,
+			      cc->chart_title->text ());
+      
+      stream.writeStartElement(xml_tags[XML_ix].tag);
+      stream.writeTextElement(xml_tags[XML_name].tag,
+			      cc->x_var_name->text ());
+      stream.writeTextElement(xml_tags[XML_label].tag,
+			      cc->x_label->text ());
+      stream.writeStartElement(xml_tags[XML_range].tag);
+      stream.writeAttribute(xml_tags[XML_min].tag,
+			    QString::number (cc->x_var_min->value ()));
+      stream.writeAttribute(xml_tags[XML_max].tag,
+			    QString::number (cc->x_var_max->value ()));
+      stream.writeEndElement(); // range
+      stream.writeEndElement(); // ix
+      
+      stream.writeStartElement(xml_tags[XML_iz].tag);
+      stream.writeTextElement(xml_tags[XML_name].tag,
+			      cc->z_var_name->text ());
+      stream.writeTextElement(xml_tags[XML_label].tag,
+			      cc->z_label->text ());
+      stream.writeStartElement(xml_tags[XML_range].tag);
+      stream.writeAttribute(xml_tags[XML_min].tag,
+			    QString::number (cc->z_var_min->value ()));
+      stream.writeAttribute(xml_tags[XML_max].tag,
+			    QString::number (cc->z_var_max->value ()));
+      stream.writeEndElement(); // range
+      stream.writeEndElement(); // ix
+      
+      stream.writeEndElement(); // chart
+    }
+    stream.writeEndElement(); // charts
   }
 
 #if 0
@@ -385,11 +449,13 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
       }
     }
   }
+#if 0
   int i;
   for (i = 0; i < curves.size (); i++) {
     fprintf (stderr, "\ncurve %d\n", i);
     curves[i].showCurve ();
   }
+#endif
   return rc;
 }
 

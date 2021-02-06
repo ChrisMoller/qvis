@@ -595,6 +595,8 @@ MainWindow::setGlobalStyle ()
 {
   // https://qss-stock.devsecstudio.com/templates.php
   // https://stackoverflow.com/questions/4810729/qt-setstylesheet-from-a-resource-qss-file
+
+  static int selection = 1;
   
   QDialog dialog (this, Qt::Widget);
   QGridLayout *layout = new QGridLayout;
@@ -605,7 +607,7 @@ MainWindow::setGlobalStyle ()
   QComboBox *style_combo = new QComboBox ();
   uint i;
   QStringList keys = QStyleFactory::keys();
-  for (i = 0; i < keys.size (); i++) {
+  for (i = 0; i < (uint)keys.size (); i++) {
     style_combo->addItem (keys[i], QString (""));
   }
 
@@ -617,13 +619,9 @@ MainWindow::setGlobalStyle ()
       fn.remove (".qss");
       style_combo->addItem (QString (basename (toCString (fn))),
 			    "./styles/" + dir[i]);
-#if 0
-      fprintf (stderr, "file %s %s\n",
-	       basename (toCString (fn)),
-	       toCString ("./styles/" + dir[i]));
-#endif
     }
   }
+  style_combo->setCurrentIndex (selection);
   layout->addWidget (style_combo, 0, 0, 1, 2);
   
   row++;
@@ -641,6 +639,7 @@ MainWindow::setGlobalStyle ()
   dialog.move (loc.x () + 200, loc.y () + 200);
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
+    selection = style_combo->currentIndex ();
     QString key = style_combo->currentText ();
     QString fn = (style_combo->currentData ()).toString ();
     if (fn.isEmpty ()) 

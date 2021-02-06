@@ -31,23 +31,21 @@ public:
   ~ChartControls ();
   QComboBox 	 *curves_combo;
   //  void 		 enterChart (ChartWindow *cw); 
+  QLineEdit	 *chart_title;
+  QCheckBox 	 *do_spline;
+  QCheckBox 	 *do_polar;
+  QLineEdit 	 *x_var_name;
+  QLineEdit	 *x_label;
+  QDoubleSpinBox *x_var_min;
+  QDoubleSpinBox *x_var_max;
+  QLineEdit 	 *z_var_name;
+  QLineEdit 	 *z_label;
+  QDoubleSpinBox *z_var_min;
+  QDoubleSpinBox *z_var_max;
 
  private:
   int		  tabIndex;
-  QLineEdit	 *chart_title;
-  //  QLineEdit	 *y_title;
-  QLineEdit 	 *x_var_name;
-  QLineEdit	 *x_title;
-  QDoubleSpinBox *x_var_min;
-  QDoubleSpinBox *x_var_max;
-  QLineEdit 	 *z_title;
-  QLineEdit 	 *z_var_name;
-  QDoubleSpinBox *z_var_min;
-  QDoubleSpinBox *z_var_max;
   QLineEdit 	 *apl_expression;
-  //  QLineEdit 	 *fcn_label;
-  QCheckBox 	 *do_spline;
-  QCheckBox 	 *do_polar;
   ChartWindow	 *chartWindow;
   MainWindow     *mainWindow;
 

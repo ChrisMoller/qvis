@@ -9,22 +9,6 @@ all the various plotting modes
 
 maybe zoom in/out of chart by widening/narrowing min/max
 
-)LOAD [lib] name[.xml]
+put global style in setting.
 
-)COPY [lib] [name[.xml]]
-
-)PCOPY [lib] [name[.xml]]
-
-)IN [lib] name[.atf]
-
-)PIN [lib] name[.atf]
-
-
-
-
-)SAVE [lib] [name[.xml]]
-
-)OUT [lib] name[.atf]
-
-)DUMP [lib] [name[.apl]]
-
+make linetype and colour in edit curves editable

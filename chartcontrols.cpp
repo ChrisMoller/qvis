@@ -73,6 +73,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 
   chart_title = new  QLineEdit ();
   chart_title->setPlaceholderText ("chart title");
+  
   layout->addWidget (chart_title, row, 0, 1, 2);
   QObject::connect (chart_title,
 		    &QLineEdit::editingFinished,
@@ -126,9 +127,9 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 		    &ChartControls::valChanged);
   layout->addWidget (x_var_max, row, col++);
   
-  x_title = new  QLineEdit ();
-  x_title->setPlaceholderText ("x axix label");
-  layout->addWidget (x_title, row, col++);
+  x_label = new  QLineEdit ();
+  x_label->setPlaceholderText ("x axix label");
+  layout->addWidget (x_label, row, col++);
 
   /*  z indep vbl */
 
@@ -157,9 +158,9 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 		    &ChartControls::valChanged);
   layout->addWidget (z_var_max, row, col++);
   
-  z_title = new  QLineEdit ();
-  z_title->setPlaceholderText ("z axix label");
-  layout->addWidget (z_title, row, col++);
+  z_label = new  QLineEdit ();
+  z_label->setPlaceholderText ("z axix label");
+  layout->addWidget (z_label, row, col++);
     
 #if 0
   /*  APL expression */
@@ -201,23 +202,25 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 void
 ChartControls::valChanged (bool enabled __attribute__((unused)))
 {
+#if 0
   chartWindow->curve.polar  = (Qt::Checked == do_polar->checkState());
   chartWindow->curve.spline = (Qt::Checked == do_spline->checkState());
   //  curve.shorttitle
   chartWindow->curve.title			= chart_title->text ();
-  //  chartWindow->curve.function.title		= y_title->text ();
+  //  chartWindow->curve.function.title		= y_label->text ();
   // chartWindow->curve.function.label		= fcn_label->text ();
   chartWindow->curve.function.expression	= apl_expression->text ();
   chartWindow->curve.ix.name			= x_var_name->text ();
-  chartWindow->curve.ix.title			= x_title->text ();
+  chartWindow->curve.ix.title			= x_label->text ();
   chartWindow->curve.ix.range.min		= x_var_min->value ();
   chartWindow->curve.ix.range.max		= x_var_max->value ();
   chartWindow->curve.iz.name			= z_var_name->text ();
-  chartWindow->curve.iz.title			= z_title->text ();
+  chartWindow->curve.iz.title			= z_label->text ();
   chartWindow->curve.iz.range.min 		= z_var_min->value ();
   chartWindow->curve.iz.range.max 		= z_var_max->value ();
   chartWindow->changed = true;
   chartWindow->handleExpression ();
+#endif
 }
 
 void
@@ -238,17 +241,17 @@ void
 ChartControls::enterChart (ChartWindow *cw)
 {
   chart_title->setText (cw->curve.title);
-  y_title->setText (cw->curve.function.label);
+  y_label->setText (cw->curve.function.label);
 
   x_var_name->setText (cw->curve.ix.name);
   x_var_min->setValue (cw->curve.ix.range.min);
   x_var_max->setValue (cw->curve.ix.range.max);
-  x_title->setText (cw->curve.ix.title);
+  x_label->setText (cw->curve.ix.title);
 
   z_var_name->setText (cw->curve.iz.name);
   z_var_min->setValue (cw->curve.iz.range.min);
   z_var_max->setValue (cw->curve.iz.range.max);
-  z_title->setText (cw->curve.iz.title);
+  z_label->setText (cw->curve.iz.title);
 
   fcn_label->setText (chartWindow->curve.function.title);
   apl_expression->setText (cw->curve.function.expression);
