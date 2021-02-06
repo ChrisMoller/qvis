@@ -31,6 +31,7 @@
 
 QT_CHARTS_USE_NAMESPACE
 
+
 int
 main (int argc, char *argv[])
 {

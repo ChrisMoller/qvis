@@ -594,18 +594,35 @@ void
 MainWindow::setGlobalStyle ()
 {
   // https://qss-stock.devsecstudio.com/templates.php
+  // https://stackoverflow.com/questions/4810729/qt-setstylesheet-from-a-resource-qss-file
   
   QDialog dialog (this, Qt::Widget);
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
 
   int row = 0;
-  
+
   QComboBox *style_combo = new QComboBox ();
-  int i;
+  uint i;
   QStringList keys = QStyleFactory::keys();
   for (i = 0; i < keys.size (); i++) {
-    style_combo->addItem (keys[i]);
+    style_combo->addItem (keys[i], QString (""));
+  }
+
+  QDir dir ("./styles", "*.qss", QDir::IgnoreCase,
+	    QDir::Files | QDir::NoDotAndDotDot);
+  if (dir.count () > 0) {
+    for (i =  0; i < dir.count (); i++) {
+      QString fn = dir[i];
+      fn.remove (".qss");
+      style_combo->addItem (QString (basename (toCString (fn))),
+			    "./styles/" + dir[i]);
+#if 0
+      fprintf (stderr, "file %s %s\n",
+	       basename (toCString (fn)),
+	       toCString ("./styles/" + dir[i]));
+#endif
+    }
   }
   layout->addWidget (style_combo, 0, 0, 1, 2);
   
@@ -623,8 +640,18 @@ MainWindow::setGlobalStyle ()
   QPoint loc = this->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
   int drc = dialog.exec ();
-  if (drc == QDialog::Accepted) 
-    QApplication::setStyle(QStyleFactory::create (style_combo->currentText ()));
+  if (drc == QDialog::Accepted) {
+    QString key = style_combo->currentText ();
+    QString fn = (style_combo->currentData ()).toString ();
+    if (fn.isEmpty ()) 
+      QApplication::setStyle (QStyleFactory::create (key));
+    else {
+      QFile styleFile(fn);
+      styleFile.open( QFile::ReadOnly );
+      QString style( styleFile.readAll() );
+      setStyleSheet (style);
+    }
+  }
 }
 
 void
