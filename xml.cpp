@@ -38,6 +38,7 @@
           <label>.</label>
 	  <range min="." max="."/>
         </iz>
+	<selected>. . .</selected>
       </chart>
     </charts>
   </qvis>
@@ -158,6 +159,14 @@ MainWindow::writeVis (QString &fileName)
 			    QString::number (cc->z_var_max->value ()));
       stream.writeEndElement(); // range
       stream.writeEndElement(); // ix
+
+      if (cc->selected.size () > 0) {
+	stream.writeStartElement(xml_tags[XML_selected].tag);
+	int j;
+	for (j =  0; j < cc->selected.size (); j++) 
+	  stream.writeCharacters (" " + QString::number (cc->selected[j]));
+	stream.writeEndElement(); // selected
+      }
       
       stream.writeEndElement(); // chart
     }

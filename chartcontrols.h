@@ -42,12 +42,12 @@ public:
   QLineEdit 	 *z_label;
   QDoubleSpinBox *z_var_min;
   QDoubleSpinBox *z_var_max;
+  QList<int>      selected;
 
  private:
   int		  tabIndex;
-  QLineEdit 	 *apl_expression;
-  ChartWindow	 *chartWindow;
   MainWindow     *mainWindow;
+  QVector<int>    curveList;
 
 private slots:
   void valChanged(bool enabled);

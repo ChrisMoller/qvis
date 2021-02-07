@@ -33,7 +33,7 @@ ChartControls::selectCurves ()
   QVBoxLayout *dialog_layout = new QVBoxLayout;
   dialog.setLayout (dialog_layout);
   
-  QTableWidget *curvesTable = new QTableWidget (this);
+  QTableWidget *curvesTable = new QTableWidget (mainWindow);
   curvesTable->setColumnCount (1);
   curvesTable->setRowCount (mainWindow->getCurveCount ());
 
@@ -55,9 +55,16 @@ ChartControls::selectCurves ()
   QObject::connect (closeButton, &QPushButton::clicked,
 		    &dialog, &QDialog::accept);
 
-  QPoint loc = this->pos ();
+  QPoint loc = mainWindow->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
-  dialog.exec ();
+  if (QDialog::Accepted == dialog.exec ()) {
+    selected.clear ();
+    for (i = 0; i < mainWindow->getCurveCount (); i++) {
+      QTableWidgetItem *item =curvesTable->item (i, 0);
+      Qt::CheckState cs = item->checkState ();
+      if (cs == Qt::Checked) selected.append (i);
+    }
+  }
 }
 
 ChartControls::ChartControls (int index, MainWindow *parent)
@@ -82,24 +89,10 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 
   col +=2; 
 
-#if 1
-  //  QLabel *Label = new QLabel(QString ("Global font"), this);
-  //  layout->addWidget (fontLabel, row, 0);
   QPushButton *curvesButton = new QPushButton (QObject::tr ("Curves"));
   layout->addWidget (curvesButton, row, col);
   QObject::connect (curvesButton, SIGNAL (clicked ()),
 		    this, SLOT (selectCurves ()));
-#else
-  curves_combo = new QComboBox ();
-  {
-    int i;
-    for (i = 0; i < mainWindow->getCurveCount (); i++) {
-      curves_combo->addItem (mainWindow->getCurve (i).getName ());
-    }
-  }
-  layout->addWidget (curves_combo, row, col++);
-#endif
-
   row++;
   col = 0;
 
@@ -162,20 +155,6 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   z_label->setPlaceholderText ("z axix label");
   layout->addWidget (z_label, row, col++);
     
-#if 0
-  /*  APL expression */
-
-  row++;
-  col = 0;
-
-  apl_expression = new  QLineEdit ();
-  apl_expression->setPlaceholderText ("function");
-  layout->addWidget (apl_expression, row, col, 1, 3);
-  QObject::connect (apl_expression,
-		    &QLineEdit::editingFinished,
-		    this,
-		    &ChartControls::valChangedv);
-#endif
 
   /*  toggles */
   

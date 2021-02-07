@@ -25,4 +25,5 @@ xml_def(range,		0),
 xml_def(height,		0),
 xml_def(width,		0),
 xml_def(theme,		0),
+xml_def(selected,	0),
 xml_def(LAST,		0)
