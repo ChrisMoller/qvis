@@ -48,31 +48,6 @@ typedef enum {
   SAVE_MODE_OUT
 } save_mode_e;
 
-#if 0
-class Function
-{
-public:
-  QString label;
-  QString title;
-  QString expression;
-};
-
-class Range
-{
-public:
-  double min;
-  double max;
-};
-
-class Index
-{
-public:
-  QString name;
-  QString title;
-  Range   range;
-};
-#endif
-
 #if 1
 class OldCurve
 {

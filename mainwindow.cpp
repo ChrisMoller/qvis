@@ -684,71 +684,6 @@ MainWindow::setEditor ()
   }
 }
 
-#if 0
-void
-MainWindow::setGeneral ()
-{
-  QDialog dialog (this, Qt::Widget);
-  QGridLayout *layout = new QGridLayout;
-  dialog.setLayout (layout);
-
-  int row = 0;
-#if 0
-  QLabel *editorLabel = new QLabel(QString ("Editor"), this);
-  layout->addWidget (editorLabel, row, 0);
-  QLineEdit *editorSelect = new  QLineEdit ();
-  if (!editor.isEmpty ()) editorSelect->setText (editor);
-  editorSelect->setPlaceholderText ("APL");
-  layout->addWidget (editorSelect, row, 1);
-  
-  row++;
-  
-  QLabel *fontLabel = new QLabel(QString ("Global font"), this);
-  layout->addWidget (fontLabel, row, 0);
-  QPushButton *fontButton = new QPushButton (QObject::tr ("Select"));
-  layout->addWidget (fontButton, row, 1);
-  QObject::connect (fontButton, SIGNAL (clicked ()),
-		    this, SLOT (setGlobalFont ()));
-  
-  row++;
-  
-  QLabel *styleLabel = new QLabel(QString ("Global style"), this);
-  layout->addWidget (styleLabel, row, 0);
-  QPushButton *styleButton = new QPushButton (QObject::tr ("Select"));
-  layout->addWidget (styleButton, row, 1);
-  QObject::connect (styleButton, SIGNAL (clicked ()),
-		    this, SLOT (setGlobalStyle ()));
-
-#endif
-  row++;
-  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
-  layout->addWidget (closeButton, row, 1);
-  QObject::connect (closeButton, &QPushButton::clicked,
-		    &dialog, &QDialog::accept);
-  QPushButton *cancelButton = new QPushButton (QObject::tr ("Cancel"));
-  layout->addWidget (cancelButton, row, 0);
-  QObject::connect (cancelButton, &QPushButton::clicked,
-		    &dialog, &QDialog::reject);
-
-  QPoint loc = this->pos ();
-  dialog.move (loc.x () + 200, loc.y () + 200);
-  int drc = dialog.exec ();
-#if 0
-  if (drc == QDialog::Accepted) {
-    if (!editorSelect->text ().isEmpty ()) {
-      QSettings settings;
-      editor = editorSelect->text ();
-      settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
-    }
-  }
-  
-  delete editorLabel;
-  delete editorSelect;
-#endif
-  delete closeButton;
-  delete layout;
-}
-#endif
 
 void
 MainWindow::create_menuBar ()
@@ -1231,11 +1166,6 @@ MainWindow::buildMenu (QString &msgs)
 
     tabs = new QTabWidget ();
     layout->addWidget (tabs);
-#if 0
-#endif
-    //    ChartControls *tab2 = new ChartControls (this);
-    //    tabs->addTab (tab2, "LL 2");
-    
 
     formGroupBox->setLayout (layout);
     formGroupBox->setAlignment (Qt::AlignLeft);
@@ -1280,18 +1210,6 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 	  this, &MainWindow::fileChanged);
   history = new History ();
   libpath = lp;
-
-#if 0
-  if (!args.empty ()) {
-    int i;
-    for (i = 0; i < args.count (); i++) {
-      ChartWindow *newchartWindow = new ChartWindow (this);
-      QString fn = args.value (i);
-      newchartWindow->readFile (fn);
-      chartWindow = newchartWindow;
-    }
-  }
-#endif
 
   initXmlHash ();
 

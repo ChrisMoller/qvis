@@ -435,19 +435,6 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
   return rc;
 }
 
-#if 0
-      QXmlStreamAttributes attrs = stream.attributes();
-      if (!attrs.isEmpty ()) {
-	int height = (attrs.value (xml_tags[XML_height].tag)).toInt ();
-	int width  = (attrs.value (xml_tags[XML_width].tag)).toInt ();
-	int theme  = (attrs.value (xml_tags[XML_theme].tag)).toInt ();
-	fprintf (stderr, "height = %d, width = %d, theme = %d\n",
-	       height, width, theme);
-	rc = parseCurves (curve, stream);
-      }
-      else rc = false;
-#endif
-
 void
 MainWindow::readVis (QString &fileName)
 {
