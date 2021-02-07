@@ -42,7 +42,9 @@ public:
   QLineEdit 	 *z_label;
   QDoubleSpinBox *z_var_min;
   QDoubleSpinBox *z_var_max;
+  QComboBox 	 *themebox;
   QList<int>      selected;
+  QChart::ChartTheme theme;
 
  private:
   int		  tabIndex;
@@ -55,6 +57,7 @@ private slots:
   void valChangedv();
   void titleChangedv ();
   void selectCurves ();
+  void curveSettings ();
 };
 
 #endif //  CHARTCONTROLS_H

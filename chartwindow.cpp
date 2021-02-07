@@ -254,6 +254,7 @@ ChartWindow::themeChanged (int newtheme __attribute__((unused)))
   handleExpression ();
 }
 
+#if 0
 void
 ChartWindow::settheme()
 {
@@ -283,6 +284,7 @@ ChartWindow::settheme()
   dialog.exec ();
   changed = true;
 }
+#endif
 
 void
 ChartWindow::setfont()
@@ -313,9 +315,11 @@ ChartWindow::create_menuBar ()
 
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
 
+#if 0
   QAction *themeAct =
     settingsMenu->addAction(tr("&Theme"), this, &ChartWindow::settheme);
   themeAct->setStatusTip(tr("Set theme"));
+#endif
 
   QAction *fontAct =
     settingsMenu->addAction(tr("&Font"), this, &ChartWindow::setfont);

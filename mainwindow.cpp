@@ -448,7 +448,7 @@ MainWindow::addCurve()
       QVariant pen	= linestyle_combo->currentData ();
       QColor  colour = curve_colour.color ();
       Curve   curve = Curve (name, label, function, pen.toInt (), colour);
-      if (!name.isEmpty () && !label.isEmpty () && !function.isEmpty ()) {
+      if (!name.isEmpty () && !function.isEmpty ()) {
 	curves.append (curve);
 	int nextRow = curvesTable->rowCount();
 	curvesTable->setRowCount (1 + nextRow);

@@ -66,7 +66,7 @@ public:
 
 private slots:
   void imageExport();
-  void settheme();
+  //  void settheme();
   void themeChanged(int newtheme);
   void setfont();
   

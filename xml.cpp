@@ -26,7 +26,7 @@
       </curve>
     </curves>
     <charts>
-      <chart spline="." polar=".">
+      <chart spline="." polar="." theme=".'>
         <title>.</title>
         <ix>
           <name>.</name>
@@ -130,6 +130,8 @@ MainWindow::writeVis (QString &fileName)
 			    QString (polar
 				     ? xml_tags[XML_true].tag
 				     : xml_tags[XML_false].tag));
+      stream.writeAttribute(xml_tags[XML_theme].tag,
+			    QString::number (cc->theme));
 
       stream.writeTextElement(xml_tags[XML_title].tag,
 			      cc->chart_title->text ());
@@ -340,7 +342,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 }
 
 bool
-MainWindow::parseChart (bool spline, bool polar,
+MainWindow::parseChart (bool spline, bool polar, int theme,
 			QXmlStreamReader &stream)
 {
   bool rc = true;
@@ -388,7 +390,8 @@ MainWindow::parseChart (bool spline, bool polar,
     }
   }
 
-  ChartData *cd = new ChartData (title, spline, polar, ix, iz, selected);
+  ChartData *cd = new ChartData (title, spline, polar, theme,
+				 ix, iz, selected);
   charts.append (cd);
 
   return rc;
@@ -413,9 +416,12 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	      (attrs.value (xml_tags[XML_spline].tag)).toString ();
 	    QString polar  =
 	      ((attrs.value (xml_tags[XML_polar].tag))).toString ();
+	    QStringRef themeref = attrs.value (xml_tags[XML_spline].tag);
+	    int theme = themeref.isEmpty ()
+	      ? QChart::ChartThemeLight : themeref.toInt ();
 	    parseChart ((0 == spline.compare (xml_tags[XML_true].tag)),
 			(0 == polar.compare (xml_tags[XML_true].tag)),
-			stream);
+			theme, stream);
 	  }
 	}
 	break;

@@ -173,7 +173,7 @@ private:
   bool 		  parseCurves (QXmlStreamReader &stream);
   bool 		  parseCurve (int idx, QXmlStreamReader &stream);
   bool 		  parseCharts (QXmlStreamReader &stream);
-  bool 		  parseChart (bool spline, bool polar,
+  bool 		  parseChart (bool spline, bool polar, int theme,
 			      QXmlStreamReader &stream);
   
 private:

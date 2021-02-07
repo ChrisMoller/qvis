@@ -23,8 +23,52 @@
 #include "chartcontrols.h"
 #include "curves.h"
 
-//QT_CHARTS_USE_NAMESPACE
+void
+ChartControls::curveSettings ()
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
 
+  QLabel lbl ("Theme");
+  layout->addWidget (&lbl, 0, 0);
+  
+  QComboBox *themebox = new QComboBox ();
+  themebox->addItem ("Light", QChart::ChartThemeLight);
+  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+  themebox->addItem ("Dark", QChart::ChartThemeDark);
+  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
+  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
+  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
+  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
+  themebox->addItem ("Qt", QChart::ChartThemeQt);
+
+  fprintf (stderr, "theme = %d\n", (int)theme);
+  layout->addWidget(themebox, 0, 1);
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
+  cancelButton->setAutoDefault (false);
+  cancelButton->setDefault (false);
+  layout->addWidget (cancelButton, 1, 0);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+		    &dialog, &QDialog::reject);
+  QPushButton *acceptButton = new QPushButton (QObject::tr ("Accept"));
+  acceptButton->setAutoDefault (true);
+  acceptButton->setDefault (true);
+  layout->addWidget (acceptButton, 1, 1);
+  QObject::connect (acceptButton, &QPushButton::clicked,
+		    &dialog, &QDialog::accept);
+
+  QPoint loc = mainWindow->pos ();
+  dialog.move (loc.x () + 200, loc.y () + 200);
+#if 0
+  dialog.exec ();
+#else
+  if (QDialog::Accepted == dialog.exec ()) {
+    theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
+    chartData->setTheme (theme);
+  }
+#endif
+}
 
 void
 ChartControls::selectCurves ()
@@ -79,6 +123,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   chartData = mainWindow->getChart (tabIndex);
   // /old_home/Qt/Examples/Qt-5.15.1/widgets/dialogs/tabdialog/tabdialog.cpp
   QGridLayout *layout = new QGridLayout ();
+  theme = QChart::ChartThemeLight;
   
   int row = 0;
   int col = 0;
@@ -99,6 +144,14 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   layout->addWidget (curvesButton, row, col);
   QObject::connect (curvesButton, SIGNAL (clicked ()),
 		    this, SLOT (selectCurves ()));
+
+  col++;
+
+  QPushButton *settingsButton = new QPushButton (QObject::tr ("Settings"));
+  layout->addWidget (settingsButton, row, col);
+  QObject::connect (settingsButton, SIGNAL (clicked ()),
+		    this, SLOT (curveSettings ()));
+  
   row++;
   col = 0;
 

@@ -58,7 +58,7 @@ class ChartData
 {
  public:
   ChartData () {};
-  ChartData (QString &rtitle, bool rspline, bool rpolar,
+  ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
 	     Index *rix, Index *riz, QList<int> &rselected)
     {
       title  = rtitle;
@@ -67,6 +67,7 @@ class ChartData
       ix     = rix;
       iz     = riz;
       selected = rselected;
+      theme = (QChart::ChartTheme)rtheme;
     }
 
   void showChart ()
@@ -93,6 +94,8 @@ class ChartData
   bool		getPolar ()  { return polar;}
   Index		*getXIndex () { return ix; }
   Index		*getZIndex () { return iz; }
+  void		 setTheme ( int rtheme) {theme = (QChart::ChartTheme)rtheme;}
+  QChart::ChartTheme getTheme () {return theme;}
 
  private:
   QString title;
@@ -101,6 +104,7 @@ class ChartData
   Index *ix;
   Index *iz;
   QList<int> selected;
+  QChart::ChartTheme theme;
 };
 
 #endif // CHARTDATA_H
