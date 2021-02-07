@@ -1183,8 +1183,8 @@ MainWindow::buildMenu (QString &msgs)
 
     tabs = new QTabWidget ();
     layout->addWidget (tabs);
-    ChartControls *tab1 = new ChartControls (0, this);
-    tabs->addTab (tab1, "LL 1");
+#if 0
+#endif
     //    ChartControls *tab2 = new ChartControls (this);
     //    tabs->addTab (tab2, "LL 2");
     
@@ -1226,16 +1226,18 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 
   initXmlHash ();
 
-#if 1
-  if (!args.empty ()) {
+  buildMenu (msgs);
+
+  if (args.empty ()) {
+    ChartControls *tab1 = new ChartControls (0, this);
+    tabs->addTab (tab1, "New tab");
+  }
+  else {
     int i;
     for (i = 0; i < args.count (); i++) {
       readVis (args[i]);
     }
   }
-#endif
-  
-  buildMenu (msgs);
   
   aplline->setFocus ();
   this->show ();

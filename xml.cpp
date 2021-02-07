@@ -495,6 +495,11 @@ MainWindow::readVis (QString &fileName)
     charts[i]->showChart ();
   }
 #endif
+  int i;
+  for (i =  0; i < charts.size (); i++) {
+    ChartControls *tab1 = new ChartControls (i, this);
+    tabs->addTab (tab1, charts[i]->getTitle ());
+  }
 }
 
 void
