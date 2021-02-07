@@ -349,6 +349,7 @@ MainWindow::parseChart (bool spline, bool polar,
 
   Index *ix = nullptr;
   Index *iz = nullptr;
+  QList<int> selected;
   
   while (run) {
     QXmlStreamReader::TokenType tt = stream.readNext ();
@@ -365,6 +366,15 @@ MainWindow::parseChart (bool spline, bool polar,
       case XML_iz:
 	iz = parseIz (stream);
 	break;
+      case XML_selected:
+	{
+	  QString cstr = stream.readElementText ();
+	  QStringList cvec = cstr.trimmed ().split (QRegExp ("\\s+"));
+	  int k;
+	  for (k = 0; k < cvec.size (); k++)
+	    selected.append (cvec[k].toInt ());
+	}
+	break;
       }
       break;
     case QXmlStreamReader::EndElement:
@@ -378,7 +388,7 @@ MainWindow::parseChart (bool spline, bool polar,
     }
   }
 
-  ChartData *cd = new ChartData (title, spline, polar, ix, iz);
+  ChartData *cd = new ChartData (title, spline, polar, ix, iz, selected);
   charts.append (cd);
 
   return rc;
