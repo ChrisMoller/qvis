@@ -413,8 +413,8 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	      (attrs.value (xml_tags[XML_spline].tag)).toString ();
 	    QString polar  =
 	      ((attrs.value (xml_tags[XML_polar].tag))).toString ();
-	    parseChart (spline.compare (xml_tags[XML_true].tag),
-			polar.compare (xml_tags[XML_true].tag),
+	    parseChart ((0 == spline.compare (xml_tags[XML_true].tag)),
+			(0 == polar.compare (xml_tags[XML_true].tag)),
 			stream);
 	  }
 	}

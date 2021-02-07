@@ -103,14 +103,19 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   col = 0;
 
   /*  x indep vbl */
-  
+
+  Index *ix = nullptr;
+  if (chartData) ix = chartData->getXIndex ();
+
   x_var_name = new  QLineEdit ();
   x_var_name->setPlaceholderText ("x variable name");
+  if (ix) x_var_name->setText (ix->getName ());
   layout->addWidget (x_var_name, row, col++);
   
   x_var_min = new  QDoubleSpinBox ();
   x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
   x_var_min->setToolTip ("x minimum value");
+  if (ix) x_var_min->setValue (ix->getMin ());
   QObject::connect (x_var_min,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
@@ -120,6 +125,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   x_var_max = new  QDoubleSpinBox ();
   x_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
   x_var_max->setToolTip ("x maximum value");
+  if (ix) x_var_max->setValue (ix->getMax ());
   QObject::connect (x_var_max,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
@@ -128,20 +134,26 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   
   x_label = new  QLineEdit ();
   x_label->setPlaceholderText ("x axix label");
+  if (ix) x_label->setText (ix->getLabel ());
   layout->addWidget (x_label, row, col++);
 
   /*  z indep vbl */
 
   row++;
   col = 0;
+  
+  Index *iz = nullptr;
+  if (chartData) iz = chartData->getZIndex ();
 
   z_var_name = new  QLineEdit ();
   z_var_name->setPlaceholderText ("z variable name");
+  if (iz) z_var_name->setText (iz->getName ());
   layout->addWidget (z_var_name, row, col++);
 
   z_var_min = new  QDoubleSpinBox ();
   z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
   z_var_min->setToolTip ("z minimum value");
+  if (iz) z_var_min->setValue (iz->getMin ());
   QObject::connect (z_var_min,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
@@ -151,6 +163,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   z_var_max = new  QDoubleSpinBox ();
   z_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
   z_var_max->setToolTip ("z maximum value");
+  if (iz) z_var_max->setValue (iz->getMax ());
   QObject::connect (z_var_max,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
@@ -159,6 +172,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   
   z_label = new  QLineEdit ();
   z_label->setPlaceholderText ("z axix label");
+  if (iz) z_label->setText (iz->getLabel ());
   layout->addWidget (z_label, row, col++);
     
 
