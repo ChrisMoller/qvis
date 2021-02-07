@@ -85,6 +85,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 
   chart_title = new  QLineEdit ();
   chart_title->setPlaceholderText ("chart title");
+  if (chartData) chart_title->setText (chartData->getTitle ());
   
   layout->addWidget (chart_title, row, 0, 1, 2);
   QObject::connect (chart_title,
@@ -167,6 +168,8 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   col = 0;
   
   do_spline = new QCheckBox ("Spline");
+  if (chartData && chartData->getSpline ())
+    do_spline->setCheckState (Qt::Checked);
   layout->addWidget (do_spline, row, col++);
   connect(do_spline,
 	  &QCheckBox::stateChanged,
@@ -174,6 +177,8 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 	  &ChartControls::valChanged);
   
   do_polar = new QCheckBox ("Polar");
+  if (chartData && chartData->getPolar ())
+    do_polar->setCheckState (Qt::Checked);
   layout->addWidget (do_polar, row, col++);
   connect(do_polar,
 	  &QCheckBox::stateChanged,
