@@ -120,10 +120,14 @@ MainWindow::writeVis (QString &fileName)
       stream.writeStartElement(xml_tags[XML_chart].tag);
       bool spline =  (Qt::Checked == cc->do_spline->checkState());
       stream.writeAttribute(xml_tags[XML_spline].tag,
-			    QString (spline ? XML_true : XML_false));
+			    QString (spline
+				     ? xml_tags[XML_true].tag
+				     : xml_tags[XML_false].tag));
       bool polar =  (Qt::Checked == cc->do_polar->checkState());
       stream.writeAttribute(xml_tags[XML_polar].tag,
-			    QString (polar ? XML_true : XML_false));
+			    QString (polar
+				     ? xml_tags[XML_true].tag
+				     : xml_tags[XML_false].tag));
 
       stream.writeTextElement(xml_tags[XML_title].tag,
 			      cc->chart_title->text ());
@@ -246,9 +250,54 @@ ChartWindow::parseRange (Range &rng, QXmlStreamReader &stream)
 }
 
 bool
-ChartWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
+MainWindow::parseIdx (QXmlStreamReader &stream)
 {
+#if 1
   bool rc = true;
+  bool run = true;
+  QString name;
+  QString label;
+  double min;
+  double max;
+  while (run) {
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch(tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_name:
+	name = stream.readElementText ();
+	break;
+      case XML_label:
+	label = stream.readElementText ();
+	break;
+      case XML_range:
+	{
+	  QXmlStreamAttributes attrs = stream.attributes();
+	  if (!attrs.isEmpty ()) {
+	    min = (attrs.value (xml_tags[XML_min].tag)).toDouble ();
+	    max = (attrs.value (xml_tags[XML_max].tag)).toDouble ();
+	    stream.readElementText ();
+	  }
+	}
+	break;
+      }
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    default:
+      break;
+    }
+  }
+  fprintf (stderr, "ii %s %s %g %g\n",
+	   toCString (name), toCString (label), min, max);
+
+      
+#else
   while (rc && stream.readNextStartElement()) {
     if (stream.isStartElement ()) {
       QString sn = stream.name ().toString ();
@@ -271,21 +320,24 @@ ChartWindow::parseIdx (Index &idx, QXmlStreamReader &stream)
     }
     else break;
   }
+#endif
   return rc;
 }
 
 bool
-ChartWindow::parseIx (OldCurve &curve, QXmlStreamReader &stream)
+MainWindow::parseIx (QXmlStreamReader &stream)
 {
-  return parseIdx (curve.ix, stream);
+  return parseIdx (stream);
 }
 
 bool
-ChartWindow::parseIz (OldCurve &curve, QXmlStreamReader &stream)
+MainWindow::parseIz (QXmlStreamReader &stream)
 {
-  return parseIdx (curve.iz, stream);
+  return parseIdx (stream);
 }
 
+
+#if 0
 bool
 ChartWindow::parseFunction (OldCurve &curve, QXmlStreamReader &stream)
 {
@@ -312,7 +364,7 @@ ChartWindow::parseFunction (OldCurve &curve, QXmlStreamReader &stream)
   }
   return rc;
 }
-
+#endif
 
 bool
 MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
@@ -447,6 +499,12 @@ MainWindow::parseChart (bool spline, bool polar, QXmlStreamReader &stream)
       case XML_title:
 	title = stream.readElementText ();
 	break;
+      case XML_ix:
+	parseIx (stream);
+	break;
+      case XML_iz:
+	parseIz (stream);
+	break;
       }
       break;
     case QXmlStreamReader::EndElement:
@@ -486,8 +544,9 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	      (attrs.value (xml_tags[XML_spline].tag)).toString ();
 	    QString polar  =
 	      ((attrs.value (xml_tags[XML_polar].tag))).toString ();
-	    parseChart (spline.compare (XML_true),
-			polar.compare (XML_false), stream);
+	    parseChart (spline.compare (xml_tags[XML_true].tag),
+			polar.compare (xml_tags[XML_true].tag),
+			stream);
 	  }
 	}
 	break;
@@ -526,7 +585,6 @@ MainWindow::readVis (QString &fileName)
   file.open (QIODevice::ReadOnly | QIODevice::Text);
   QXmlStreamReader stream(&file);
 
-  static int ct = 0;
   bool run = true;
   while (run) {
     QXmlStreamReader::TokenType tt = stream.readNext();

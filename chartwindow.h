@@ -77,18 +77,14 @@ private:
   QFont titlefont;
   QChart::ChartTheme theme;
   MainWindow	*mainWindow;
-  //  bool parseCurve (OldCurve &curve, QXmlStreamReader &stream);
-  bool parseFunction (OldCurve &curve, QXmlStreamReader &stream);
+  //  bool parseFunction (OldCurve &curve, QXmlStreamReader &stream);
   bool parseRange (Range &rng, QXmlStreamReader &stream);
-  bool parseIdx (Index &idx, QXmlStreamReader &stream);
-  bool parseIx (OldCurve &curve, QXmlStreamReader &stream);
-  bool parseIz (OldCurve &curve, QXmlStreamReader &stream);
-  int	         handle_vector (APL_value res,
-				APL_value xvals,
-				QString flbl);
   void create_menuBar ();
   QComboBox 	*themebox;
   ChartEnter *chartEnter;
+  int	         handle_vector (APL_value res,
+				APL_value xvals,
+				QString flbl);
 };
 
 

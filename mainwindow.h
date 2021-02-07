@@ -183,6 +183,9 @@ private:
   QChart::ChartTheme theme;	// fixme--copy to chartwin
   ChartWindow	 *chartWindow;
   void		  insertItem (int i, QTableWidget* &curvesTable);
+  bool 		  parseIdx (QXmlStreamReader &stream);
+  bool 		  parseIx (QXmlStreamReader &stream);
+  bool 		  parseIz (QXmlStreamReader &stream);
   bool 		  parseCurves (QXmlStreamReader &stream);
   bool 		  parseCurve (int idx, QXmlStreamReader &stream);
   bool 		  parseCharts (QXmlStreamReader &stream);
