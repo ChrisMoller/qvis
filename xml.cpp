@@ -53,6 +53,7 @@
 #include "chartwindow.h"
 #include "chartcontrols.h"
 #include "curves.h"
+#include "chartdata.h"
 #include "xml.h"
 
 #define xml_def(v, l) #v, XML_ ## v, l
@@ -162,62 +163,6 @@ MainWindow::writeVis (QString &fileName)
     }
     stream.writeEndElement(); // charts
   }
-
-#if 0
-  stream.writeStartElement(xml_tags[XML_curve].tag);
-  stream.writeAttribute(xml_tags[XML_polar].tag,
-			curve.polar ?
-			QString::number (xml_tags[XML_true].logical) :
-			QString::number (xml_tags[XML_false].logical));
-  stream.writeAttribute(xml_tags[XML_spline].tag,
-			curve.spline ?
-			QString::number (xml_tags[XML_true].logical) :
-			QString::number (xml_tags[XML_false].logical));
-  
-  stream.writeTextElement(xml_tags[XML_shorttitle].tag, curve.shorttitle);
-  stream.writeTextElement(xml_tags[XML_title].tag, curve.title);
-  
-  stream.writeStartElement(xml_tags[XML_function].tag);
-  stream.writeTextElement(xml_tags[XML_label].tag,
-			  curve.function.label);
-  stream.writeTextElement(xml_tags[XML_title].tag,
-			  curve.function.title);
-  stream.writeTextElement(xml_tags[XML_expression].tag,
-			  curve.function.expression);
-  stream.writeEndElement(); // function
-  
-  stream.writeStartElement (xml_tags[XML_ix].tag);
-#if 0
-  stream.writeTextElement(xml_tags[XML_name].tag,  curve.ix.name);
-#endif
-  stream.writeTextElement(xml_tags[XML_title].tag, curve.ix.title);
-
-  stream.writeStartElement(xml_tags[XML_range].tag);
-  stream.writeTextElement(xml_tags[XML_min].tag,
-			  QString::number (curve.ix.range.min));
-  stream.writeTextElement(xml_tags[XML_max].tag,
-			  QString::number (curve.ix.range.max));
-  stream.writeEndElement(); // range
-
-  stream.writeEndElement(); // ix
-  
-  stream.writeStartElement(xml_tags[XML_iz].tag);
-#if 0
-  stream.writeTextElement(xml_tags[XML_name].tag,  curve.iz.name);
-#endif
-  stream.writeTextElement(xml_tags[XML_title].tag, curve.iz.title);
-
-  stream.writeStartElement(xml_tags[XML_range].tag);
-  stream.writeTextElement(xml_tags[XML_min].tag,
-			  QString::number (curve.iz.range.min));
-  stream.writeTextElement(xml_tags[XML_max].tag,
-			  QString::number (curve.iz.range.max));
-  stream.writeEndElement(); // range
-
-  stream.writeEndElement(); // iz
-
-#endif
-  stream.writeEndElement(); // curve
   
   stream.writeEndElement(); // qvis
   stream.writeEndDocument();
@@ -225,40 +170,14 @@ MainWindow::writeVis (QString &fileName)
   return true;
 }
 
-bool
-ChartWindow::parseRange (Range &rng, QXmlStreamReader &stream)
-{
-  bool rc = true;
-  while (rc && stream.readNextStartElement()) {
-    if (stream.isStartElement ()) {
-      QString sn = stream.name ().toString ();
-      switch (xmlhash.value (sn)) {
-	case XML_min:
-	  rng.min = stream.readElementText ().toDouble ();
-	  break;
-	case XML_max:
-	  rng.max = stream.readElementText ().toDouble ();
-	  break;
-	default:
-	  rc = false;
-	  break;
-      }
-    }
-    else break;
-  }
-  return rc;
-}
-
-bool
+Index *
 MainWindow::parseIdx (QXmlStreamReader &stream)
 {
-#if 1
-  bool rc = true;
   bool run = true;
   QString name;
   QString label;
-  double min;
-  double max;
+  double min = 0.0;
+  double max = 0.0;
   while (run) {
     QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
@@ -293,78 +212,23 @@ MainWindow::parseIdx (QXmlStreamReader &stream)
       break;
     }
   }
-  fprintf (stderr, "ii %s %s %g %g\n",
-	   toCString (name), toCString (label), min, max);
-
-      
-#else
-  while (rc && stream.readNextStartElement()) {
-    if (stream.isStartElement ()) {
-      QString sn = stream.name ().toString ();
-      switch (xmlhash.value (sn)) {
-#if 0
-      case XML_name:
-	idx.name = stream.readElementText ();
-	break;
-#endif
-      case XML_title:
-	idx.title = stream.readElementText ();
-	break;
-      case XML_range:
-	rc = parseRange (idx.range, stream);
-	break;
-      default:
-	rc = false;
-	break;
-      }
-    }
-    else break;
-  }
-#endif
-  return rc;
+  
+  Index *rx = new Index (name, label, min, max);
+  return rx;
 }
 
-bool
+Index *
 MainWindow::parseIx (QXmlStreamReader &stream)
 {
   return parseIdx (stream);
 }
 
-bool
+Index *
 MainWindow::parseIz (QXmlStreamReader &stream)
 {
   return parseIdx (stream);
 }
 
-
-#if 0
-bool
-ChartWindow::parseFunction (OldCurve &curve, QXmlStreamReader &stream)
-{
-  bool rc = true;
-  while (rc && stream.readNextStartElement()) {
-    if (stream.isStartElement ()) {
-      QString sn = stream.name ().toString ();
-      switch (xmlhash.value (sn)) {
-      case XML_label:
-	curve.function.label = stream.readElementText ();
-	break;
-      case XML_title:
-	curve.function.title = stream.readElementText ();
-	break;
-      case XML_expression:
-	curve.function.expression = stream.readElementText ();
-	break;
-      default:
-	rc = false;
-	break;
-      }
-    }
-    else break;
-  }
-  return rc;
-}
-#endif
 
 bool
 MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
@@ -463,33 +327,20 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
       break;
     }
   }
-#if 1
-  int i;
-  for (i = 0; i < curves.size (); i++) {
-    fprintf (stderr, "\ncurve %d\n", i);
-    curves[i].showCurve ();
-  }
-#endif
   return rc;
 }
 
 bool
-MainWindow::parseChart (bool spline, bool polar, QXmlStreamReader &stream)
+MainWindow::parseChart (bool spline, bool polar,
+			QXmlStreamReader &stream)
 {
   bool rc = true;
   bool run = true;
   QString title;
-#if 0
-  QString x_name;
-  QString x_label;
-  double  x_min;
-  double  x_max;
-  QString z_name;
-  QString z_label;
-  double  z_min;
-  double  z_max;
-#endif
 
+  Index *ix = nullptr;
+  Index *iz = nullptr;
+  
   while (run) {
     QXmlStreamReader::TokenType tt = stream.readNext ();
     QString sn = stream.name ().toString ();
@@ -500,10 +351,10 @@ MainWindow::parseChart (bool spline, bool polar, QXmlStreamReader &stream)
 	title = stream.readElementText ();
 	break;
       case XML_ix:
-	parseIx (stream);
+	ix = parseIx (stream);
 	break;
       case XML_iz:
-	parseIz (stream);
+	iz = parseIz (stream);
 	break;
       }
       break;
@@ -518,10 +369,9 @@ MainWindow::parseChart (bool spline, bool polar, QXmlStreamReader &stream)
     }
   }
 
-  fprintf (stderr, "s = %d, p = %d\n", spline, polar);
-  fprintf (stderr, "title = %s\n", toCString(title));
-  //  Curve   curve = Curve (name, label, function, pen, colour);
-  //  curves.insert (idx, curve);
+  ChartData *cd = new ChartData (title, spline, polar, ix, iz);
+  charts.append (cd);
+
   return rc;
 }
 
@@ -562,6 +412,7 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
       break;
     }
   }
+
   return rc;
 }
 
@@ -611,6 +462,17 @@ MainWindow::readVis (QString &fileName)
     default:
       break;
     }
+  }
+
+  int i;
+  for (i = 0; i < curves.size (); i++) {
+    fprintf (stderr, "\ncurve %d\n", i);
+    curves[i].showCurve ();
+  }
+
+  for (i =  0; i < charts.size (); i++) {
+    fprintf (stderr, "\nchart %d\n", i);
+    charts[i]->showChart ();
   }
 }
 

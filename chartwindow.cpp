@@ -114,6 +114,7 @@ ChartWindow::handleExpression ()
 
   int incr = 16;  // fixme--make settable
 
+#if 0
   if (!curve.ix.name.isEmpty ()) {
     /***
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
@@ -226,6 +227,7 @@ ChartWindow::handleExpression ()
       }
     }
   }
+#endif
 }
 
 void

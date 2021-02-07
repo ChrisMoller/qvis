@@ -27,7 +27,6 @@
 class Curve
 {
  public:
-  Curve ();
   Curve (QString &rname, QString &rlabel,
 	 QString &rfcn, int rpen, QColor rcolour)
     {

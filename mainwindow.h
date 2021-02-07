@@ -30,6 +30,7 @@ QT_CHARTS_USE_NAMESPACE
 
 #include "history.h"
 #include "curves.h"
+#include "chartdata.h"
 
 // for settings
 #define SETTINGS_EDITOR     "Editor"
@@ -45,6 +46,7 @@ typedef enum {
   SAVE_MODE_OUT
 } save_mode_e;
 
+#if 0
 class Function
 {
 public:
@@ -67,6 +69,7 @@ public:
   QString title;
   Range   range;
 };
+#endif
 
 #if 1
 class OldCurve
@@ -76,9 +79,9 @@ public:
   bool spline;
   QString shorttitle;
   QString title;
-  Function function;
-  Index ix;
-  Index iz;
+  //Function function;
+  //Index ix;
+  //Index iz;
 };
 #endif
 
@@ -183,9 +186,9 @@ private:
   QChart::ChartTheme theme;	// fixme--copy to chartwin
   ChartWindow	 *chartWindow;
   void		  insertItem (int i, QTableWidget* &curvesTable);
-  bool 		  parseIdx (QXmlStreamReader &stream);
-  bool 		  parseIx (QXmlStreamReader &stream);
-  bool 		  parseIz (QXmlStreamReader &stream);
+  Index		 *parseIdx (QXmlStreamReader &stream);
+  Index 	 *parseIx (QXmlStreamReader &stream);
+  Index		 *parseIz (QXmlStreamReader &stream);
   bool 		  parseCurves (QXmlStreamReader &stream);
   bool 		  parseCurve (int idx, QXmlStreamReader &stream);
   bool 		  parseCharts (QXmlStreamReader &stream);
@@ -204,5 +207,6 @@ private:
   QList<Curve>		curves;
   QTabWidget 		*tabs;
   QTableWidget 		*curvesTable;
+  QList<ChartData*>	charts;
 };
 #endif // MAINWINDOW_H

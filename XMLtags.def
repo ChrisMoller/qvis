@@ -21,12 +21,8 @@ xml_def(polar,		0),
 xml_def(spline,		0),
 xml_def(true,		1),
 xml_def(false,		0),
-
+xml_def(range,		0),
 xml_def(height,		0),
 xml_def(width,		0),
 xml_def(theme,		0),
-xml_def(shorttitle,	0),
-xml_def(expression,	0),
-xml_def(range,		0),
-xml_def(id,		0),
 xml_def(LAST,		0)

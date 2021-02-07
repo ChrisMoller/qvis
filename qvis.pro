@@ -19,6 +19,7 @@ SOURCES += \
 
 HEADERS += \
     curves.h \
+    chartdata.h \
     chartwindow.h \
     chartcontrols.h \
     mainwindow.h \

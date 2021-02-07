@@ -78,7 +78,7 @@ private:
   QChart::ChartTheme theme;
   MainWindow	*mainWindow;
   //  bool parseFunction (OldCurve &curve, QXmlStreamReader &stream);
-  bool parseRange (Range &rng, QXmlStreamReader &stream);
+  //bool parseRange (Range &rng, QXmlStreamReader &stream);
   void create_menuBar ();
   QComboBox 	*themebox;
   ChartEnter *chartEnter;
