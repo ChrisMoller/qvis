@@ -43,7 +43,9 @@ ChartControls::curveSettings ()
   themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
   themebox->addItem ("Qt", QChart::ChartThemeQt);
 
-  fprintf (stderr, "theme = %d\n", (int)theme);
+  int sel = (int)chartData->getTheme ();
+  themebox->setCurrentIndex (sel);
+  
   layout->addWidget(themebox, 0, 1);
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
   cancelButton->setAutoDefault (false);

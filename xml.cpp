@@ -416,7 +416,7 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	      (attrs.value (xml_tags[XML_spline].tag)).toString ();
 	    QString polar  =
 	      ((attrs.value (xml_tags[XML_polar].tag))).toString ();
-	    QStringRef themeref = attrs.value (xml_tags[XML_spline].tag);
+	    QStringRef themeref = attrs.value (xml_tags[XML_theme].tag);
 	    int theme = themeref.isEmpty ()
 	      ? QChart::ChartThemeLight : themeref.toInt ();
 	    parseChart ((0 == spline.compare (xml_tags[XML_true].tag)),
@@ -476,8 +476,8 @@ MainWindow::readVis (QString &fileName)
     }
   }
 
-#if 0
   int i;
+#if 0
   for (i = 0; i < curves.size (); i++) {
     fprintf (stderr, "\ncurve %d\n", i);
     curves[i].showCurve ();
@@ -488,7 +488,7 @@ MainWindow::readVis (QString &fileName)
     charts[i]->showChart ();
   }
 #endif
-  int i;
+
   for (i =  0; i < charts.size (); i++) {
     ChartControls *tab1 = new ChartControls (i, this);
     tabs->addTab (tab1, charts[i]->getTitle ());

@@ -72,10 +72,10 @@ class ChartData
 
   void showChart ()
   {
-    fprintf (stderr, "%s spline=%s polar=%s\n",
+    fprintf (stderr, "%s spline=%s polar=%s theme = %d\n",
 	     toCString (title),
 	     (spline ? "true" : "false"),
-	     (polar ? "true" : "false"));
+	     (polar ? "true" : "false"), (int)theme);
     if (ix) ix->showIndex ();
     if (iz) iz->showIndex ();
     if (!selected.isEmpty ()) {
