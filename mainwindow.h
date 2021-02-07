@@ -140,6 +140,10 @@ public:
   QTextEdit 	*aplwin;
   int 		 getCurveCount () { return curves.size (); }
   Curve		 getCurve (int i) { return curves[i]; }
+  int 		 getChartCount () { return charts.size (); }
+  ChartData	*getChart (int i) {
+    return ((i >= 0 && i < charts.size ()) ? charts[i] : nullptr);
+  }
   void		 initXmlHash ();
   void 		 setTabTitle (int ix, QString &title)
       { tabs->setTabText (ix, title); }

@@ -48,6 +48,7 @@ public:
   int		  tabIndex;
   MainWindow     *mainWindow;
   QVector<int>    curveList;
+  ChartData 	 *chartData;			   
 
 private slots:
   void valChanged(bool enabled);

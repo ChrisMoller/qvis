@@ -1223,8 +1223,6 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
     }
   }
 #endif
-  
-  buildMenu (msgs);
 
   initXmlHash ();
 
@@ -1236,6 +1234,8 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
     }
   }
 #endif
+  
+  buildMenu (msgs);
   
   aplline->setFocus ();
   this->show ();

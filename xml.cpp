@@ -483,6 +483,7 @@ MainWindow::readVis (QString &fileName)
     }
   }
 
+#if 0
   int i;
   for (i = 0; i < curves.size (); i++) {
     fprintf (stderr, "\ncurve %d\n", i);
@@ -493,6 +494,7 @@ MainWindow::readVis (QString &fileName)
     fprintf (stderr, "\nchart %d\n", i);
     charts[i]->showChart ();
   }
+#endif
 }
 
 void

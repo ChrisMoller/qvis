@@ -44,7 +44,11 @@ ChartControls::selectCurves ()
   for (i = 0; i < mainWindow->getCurveCount (); i++) {
     QTableWidgetItem *item_lbl =
       new QTableWidgetItem (mainWindow->getCurve (i).getLabel ());
-    item_lbl->setCheckState(Qt::Unchecked);
+    bool active;
+    if (chartData)
+      active = chartData->getSelected ().contains (i);
+    else active = false;
+    item_lbl->setCheckState(active ? Qt::Checked : Qt::Unchecked);
     curvesTable->setItem (i, 0, item_lbl);
   }
 
@@ -72,6 +76,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 {
   mainWindow = parent;
   tabIndex = index;
+  chartData = mainWindow->getChart (tabIndex);
   // /old_home/Qt/Examples/Qt-5.15.1/widgets/dialogs/tabdialog/tabdialog.cpp
   QGridLayout *layout = new QGridLayout ();
   
