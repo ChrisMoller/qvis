@@ -586,8 +586,12 @@ MainWindow::setGlobalFont ()
   QFontDialog dialog ();
   bool ok;
   QFont newfont = QFontDialog::getFont(&ok, this);
-  if (ok) 
+  if (ok) {
+    QSettings settings;
     QApplication::setFont (newfont);
+    settings.setValue (QString (SETTINGS_FONT),
+		       QVariant (newfont.toString ()));
+  }
 }
 
 void
@@ -596,32 +600,36 @@ MainWindow::setGlobalStyle ()
   // https://qss-stock.devsecstudio.com/templates.php
   // https://stackoverflow.com/questions/4810729/qt-setstylesheet-from-a-resource-qss-file
 
-  static int selection = 1;
-  
   QDialog dialog (this, Qt::Widget);
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
 
+  static int idx = -1;
   int row = 0;
 
   QComboBox *style_combo = new QComboBox ();
   uint i;
   QStringList keys = QStyleFactory::keys();
   for (i = 0; i < (uint)keys.size (); i++) {
+    if (styledesc.contains (keys[i]))
+      idx = i;
     style_combo->addItem (keys[i], QString (""));
   }
 
   QDir dir ("./styles", "*.qss", QDir::IgnoreCase,
 	    QDir::Files | QDir::NoDotAndDotDot);
   if (dir.count () > 0) {
-    for (i =  0; i < dir.count (); i++) {
+    int j = i;
+    for (i =  0; i < dir.count (); i++, j++) {
+      if (styledesc.contains (dir[i]))
+	idx = j;
       QString fn = dir[i];
       fn.remove (".qss");
       style_combo->addItem (QString (basename (toCString (fn))),
 			    "./styles/" + dir[i]);
     }
   }
-  style_combo->setCurrentIndex (selection);
+  style_combo->setCurrentIndex (idx);
   layout->addWidget (style_combo, 0, 0, 1, 2);
   
   row++;
@@ -639,20 +647,44 @@ MainWindow::setGlobalStyle ()
   dialog.move (loc.x () + 200, loc.y () + 200);
   int drc = dialog.exec ();
   if (drc == QDialog::Accepted) {
-    selection = style_combo->currentIndex ();
+    idx = style_combo->currentIndex ();
     QString key = style_combo->currentText ();
     QString fn = (style_combo->currentData ()).toString ();
-    if (fn.isEmpty ()) 
+    QSettings settings;
+    if (fn.isEmpty ()) {
       QApplication::setStyle (QStyleFactory::create (key));
+      settings.setValue (QString (SETTINGS_STYLE), QVariant (key));
+    }
     else {
+      settings.setValue (QString (SETTINGS_STYLE), QVariant (fn));
       QFile styleFile(fn);
       styleFile.open( QFile::ReadOnly );
       QString style( styleFile.readAll() );
       setStyleSheet (style);
+      styleFile.close ();
     }
   }
 }
 
+void
+MainWindow::setEditor ()
+{
+  bool ok;
+  QString text =
+    QInputDialog::getText(this,					// parent
+			  tr("Select editor"),	// title
+			  tr("Editor:"),			// label
+			  QLineEdit::Normal,			// echo mode
+			  editor,		// text
+			  &ok);
+  if (ok && !text.isEmpty()) {
+    QSettings settings;
+    editor = text;
+    settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
+  }
+}
+
+#if 0
 void
 MainWindow::setGeneral ()
 {
@@ -661,6 +693,7 @@ MainWindow::setGeneral ()
   dialog.setLayout (layout);
 
   int row = 0;
+#if 0
   QLabel *editorLabel = new QLabel(QString ("Editor"), this);
   layout->addWidget (editorLabel, row, 0);
   QLineEdit *editorSelect = new  QLineEdit ();
@@ -686,6 +719,7 @@ MainWindow::setGeneral ()
   QObject::connect (styleButton, SIGNAL (clicked ()),
 		    this, SLOT (setGlobalStyle ()));
 
+#endif
   row++;
   QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   layout->addWidget (closeButton, row, 1);
@@ -699,6 +733,7 @@ MainWindow::setGeneral ()
   QPoint loc = this->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
   int drc = dialog.exec ();
+#if 0
   if (drc == QDialog::Accepted) {
     if (!editorSelect->text ().isEmpty ()) {
       QSettings settings;
@@ -706,11 +741,14 @@ MainWindow::setGeneral ()
       settings.setValue (QString (SETTINGS_EDITOR), QVariant (editor));
     }
   }
+  
   delete editorLabel;
   delete editorSelect;
+#endif
   delete closeButton;
   delete layout;
 }
+#endif
 
 void
 MainWindow::create_menuBar ()
@@ -765,9 +803,19 @@ MainWindow::create_menuBar ()
   /********** settings ****************/
   QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
 
-  QAction *generalAct =
-    settingsMenu->addAction(tr("&General"), this, &MainWindow::setGeneral);
-  generalAct->setStatusTip(tr("General settings"));
+  QAction *editorAct =
+    settingsMenu->addAction(tr("&Editor"), this, &MainWindow::setEditor);
+  editorAct->setStatusTip(tr("Set editor"));
+  
+  QAction *fontAct =
+    settingsMenu->addAction(tr("&Font"), this, &MainWindow::setGlobalFont);
+  fontAct->setStatusTip(tr("Set font"));
+  
+  QAction *styleAct =
+    settingsMenu->addAction(tr("&Style"), this, &MainWindow::setGlobalStyle);
+  styleAct->setStatusTip(tr("Set style"));
+
+  
 
   /********** help ****************/
   QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -1205,6 +1253,27 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   editor = settings.value (SETTINGS_EDITOR).toString ();
   if (editor.isEmpty ()) 
     editor = QString (DEFAULT_EDITOR);
+
+  QString fontdesc = settings.value (SETTINGS_FONT).toString ();
+  if (!fontdesc.isEmpty ()) {
+    QFont font;
+    font.fromString (fontdesc);
+    QApplication::setFont (font);
+  }
+
+  styledesc = settings.value (SETTINGS_STYLE).toString ();
+  if (!styledesc.isEmpty ()) {
+    if (styledesc.endsWith (".qss", Qt::CaseInsensitive)) {
+      QFile styleFile (styledesc);
+      styleFile.open( QFile::ReadOnly );
+      QString style( styleFile.readAll() );
+      setStyleSheet (style);
+      styleFile.close ();
+    }
+    else QApplication::setStyle (QStyleFactory::create (styledesc));
+  }
+      
+
   save_mode = SAVE_MODE_SAVE;
   connect(&watcher,
 	  &QFileSystemWatcher::fileChanged,

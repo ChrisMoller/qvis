@@ -34,6 +34,8 @@ QT_CHARTS_USE_NAMESPACE
 
 // for settings
 #define SETTINGS_EDITOR     "Editor"
+#define SETTINGS_FONT       "Font"
+#define SETTINGS_STYLE      "Style"
 #define SETTINGS_HEIGHT     "Height"
 #define SETTINGS_WIDTH      "Width"
 
@@ -165,9 +167,6 @@ private slots:
   void newChart();
   void about();
   void returnPressed ();
-  void setGeneral ();
-  void setGlobalFont ();
-  void setGlobalStyle ();
   void fileChanged(const QString &path);
   void cellPressed (int row, int column);
   bool writeVis (QString &fileName);
@@ -176,6 +175,9 @@ private slots:
   
   
 private:
+  void 		 setEditor ();
+  void 		 setGlobalStyle ();
+  void		 setGlobalFont ();
   void		 openapl(bool cpy);
   void           createActions();
   void		 process_line(QString text);
@@ -212,5 +214,6 @@ private:
   QTabWidget 		*tabs;
   QTableWidget 		*curvesTable;
   QList<ChartData*>	charts;
+  QString		styledesc;
 };
 #endif // MAINWINDOW_H
