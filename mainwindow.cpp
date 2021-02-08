@@ -188,8 +188,13 @@ MainWindow::openVis()
   dialog.setNameFilter(tr("Vis (*.vis)"));
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptOpen);
-  if (dialog.exec() == QDialog::Accepted)
-    readVis (dialog.selectedFiles().first());
+  if (dialog.exec() == QDialog::Accepted) {
+    visCurFile = visCurFile.isNull () 
+      ? dialog.selectedFiles().first()
+      : QString ("");
+    fprintf (stderr, "opening = \"%s\"\n", toCString (visCurFile));
+    readVis (visCurFile);
+  }
 }
 
 void
@@ -760,7 +765,6 @@ MainWindow::create_menuBar ()
   fileToolBar->addAction(loadAct);
 #endif
   loadAct->setShortcuts(QKeySequence::Open);
-  loadAct->setStatusTip(tr("Load an existing workspace"));
   connect(loadAct, &QAction::triggered, this, &MainWindow::loadapl);
   fileMenu->addAction(loadAct);
 
@@ -771,7 +775,6 @@ MainWindow::create_menuBar ()
   fileToolBar->addAction(saveAct);
 #endif
   saveAct->setShortcuts(QKeySequence::Save);
-  saveAct->setStatusTip(tr("Save the document to disk"));
   connect(saveAct, &QAction::triggered, this, &MainWindow::save);
   fileMenu->addAction(saveAct);
 
@@ -780,7 +783,6 @@ MainWindow::create_menuBar ()
     fileMenu->addAction(saveAsIcon, tr("Save &As..."), this,
 			&MainWindow::saveAs);
   saveAsAct->setShortcuts(QKeySequence::SaveAs);
-  saveAsAct->setStatusTip(tr("Save the document under a new name"));
 
   fileMenu->addSeparator();
 
@@ -790,7 +792,6 @@ MainWindow::create_menuBar ()
   QAction *exitAct =
     fileMenu->addAction(exitIcon, tr("E&xit"), this, &QWidget::close);
   exitAct->setShortcuts(QKeySequence::Quit);
-  exitAct->setStatusTip(tr("Exit the application"));
 #ifdef USE_TOOLBAR
   fileToolBar->addAction(exitAct);
 #endif
@@ -1121,16 +1122,19 @@ MainWindow::saveAsVis()
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   if (dialog.exec() != QDialog::Accepted)
     return false;
-  return writeVis (dialog.selectedFiles().first());
+  fprintf (stderr, "saveas \"%s\"\n", toCString (visCurFile));
+  visCurFile = dialog.selectedFiles().first();
+  return writeVis (visCurFile);
 }
 
 bool
 MainWindow::saveVis()
 {
-  if (curFile.isEmpty()) {
+  if (visCurFile.isEmpty()) {
     return saveAs();
   } else {
-    return writeVis (curFile);
+    fprintf (stderr, "save \"%s\"\n", toCString (visCurFile));
+    return writeVis (visCurFile);
   }
 }
 
@@ -1205,11 +1209,13 @@ MainWindow::buildMenu (QString &msgs)
     /** chart menu *****/
     
     QMenu *chartMenu = mb2->addMenu(tr("Chart"));
-    
+
+#if 0
     QAction *openAct = new QAction(tr("&Open Chart..."), this);
     openAct->setStatusTip(tr("Open an existing vis file"));
     //    connect(openAct, &QAction::triggered, this, &MainWindow::open);
     chartMenu->addAction(openAct);
+#endif
     
     QAction *newChartAct = new QAction(tr("&New Chart..."), this);
     newChartAct->setStatusTip(tr("New chart"));
@@ -1277,10 +1283,13 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 
   if (args.empty ()) {
     ChartControls *tab1 = new ChartControls (0, this);
+    tab1->setUseState (false);
     tabs->addTab (tab1, "New tab");
   }
   else {
     int i;
+    if (args.count () == 1)
+      visCurFile = args[0];
     for (i = 0; i < args.count (); i++) {
       readVis (args[i]);
     }

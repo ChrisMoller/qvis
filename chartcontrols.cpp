@@ -113,6 +113,19 @@ ChartControls::selectCurves ()
   }
 }
 
+void
+ChartControls::setUseState (bool state)
+{
+  useState = state;
+}
+
+bool
+ChartControls::inUse ()
+{
+  return useState;
+}
+
+
 ChartControls::ChartControls (int index, MainWindow *parent)
   : QWidget(parent)
 {
@@ -122,6 +135,7 @@ ChartControls::ChartControls (int index, MainWindow *parent)
   // /old_home/Qt/Examples/Qt-5.15.1/widgets/dialogs/tabdialog/tabdialog.cpp
   QGridLayout *layout = new QGridLayout ();
   theme = QChart::ChartThemeLight;
+  useState = false;
   
   int row = 0;
   int col = 0;

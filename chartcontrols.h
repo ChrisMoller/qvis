@@ -45,12 +45,16 @@ public:
   QComboBox 	 *themebox;
   QList<int>      selected;
   QChart::ChartTheme theme;
+  void		 setInUse (bool state);
+  bool		 inUse ();
+  void		 setUseState (bool state);
 
  private:
   int		  tabIndex;
   MainWindow     *mainWindow;
   QVector<int>    curveList;
-  ChartData 	 *chartData;			   
+  ChartData 	 *chartData;
+  bool 		  useState;
 
 private slots:
   void valChanged(bool enabled);

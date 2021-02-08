@@ -489,8 +489,17 @@ MainWindow::readVis (QString &fileName)
   }
 #endif
 
+  
   for (i =  0; i < charts.size (); i++) {
-    ChartControls *tab1 = new ChartControls (i, this);
+    ChartControls *tab1 = nullptr;
+    if (tabs->count () > 0) {
+      int ix = tabs->count () - 1;
+      QWidget *widg = tabs->widget (ix);
+      ChartControls *cc = (ChartControls *)widg;
+      if (!cc->inUse ()) tab1 = cc;
+    }
+    if (!tab1) tab1 = new ChartControls (i, this);
+    tab1->setUseState (true);
     tabs->addTab (tab1, charts[i]->getTitle ());
   }
 }

@@ -168,6 +168,7 @@ private:
   QComboBox 	 *themebox;
   bool		  changed;
   QString 	  curFile;
+  QString 	  visCurFile;
   QChart::ChartTheme theme;	// fixme--copy to chartwin
   ChartWindow	 *chartWindow;
   void		  insertItem (int i, QTableWidget* &curvesTable);
