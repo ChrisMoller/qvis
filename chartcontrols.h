@@ -48,6 +48,7 @@ public:
   void		 setInUse (bool state);
   bool		 inUse ();
   void		 setUseState (bool state);
+  ChartData 	*getChartData ();
 
  private:
   int		  tabIndex;

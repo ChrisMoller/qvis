@@ -125,6 +125,11 @@ ChartControls::inUse ()
   return useState;
 }
 
+ChartData *
+ChartControls::getChartData ()
+{
+  return chartData;
+}
 
 ChartControls::ChartControls (int index, MainWindow *parent)
   : QWidget(parent)

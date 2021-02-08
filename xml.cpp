@@ -117,7 +117,8 @@ MainWindow::writeVis (QString &fileName)
     int i;
     for (i = 0; i < tabs->count (); i++) {
       QWidget *widg = tabs->widget (i);
-      ChartControls *cc = (ChartControls *)widg; 
+      ChartControls *cc = (ChartControls *)widg;
+      ChartData     *cd = cc->getChartData ();
       
       stream.writeStartElement(xml_tags[XML_chart].tag);
       bool spline =  (Qt::Checked == cc->do_spline->checkState());
@@ -131,7 +132,7 @@ MainWindow::writeVis (QString &fileName)
 				     ? xml_tags[XML_true].tag
 				     : xml_tags[XML_false].tag));
       stream.writeAttribute(xml_tags[XML_theme].tag,
-			    QString::number (cc->theme));
+			    QString::number (cd->getTheme ()));
 
       stream.writeTextElement(xml_tags[XML_title].tag,
 			      cc->chart_title->text ());
@@ -162,11 +163,13 @@ MainWindow::writeVis (QString &fileName)
       stream.writeEndElement(); // range
       stream.writeEndElement(); // ix
 
-      if (cc->selected.size () > 0) {
+      QList<int> selList = cd->getSelected ();
+      fprintf (stderr, "selList size %d\n", selList.size ());
+      if (selList.size () > 0) {
 	stream.writeStartElement(xml_tags[XML_selected].tag);
 	int j;
-	for (j =  0; j < cc->selected.size (); j++) 
-	  stream.writeCharacters (" " + QString::number (cc->selected[j]));
+	for (j =  0; j < selList.size (); j++) 
+	  stream.writeCharacters (" " + QString::number (selList[j]));
 	stream.writeEndElement(); // selected
       }
       
@@ -370,11 +373,15 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
 	break;
       case XML_selected:
 	{
+	  fprintf (stderr, "reading sel\n");
 	  QString cstr = stream.readElementText ();
 	  QStringList cvec = cstr.trimmed ().split (QRegExp ("\\s+"));
+	  fprintf (stderr, "cstr = \"%s\", ct = %d\n",
+		   toCString (cstr),  cvec.size ());
 	  int k;
 	  for (k = 0; k < cvec.size (); k++)
 	    selected.append (cvec[k].toInt ());
+	  fprintf (stderr, "sc = %d\n", selected.size ());
 	}
 	break;
       }
@@ -392,6 +399,7 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
 
   ChartData *cd = new ChartData (title, spline, polar, theme,
 				 ix, iz, selected);
+  fprintf (stderr, "sc = %d\n", cd->getSelected ().size ());
   charts.append (cd);
 
   return rc;
