@@ -54,6 +54,7 @@ class Curve
   QString getFunction () { return fcn; }
   int     getPen ()      { return pen; }
   QColor  getColour ()   { return colour; }
+  void    setColour (QColor rcolour)   { colour = rcolour; }
 
   QString getPenName ()
   {

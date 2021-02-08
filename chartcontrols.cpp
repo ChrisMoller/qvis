@@ -62,14 +62,10 @@ ChartControls::curveSettings ()
 
   QPoint loc = mainWindow->pos ();
   dialog.move (loc.x () + 200, loc.y () + 200);
-#if 0
-  dialog.exec ();
-#else
   if (QDialog::Accepted == dialog.exec ()) {
     theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
     chartData->setTheme (theme);
   }
-#endif
 }
 
 void

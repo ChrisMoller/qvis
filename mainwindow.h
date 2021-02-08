@@ -23,6 +23,7 @@
 #include <QtCharts/QChartView>
 #include <QPolarChart>
 #include <QTextEdit>
+#include <QObject>
 
 QT_CHARTS_USE_NAMESPACE
 
@@ -31,6 +32,9 @@ QT_CHARTS_USE_NAMESPACE
 #include "history.h"
 #include "curves.h"
 #include "chartdata.h"
+
+#include "QtColorWidgets/color_selector.hpp"
+using namespace color_widgets;
 
 // for settings
 #define SETTINGS_EDITOR     "Editor"

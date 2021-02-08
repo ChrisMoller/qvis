@@ -12,3 +12,11 @@ maybe zoom in/out of chart by widening/narrowing min/max
 make linetype and colour in edit curves editable
 
 parameters menu
+
+labelling on charts
+
+set fonts in chart ctrls
+
+separate chartdata.h      chartwindow.h  into .h and .cpp
+
+on open vis file, check if existing tab is empty.  if so, kill it or fill it in.

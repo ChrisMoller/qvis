@@ -20,6 +20,7 @@
 // https://doc.qt.io/qt-5/qtdatavisualization-index.html
 
 #include <QtWidgets>
+#include <QObject>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QTextEdit>
@@ -32,6 +33,7 @@
 #include <QInputDialog>
 #include <values.h>
 
+#include "QtColorWidgets/color_palette.hpp"
 #include "QtColorWidgets/color_selector.hpp"
 
 using namespace color_widgets;
@@ -295,50 +297,73 @@ MainWindow::save()
   return rc;
 }
 
+
+enum {
+  COLUMN_NAME,
+  COLUMN_LABEL,
+  COLUMN_FCN,
+  COLUMN_COLOUR,
+  COLUMN_PEN,
+  COLUMN_X
+};
+
 void
 MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 {
   QTableWidgetItem *item_name =
     new QTableWidgetItem (curves[i].getName ());
   item_name->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
+  curvesTable->setItem (i, COLUMN_NAME, item_name);
+
   QTableWidgetItem *item_lbl =
     new QTableWidgetItem (curves[i].getLabel ());
   item_lbl->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
+  curvesTable->setItem (i, COLUMN_LABEL, item_lbl);
+
   QTableWidgetItem *item_fcn =
     new QTableWidgetItem (curves[i].getFunction ());
   item_fcn->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
-  QTableWidgetItem *item_colour =
-    new QTableWidgetItem (curves[i].getColour ().name ());
-  QBrush brush (curves[i].getColour ());
-  item_colour->setBackground (brush);
+  curvesTable->setItem (i, COLUMN_FCN, item_fcn);
+
+  ColorSelector *curve_colour = new ColorSelector ();
+  curve_colour->setUpdateMode (ColorSelector::Confirm);
+  curve_colour->setColor (curves[i].getColour ());
+  curvesTable->setCellWidget (i, COLUMN_COLOUR, curve_colour);
+
   QTableWidgetItem *item_pen =
     new QTableWidgetItem (curves[i].getPenName ());
+  curvesTable->setItem (i, COLUMN_PEN, item_pen);
+
   QTableWidgetItem *item_delete =
-    new QTableWidgetItem ("X");
-  curvesTable->setItem (i, 0, item_name);
-  curvesTable->setItem (i, 1, item_lbl);
-  curvesTable->setItem (i, 2, item_fcn);
-  curvesTable->setItem (i, 3, item_colour);
-  curvesTable->setItem (i, 4, item_pen);
-  curvesTable->setItem (i, 5, item_delete);
+    new QTableWidgetItem (QIcon (":/images/edit-delete.png"), "Delete");
+  curvesTable->setItem (i, COLUMN_X, item_delete);
 }
+
 
 void
 MainWindow::cellPressed (int row, int column)
 {
-  if (column == 5) {
-    fprintf (stderr, "cell pressed %d %d\n", row, column);
-    if (row >= 0 && row < curves.size ()) {
-      QMessageBox msgBox;
-      msgBox.setText ("Did you really mean that?");
-      msgBox.setStandardButtons (QMessageBox::Yes |
-				 QMessageBox::Cancel);
-      msgBox.setDefaultButton (QMessageBox::Cancel);
-      if (msgBox.exec() == QMessageBox::Yes) {
-	curves.removeAt (row);
-	curvesTable->removeRow (row);
+  switch(column) {
+  case COLUMN_X:
+    {
+      if (row >= 0 && row < curves.size ()) {
+	QMessageBox msgBox;
+	msgBox.setText ("Did you really mean that?");
+	msgBox.setStandardButtons (QMessageBox::Yes |
+				   QMessageBox::Cancel);
+	msgBox.setDefaultButton (QMessageBox::Cancel);
+	QPoint loc = this->pos ();
+	msgBox.move (loc.x () + 200, loc.y () + 200);
+	if (msgBox.exec() == QMessageBox::Yes) {
+	  curves.removeAt (row);
+	  curvesTable->removeRow (row);
+	}
       }
     }
+    break;
+  case  COLUMN_PEN:
+    fprintf (stderr, "pen cell pressed\n");
+    break;
   }
 }
 
@@ -369,12 +394,12 @@ MainWindow::addCurve()
   QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
   QTableWidgetItem *column_x      = new QTableWidgetItem(tr("Delete"));
   QString colour_style_style ("background-color: yellow; color: red;");
-  curvesTable->setHorizontalHeaderItem (0, column_name);
-  curvesTable->setHorizontalHeaderItem (1, column_label);
-  curvesTable->setHorizontalHeaderItem (2, column_fcn);
-  curvesTable->setHorizontalHeaderItem (3, column_colour);
-  curvesTable->setHorizontalHeaderItem (4, column_pen);
-  curvesTable->setHorizontalHeaderItem (5, column_x);
+  curvesTable->setHorizontalHeaderItem (COLUMN_NAME,	column_name);
+  curvesTable->setHorizontalHeaderItem (COLUMN_LABEL,	column_label);
+  curvesTable->setHorizontalHeaderItem (COLUMN_FCN,	column_fcn);
+  curvesTable->setHorizontalHeaderItem (COLUMN_COLOUR,	column_colour);
+  curvesTable->setHorizontalHeaderItem (COLUMN_PEN,	column_pen);
+  curvesTable->setHorizontalHeaderItem (COLUMN_X,	column_x);
   int i;
   for (i = 0; i < curves.size (); i++)
     insertItem (i, curvesTable);
@@ -457,6 +482,11 @@ MainWindow::addCurve()
       curve_name->clear ();
       curve_label->clear ();
       curve_function->clear ();
+      for (i = 0; i < curves.size (); i++) {
+	QWidget *widget = curvesTable->cellWidget (i, COLUMN_COLOUR);
+	QColor colour = ((ColorSelector *)widget)->color ();
+	curves[i].setColour (colour);
+      }
 #if 0
       {
 	int i;
@@ -487,8 +517,8 @@ MainWindow::addCurve()
   }
   
   
-  delete acceptButton;
-  delete layout;
+  //  delete acceptButton;
+  //  delete layout;
 }
 
 void
