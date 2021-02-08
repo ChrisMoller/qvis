@@ -136,7 +136,8 @@ ChartControls::ChartControls (int index, MainWindow *parent)
 {
   mainWindow = parent;
   tabIndex = index;
-  chartData = mainWindow->getChart (tabIndex);
+  chartData = mainWindow->getChart (index);
+  fprintf (stderr, "index = %d, cd = %p\n", index, chartData);
   // /old_home/Qt/Examples/Qt-5.15.1/widgets/dialogs/tabdialog/tabdialog.cpp
   QGridLayout *layout = new QGridLayout ();
   theme = QChart::ChartThemeLight;

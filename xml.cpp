@@ -506,9 +506,9 @@ MainWindow::readVis (QString &fileName)
       ChartControls *cc = (ChartControls *)widg;
       if (!cc->inUse ()) tab1 = cc;
     }
-    if (!tab1) tab1 = new ChartControls (i, this);
     tab1->setUseState (true);
     tabs->addTab (tab1, charts[i]->getTitle ());
+    if (!tab1) tab1 = new ChartControls (i, this);
   }
 }
 
