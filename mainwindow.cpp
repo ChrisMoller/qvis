@@ -340,6 +340,25 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 }
 
 
+static QComboBox *
+linestyleCombo (int sel)
+{
+  QComboBox *linestyle_combo = new QComboBox ();
+  linestyle_combo->addItem ("Solid Line",
+			    QVariant((int)Qt::SolidLine));
+  linestyle_combo->addItem ("Dash Line,",
+			    QVariant((int)Qt::DashLine));
+  linestyle_combo->addItem ("Dot Line,",
+			    QVariant((int)Qt::DotLine));
+  linestyle_combo->addItem ("Dash Dot Line,",
+			    QVariant((int)Qt::DashDotLine));
+  linestyle_combo->addItem ("Dash Dot Dot Line",
+			    QVariant((int)Qt::DashDotDotLine));
+  linestyle_combo->setCurrentIndex (sel);
+  
+  return linestyle_combo;
+}
+
 void
 MainWindow::cellPressed (int row, int column)
 {
@@ -362,7 +381,29 @@ MainWindow::cellPressed (int row, int column)
     }
     break;
   case  COLUMN_PEN:
-    fprintf (stderr, "pen cell pressed\n");
+    {
+     QDialog dialog (this, Qt::Dialog);
+     QGridLayout *layout = new QGridLayout;
+     dialog.setLayout (layout);
+     
+     QComboBox *linestyle_combo = linestyleCombo (0);
+     int found = linestyle_combo->findData (QVariant(curves[row].getPen ()));
+     if (found != -1) linestyle_combo->setCurrentIndex (found);
+     layout->addWidget (linestyle_combo, 0, 0, 1, 2);
+
+     QPushButton *acceptButton = new QPushButton (QObject::tr ("Accept"));
+     acceptButton->setAutoDefault (true);
+     acceptButton->setDefault (true);
+     layout->addWidget (acceptButton, 1, 1);
+     QObject::connect (acceptButton, &QPushButton::clicked,
+		       &dialog, &QDialog::accept);
+     if (QDialog::Accepted == dialog.exec ()) {
+       int pen	= (linestyle_combo->currentData ()).toInt ();
+       curves[row].setPen (pen);
+       QTableWidgetItem *item = curvesTable->item (row, COLUMN_PEN);
+       item->setText (curves[row].getPenName ());
+     }
+    }
     break;
   }
 }
@@ -431,18 +472,7 @@ MainWindow::addCurve()
   curve_colour.setUpdateMode (ColorSelector::Confirm);
   layout->addWidget (&curve_colour, row, col++);
 
-  QComboBox *linestyle_combo = new QComboBox ();
-  linestyle_combo->addItem ("Solid Line",
-			    QVariant((int)Qt::SolidLine));
-  linestyle_combo->addItem ("Dash Line,",
-			    QVariant((int)Qt::DashLine));
-  linestyle_combo->addItem ("Dot Line,",
-			    QVariant((int)Qt::DotLine));
-  linestyle_combo->addItem ("Dash Dot Line,",
-			    QVariant((int)Qt::DashDotLine));
-  linestyle_combo->addItem ("Dash Dot Dot Line",
-			    QVariant((int)Qt::DashDotDotLine));
-  linestyle_combo->setCurrentIndex (0);
+  QComboBox *linestyle_combo = linestyleCombo (0);
   layout->addWidget (linestyle_combo, row, col++);
   
   row++;
