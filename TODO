@@ -15,8 +15,6 @@ labelling on charts
 
 set fonts in chart ctrls
 
-separate chartdata.h      chartwindow.h  into .h and .cpp
-
 on open vis file, check if existing tab is empty.  if so, kill it or fill it in.
 
 clear curves, clear charts

@@ -28,44 +28,17 @@ class Curve
 {
  public:
   Curve (QString &rname, QString &rlabel,
-	 QString &rfcn, int rpen, QColor rcolour)
-    {
-      name	= rname;
-      label	= rlabel;
-      fcn	= rfcn;
-      pen	= rpen;
-      colour	= rcolour;
-    }
-
-  void showCurve ()
-  {
-    fprintf (stderr, "\"%s\": \"%s\" \"%s\"\n",
-	     toCString (name),
-	     toCString (label),
-	     toCString (fcn));
-    fprintf (stderr, "pen: %d\n", pen);
-    fprintf (stderr, "colour: %d %d %d\n",
-	     colour.red (), colour.green (), colour.blue ());
-  }
-
-  QString getName ()     { return name; }
-  void setName (QString &newname)     { name = newname; }
-  QString getLabel ()    { return label; }
-  QString getFunction () { return fcn; }
-  int     getPen ()      { return pen; }
-  QColor  getColour ()   { return colour; }
-  
-  void    setColour (QColor rcolour)   { colour = rcolour; }
-  void    setPen (int rpen)            { pen = rpen; }
-
-  QString getPenName ()
-  {
-    QString name ("Unknown");
-    if (pen >=0 && pen < penNames.size ()) 
-      name = penNames[pen];
-    return name;
-  }
-      
+	 QString &rfcn, int rpen, QColor rcolour);
+  void showCurve ();
+  QString getName ();
+  void setName (QString &newname);
+  QString getLabel ();
+  QString getFunction ();
+  int     getPen ();
+  QColor  getColour ();
+  void    setColour (QColor rcolour);
+  void    setPen (int rpen);
+  QString getPenName ();
 
  private:
   QString name;			// key 

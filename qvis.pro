@@ -9,23 +9,25 @@ LIBS += -L`apl --show_lib_dir` -lapl -lreadline
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    aplexec.cpp \
+    chartdata.cpp \
+    chartcontrols.cpp \
+    chartwindow.cpp \
+    curves.cpp \
+    history.cpp \
     main.cpp \
     mainwindow.cpp \
-    chartwindow.cpp \
-    chartcontrols.cpp \
-    history.cpp \
-    aplexec.cpp \
     xml.cpp
 
 HEADERS += \
-    curves.h \
+    aplexec.h \
     chartdata.h \
-    chartwindow.h \
     chartcontrols.h \
+    chartwindow.h \
+    curves.h \
+    history.h \
     mainwindow.h \
     xml.h \
-    history.h \
-    aplexec.h \
     XMLtags.def
 
 FORMS +=

@@ -19,7 +19,10 @@
 #define CHARTDATA_H
 
 #include <QtWidgets>
+#include <QChart>
+#include <QtCharts/QChartView>
 
+QT_CHARTS_USE_NAMESPACE
 
 #ifndef toCString
 #define toCString(v) ((v).toStdString ().c_str ())
@@ -28,24 +31,12 @@
 class Index
 {
  public:
-  Index (QString &rname, QString &rlabel, double rmin, double rmax)
-    {
-      name  = rname;
-      label = rlabel;
-      min   = rmin;
-      max   = rmax;
-    }
-  void showIndex ()
-  {
-    fprintf (stderr, "%s %s min: %g max: %g\n",
-	     toCString (name),
-	     toCString (label),
-	     min, max);
-  }
-  QString	getName ()  { return name;}
-  QString	getLabel () { return label;}
-  double	getMin ()   { return min;}
-  double	getMax ()   { return max;}
+  Index (QString &rname, QString &rlabel, double rmin, double rmax);
+  void 		showIndex ();
+  QString	getName ();
+  QString	getLabel ();
+  double	getMin ();
+  double	getMax ();
   
  private:
   QString name;
@@ -57,51 +48,20 @@ class Index
 class ChartData
 {
  public:
-  ChartData () {};
   ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
-	     Index *rix, Index *riz, QList<int> &rselected)
-    {
-      title  = rtitle;
-      spline = rspline;
-      polar  = rpolar;
-      ix     = rix;
-      iz     = riz;
-      selected = rselected;
-      theme = (QChart::ChartTheme)rtheme;
-    }
+	     Index *rix, Index *riz, QList<int> &rselected);
 
-  void showChart ()
-  {
-    fprintf (stderr, "%s spline=%s polar=%s theme = %d\n",
-	     toCString (title),
-	     (spline ? "true" : "false"),
-	     (polar ? "true" : "false"), (int)theme);
-    if (ix) ix->showIndex ();
-    if (iz) iz->showIndex ();
-    if (!selected.isEmpty ()) {
-      fprintf (stderr, "Selected: ");
-      int k;
-      for (k = 0; k < selected.size (); k++)
-	fprintf (stderr, "%d ", selected[k]);
-      fprintf (stderr, "\n");
-    }
-  }
-  void	  	appendSelected (int i) {selected.append (i);}
-  void	  	clearSelected () {selected.clear ();}
-  QList<int>	getSelected () { return selected;}
-  QString	getTitle ()  { return title;}
-  bool		getSpline () { return spline;}
-  bool		getPolar ()  { return polar;}
-  Index		*getXIndex () { return ix; }
-  Index		*getZIndex () { return iz; }
-  void		 setTheme ( int rtheme) {
-    theme = (QChart::ChartTheme)rtheme;
-    fprintf (stderr, "settheme %d\n", theme);
-  }
-
-  QChart::ChartTheme getTheme () {
-    return theme;
-  }
+  void 		showChart ();
+  void	  	appendSelected (int i);
+  void	  	clearSelected ();
+  QList<int>	getSelected ();
+  QString	getTitle ();
+  bool		getSpline ();
+  bool		getPolar ();
+  Index		*getXIndex ();
+  Index		*getZIndex ();
+  void		setTheme (int rtheme);
+  QChart::ChartTheme getTheme ();
 
  private:
   QString title;
