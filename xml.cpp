@@ -164,7 +164,6 @@ MainWindow::writeVis (QString &fileName)
       stream.writeEndElement(); // ix
 
       QList<int> selList = cd->getSelected ();
-      fprintf (stderr, "selList size %d\n", selList.size ());
       if (selList.size () > 0) {
 	stream.writeStartElement(xml_tags[XML_selected].tag);
 	int j;
@@ -373,15 +372,11 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
 	break;
       case XML_selected:
 	{
-	  fprintf (stderr, "reading sel\n");
 	  QString cstr = stream.readElementText ();
 	  QStringList cvec = cstr.trimmed ().split (QRegExp ("\\s+"));
-	  fprintf (stderr, "cstr = \"%s\", ct = %d\n",
-		   toCString (cstr),  cvec.size ());
 	  int k;
 	  for (k = 0; k < cvec.size (); k++)
 	    selected.append (cvec[k].toInt ());
-	  fprintf (stderr, "sc = %d\n", selected.size ());
 	}
 	break;
       }
@@ -399,7 +394,6 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
 
   ChartData *cd = new ChartData (title, spline, polar, theme,
 				 ix, iz, selected);
-  fprintf (stderr, "sc = %d\n", cd->getSelected ().size ());
   charts.append (cd);
 
   return rc;
@@ -499,16 +493,17 @@ MainWindow::readVis (QString &fileName)
 
   
   for (i =  0; i < charts.size (); i++) {
-    ChartControls *tab1 = nullptr;
     if (tabs->count () > 0) {
       int ix = tabs->count () - 1;
       QWidget *widg = tabs->widget (ix);
       ChartControls *cc = (ChartControls *)widg;
-      if (!cc->inUse ()) tab1 = cc;
+      if (!cc->inUse ()) {
+	tabs->removeTab (ix);
+      }
     }
+    ChartControls *tab1 = new ChartControls (i, charts[i], this);
     tab1->setUseState (true);
     tabs->addTab (tab1, charts[i]->getTitle ());
-    if (!tab1) tab1 = new ChartControls (i, this);
   }
 }
 

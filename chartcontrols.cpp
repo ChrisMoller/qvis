@@ -43,6 +43,10 @@ ChartControls::curveSettings ()
   themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
   themebox->addItem ("Qt", QChart::ChartThemeQt);
 
+#if 1
+  chartData = this->getChartData ();
+#else
+#endif
   int sel = (int)chartData->getTheme ();
   themebox->setCurrentIndex (sel);
   
@@ -131,13 +135,18 @@ ChartControls::getChartData ()
   return chartData;
 }
 
-ChartControls::ChartControls (int index, MainWindow *parent)
+void
+ChartControls::setChartData (ChartData *cd)
+{
+  chartData = cd;
+}
+
+ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   : QWidget(parent)
 {
   mainWindow = parent;
   tabIndex = index;
-  chartData = mainWindow->getChart (index);
-  fprintf (stderr, "index = %d, cd = %p\n", index, chartData);
+  chartData = cd;
   // /old_home/Qt/Examples/Qt-5.15.1/widgets/dialogs/tabdialog/tabdialog.cpp
   QGridLayout *layout = new QGridLayout ();
   theme = QChart::ChartThemeLight;

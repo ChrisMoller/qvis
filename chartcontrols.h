@@ -27,7 +27,7 @@ class ChartControls : public QWidget
   Q_OBJECT
 
 public:
-  ChartControls (int index, MainWindow *parent);
+  ChartControls (int index, ChartData *cd, MainWindow *parent);
   ~ChartControls ();
   QComboBox 	 *curves_combo;
   //  void 		 enterChart (ChartWindow *cw); 
@@ -49,6 +49,7 @@ public:
   bool		 inUse ();
   void		 setUseState (bool state);
   ChartData 	*getChartData ();
+  void           setChartData (ChartData *cd);
 
  private:
   int		  tabIndex;

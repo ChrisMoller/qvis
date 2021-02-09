@@ -94,8 +94,14 @@ class ChartData
   bool		getPolar ()  { return polar;}
   Index		*getXIndex () { return ix; }
   Index		*getZIndex () { return iz; }
-  void		 setTheme ( int rtheme) {theme = (QChart::ChartTheme)rtheme;}
-  QChart::ChartTheme getTheme () {return theme;}
+  void		 setTheme ( int rtheme) {
+    theme = (QChart::ChartTheme)rtheme;
+    fprintf (stderr, "settheme %d\n", theme);
+  }
+
+  QChart::ChartTheme getTheme () {
+    return theme;
+  }
 
  private:
   QString title;

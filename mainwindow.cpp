@@ -192,7 +192,6 @@ MainWindow::openVis()
     visCurFile = visCurFile.isNull () 
       ? dialog.selectedFiles().first()
       : QString ("");
-    fprintf (stderr, "opening = \"%s\"\n", toCString (visCurFile));
     readVis (visCurFile);
   }
 }
@@ -560,7 +559,7 @@ void
 MainWindow::newChart()
 {
   int tcnt = tabs->count ();
-  ChartControls *tab1 = new ChartControls (tcnt, this);
+  ChartControls *tab1 = new ChartControls (tcnt, nullptr, this);
   tabs->addTab (tab1, "New tab");
   tabs->setCurrentIndex (tcnt);  
 }
@@ -1104,7 +1103,7 @@ AplLineFilter::eventFilter(QObject *obj, QEvent *event)
 	  }
 	}
 	else if (!errString.isEmpty ()) {
-	  fprintf (stderr, "got fns err\n");
+	  fprintf (stderr, "got fns err\n"); // fixme, use msgbox
 	}
 	return true;
       }
@@ -1122,7 +1121,6 @@ MainWindow::saveAsVis()
   dialog.setAcceptMode(QFileDialog::AcceptSave);
   if (dialog.exec() != QDialog::Accepted)
     return false;
-  fprintf (stderr, "saveas \"%s\"\n", toCString (visCurFile));
   visCurFile = dialog.selectedFiles().first();
   return writeVis (visCurFile);
 }
@@ -1130,12 +1128,10 @@ MainWindow::saveAsVis()
 bool
 MainWindow::saveVis()
 {
-  if (visCurFile.isEmpty()) {
+  if (visCurFile.isEmpty())
     return saveAs();
-  } else {
-    fprintf (stderr, "save \"%s\"\n", toCString (visCurFile));
+  else 
     return writeVis (visCurFile);
-  }
 }
 
 void
@@ -1282,9 +1278,11 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   buildMenu (msgs);
 
   if (args.empty ()) {
+#if 0
     ChartControls *tab1 = new ChartControls (0, this);
     tab1->setUseState (false);
     tabs->addTab (tab1, "New tab");
+#endif
   }
   else {
     int i;
