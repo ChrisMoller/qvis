@@ -41,6 +41,12 @@ Parm::getName ()
   return name;
 }
 
+void
+Parm::setName (QString &newname)
+{
+  name = newname;
+}
+
 Curve::Curve (QString &rname, QString &rlabel,
        QString &rfcn, int rpen, QColor rcolour)
 {
