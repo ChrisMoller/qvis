@@ -311,6 +311,26 @@ enum {
   COLUMN_X
 };
 
+enum {
+  PCOLUMN_NAME,
+  PCOLUMN_REAL,
+  PCOLUMN_IMAG
+};
+
+void
+MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
+{
+  QTableWidgetItem *item_name =
+    new QTableWidgetItem (parms[i].getName ());
+  item_name->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
+  parmsTable->setItem (i, PCOLUMN_NAME, item_name);
+
+  QDoubleSpinBox *item_real = new QDoubleSpinBox ();
+  item_real->setRange (-MAXDOUBLE, MAXDOUBLE);
+  item_real->setValue (parms[i].getValue ().real ());
+  parmsTable->setCellWidget (i, PCOLUMN_REAL, item_real);
+}
+
 void
 MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 {
@@ -364,6 +384,11 @@ linestyleCombo (int sel)
 }
 
 void
+MainWindow::parmsCellPressed (int row, int column)
+{
+}
+
+void
 MainWindow::cellPressed (int row, int column)
 {
   switch(column) {
@@ -410,6 +435,39 @@ MainWindow::cellPressed (int row, int column)
     }
     break;
   }
+}
+
+void
+MainWindow::addParms()
+{
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *dialog_layout = new QGridLayout;
+  dialog.setLayout (dialog_layout);
+
+  /***** existing parms *****/
+  
+  QGroupBox *gbox = new QGroupBox ("Parameters");
+  QHBoxLayout *layout = new QHBoxLayout ();
+  gbox->setLayout (layout);
+  layout->addWidget (gbox);
+    
+  parmsTable       = new QTableWidget (this);
+  connect (parmsTable, &QTableWidget::cellPressed,
+	   this, &MainWindow::parmsCellPressed);
+  
+  parmsTable->setColumnCount (3);
+  parmsTable->setRowCount (parms.size ());
+  QTableWidgetItem *column_name  = new QTableWidgetItem(tr("Name"));
+  QTableWidgetItem *column_real  = new QTableWidgetItem(tr("Real"));
+  QTableWidgetItem *column_imag  = new QTableWidgetItem(tr("Imag"));
+  parmsTable->setHorizontalHeaderItem (PCOLUMN_NAME,	column_name);
+  parmsTable->setHorizontalHeaderItem (PCOLUMN_REAL,	column_real);
+  parmsTable->setHorizontalHeaderItem (PCOLUMN_IMAG,	column_imag);
+  int i;
+  for (i = 0; i < parms.size (); i++)
+    insertParmItem (i, parmsTable);
+  layout->addWidget (parmsTable);
+  
 }
 
 void
@@ -1223,7 +1281,11 @@ MainWindow::buildMenu (QString &msgs)
   
     QAction *addCurveAct =
     chartMenu->addAction(tr("Edit Curves"), this, &MainWindow::addCurve);
-    addCurveAct->setStatusTip(tr("Add a curve specification"));
+    addCurveAct->setStatusTip(tr("Add curve specifications"));
+  
+    QAction *addParmAct =
+    chartMenu->addAction(tr("Edit Parameters"), this, &MainWindow::addParms);
+    addParmAct->setStatusTip(tr("Add parametersn"));
 
     /***** end chart menu ****/
 
@@ -1300,6 +1362,36 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   this->show ();
 
   changed = false;
+}
+
+int
+MainWindow::getCurveCount ()
+{
+  return curves.size ();
+}
+
+Curve
+MainWindow::getCurve (int i)
+{
+  return curves[i];
+}
+
+int
+MainWindow::getChartCount ()
+{
+  return charts.size ();
+}
+
+ChartData *
+MainWindow::getChart (int i)
+{
+  return ((i >= 0 && i < charts.size ()) ? charts[i] : nullptr);
+}
+
+void
+MainWindow::setTabTitle (int ix, QString &title)
+{
+  tabs->setTabText (ix, title);
 }
 
 MainWindow::~MainWindow()

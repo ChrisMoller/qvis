@@ -23,6 +23,24 @@
 #define toCString(v) ((v).toStdString ().c_str ())
 #endif
 
+Parm::Parm (QString &rname, std::complex<double> rval)
+{
+  name = rname;
+  val  = rval;
+}
+
+std::complex<double>
+Parm::getValue ()
+{
+  return val;
+}
+
+QString
+Parm::getName ()
+{
+  return name;
+}
+
 Curve::Curve (QString &rname, QString &rlabel,
        QString &rfcn, int rpen, QColor rcolour)
 {

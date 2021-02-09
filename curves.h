@@ -19,10 +19,23 @@
 #define CURVES_H
 
 #include <QtWidgets>
+#include <complex>
 
 #ifndef toCString
 #define toCString(v) ((v).toStdString ().c_str ())
 #endif
+
+class Parm
+{
+public:
+  Parm (QString &rname, std::complex<double> rval);
+  std::complex<double> getValue ();
+  QString getName ();
+
+private:
+  QString name;
+  std::complex<double> val;
+};
 
 class Curve
 {

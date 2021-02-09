@@ -119,15 +119,12 @@ public:
   History 	*history;
   QLineEdit	*aplline;
   QTextEdit 	*aplwin;
-  int 		 getCurveCount () { return curves.size (); }
-  Curve		 getCurve (int i) { return curves[i]; }
-  int 		 getChartCount () { return charts.size (); }
-  ChartData	*getChart (int i) {
-    return ((i >= 0 && i < charts.size ()) ? charts[i] : nullptr);
-  }
+  int 		 getCurveCount ();
+  Curve		 getCurve (int i);
+  int 		 getChartCount ();
+  ChartData	*getChart (int i);
   void		 initXmlHash ();
-  void 		 setTabTitle (int ix, QString &title)
-      { tabs->setTabText (ix, title); }
+  void 		 setTabTitle (int ix, QString &title);
 									  
 public slots:
 
@@ -143,11 +140,13 @@ private slots:
   bool saveVis();
   bool saveAsVis();
   void addCurve();
+  void addParms();
   void newChart();
   void about();
   void returnPressed ();
   void fileChanged(const QString &path);
   void cellPressed (int row, int column);
+  void parmsCellPressed (int row, int column);
   bool writeVis (QString &fileName);
   void readVis (QString &fileName);
   void openVis ();
@@ -172,6 +171,7 @@ private:
   QChart::ChartTheme theme;	// fixme--copy to chartwin
   ChartWindow	 *chartWindow;
   void		  insertItem (int i, QTableWidget* &curvesTable);
+  void		  insertParmItem (int i, QTableWidget* &parmsTable);
   Index		 *parseIdx (QXmlStreamReader &stream);
   Index 	 *parseIx (QXmlStreamReader &stream);
   Index		 *parseIz (QXmlStreamReader &stream);
@@ -191,8 +191,10 @@ private:
   QTemporaryDir		tempdir;
   save_mode_e		save_mode;
   QList<Curve>		curves;
+  QList<Parm>		parms;
   QTabWidget 		*tabs;
   QTableWidget 		*curvesTable;
+  QTableWidget 		*parmsTable;
   QList<ChartData*>	charts;
   QString		styledesc;
 };

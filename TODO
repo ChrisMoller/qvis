@@ -10,7 +10,9 @@ all the various plotting modes
 
 maybe zoom in/out of chart by widening/narrowing min/max
 
-parameters menu
+make sure ix and iz names don't match
+
+make sure parm names don't match
 
 labelling on charts
 
