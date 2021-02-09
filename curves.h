@@ -25,10 +25,10 @@
 #define toCString(v) ((v).toStdString ().c_str ())
 #endif
 
-class Parm
+class Param
 {
 public:
-  Parm (QString &rname, std::complex<double> rval);
+  Param (QString &rname, std::complex<double> rval);
   std::complex<double> getValue ();
   QString getName ();
   void setName (QString &newname);

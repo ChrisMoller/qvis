@@ -41,6 +41,10 @@
 	<selected>. . .</selected>
       </chart>
     </charts>
+    <parameters>
+      <parameter real="." iimag=".">.</parameter
+      <parameter real="." iimag=".">.</parameter
+    </parameters>
   </qvis>
  ***/
 
@@ -175,6 +179,20 @@ MainWindow::writeVis (QString &fileName)
       stream.writeEndElement(); // chart
     }
     stream.writeEndElement(); // charts
+  }
+
+  if (parms.count () > 0) {
+    stream.writeStartElement(xml_tags[XML_parameters].tag);
+    int i;
+    for (i = 0; i < parms.count (); i++) {
+      stream.writeStartElement(xml_tags[XML_parameter].tag);
+      stream.writeAttribute(xml_tags[XML_real].tag,
+			    QString::number (parms[i].getValue ().real ()));
+      stream.writeAttribute(xml_tags[XML_imag].tag,
+			    QString::number (parms[i].getValue ().imag ()));
+      stream.writeCharacters(parms[i].getName ());
+      stream.writeEndElement(); // parameters
+    }
   }
   
   stream.writeEndElement(); // qvis
@@ -399,6 +417,7 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
   return rc;
 }
 
+
 bool
 MainWindow::parseCharts (QXmlStreamReader &stream)
 {
@@ -443,6 +462,51 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
   return rc;
 }
 
+bool
+MainWindow::parseParams (QXmlStreamReader &stream)
+{
+  bool rc = false;
+  bool run = true;
+  QString name;
+  double real;
+  double imag;
+  while (run) {
+    QXmlStreamReader::TokenType tt = stream.readNext ();
+    QString sn = stream.name ().toString ();
+    switch (tt) {
+    case QXmlStreamReader::StartElement:
+      switch (xmlhash.value (sn)) {
+      case XML_parameter:
+	{
+	  QXmlStreamAttributes attrs = stream.attributes();
+	  if (!attrs.isEmpty ()) {
+	    real = (attrs.value (xml_tags[XML_real].tag)).toDouble ();
+	    imag = (attrs.value (xml_tags[XML_imag].tag)).toDouble ();
+	    name = stream.readElementText ();
+	    if (!name.isEmpty ()) {
+	      std::complex<double> val (real, imag);
+	      Param parm = Param (name, val);
+	      parms.append (parm);
+	    }
+	  }
+	}
+	break;
+      }
+      break;
+    case QXmlStreamReader::EndElement:
+      run = false;
+      break;
+    case QXmlStreamReader::EndDocument:
+      run = false;
+      break;
+    default:
+      break;
+    }
+  }
+
+  return rc;
+}
+
 void
 MainWindow::readVis (QString &fileName)
 {
@@ -462,6 +526,9 @@ MainWindow::readVis (QString &fileName)
 	break;
       case XML_charts:
 	parseCharts (stream);
+	break;
+      case XML_parameters:
+	parseParams (stream);
 	break;
       }
       break;

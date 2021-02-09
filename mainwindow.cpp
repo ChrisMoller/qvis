@@ -521,8 +521,8 @@ MainWindow::addParms()
       double  real = parm_real->value ();
       double  imag = parm_imag->value ();
       std::complex<double> val (real, imag);
-      Parm parm = Parm (name, val);
       if (!name.isEmpty ()) {
+	Param parm = Param (name, val);
 	parms.append (parm);
 	int nextRow = parmsTable->rowCount();
 	parmsTable->setRowCount (1 + nextRow);

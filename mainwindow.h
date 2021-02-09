@@ -180,6 +180,7 @@ private:
   bool 		  parseCharts (QXmlStreamReader &stream);
   bool 		  parseChart (bool spline, bool polar, int theme,
 			      QXmlStreamReader &stream);
+  bool 		  parseParams (QXmlStreamReader &stream);
   
 private:
   AplLineFilter		*aplLineFilter;
@@ -191,7 +192,7 @@ private:
   QTemporaryDir		tempdir;
   save_mode_e		save_mode;
   QList<Curve>		curves;
-  QList<Parm>		parms;
+  QList<Param>		parms;
   QTabWidget 		*tabs;
   QTableWidget 		*curvesTable;
   QTableWidget 		*parmsTable;
