@@ -146,7 +146,9 @@ private slots:
   void returnPressed ();
   void fileChanged(const QString &path);
   void cellPressed (int row, int column);
+#if 0
   void parmsCellPressed (int row, int column);
+#endif
   bool writeVis (QString &fileName);
   void readVis (QString &fileName);
   void openVis ();

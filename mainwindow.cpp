@@ -388,10 +388,12 @@ linestyleCombo (int sel)
   return linestyle_combo;
 }
 
+#if 0
 void
 MainWindow::parmsCellPressed (int row, int column)
 {
 }
+#endif
 
 void
 MainWindow::cellPressed (int row, int column)
@@ -457,8 +459,10 @@ MainWindow::addParms()
   dialog_layout->addWidget (gbox);
     
   parmsTable = new QTableWidget (this);
+#if 0
   connect (parmsTable, &QTableWidget::cellPressed,
 	   this, &MainWindow::parmsCellPressed);
+#endif
   
   parmsTable->setColumnCount (3);
   parmsTable->setRowCount (parms.size ());
