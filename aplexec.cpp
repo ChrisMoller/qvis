@@ -54,7 +54,10 @@ AplExec::aplExec (apl_op_e apl_op, QString &cmd,
       std::streambuf *cerrbuf = std::cerr.rdbuf();
       std::cerr.rdbuf(errbuffer.rdbuf());
       const char *res = apl_command (cmd.toStdString ().c_str ());
-      outString = QString (res);
+      if (res) {
+	outString = QString (res);
+	free ((void *)res);
+      }
       std::cerr.rdbuf(cerrbuf);
       errString = QString (errbuffer.str ().c_str ());
     }

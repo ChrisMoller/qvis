@@ -1148,6 +1148,7 @@ MainWindow::buildMenu (QString &msgs)
     QVBoxLayout *layout = new QVBoxLayout ();
 
     aplwin = new QTextEdit ();
+    aplwin->resize (640, 480);
     aplWinFilter = new AplWinFilter (aplwin, this);
     aplwin->setReadOnly (true);
     aplwin->setEnabled (true);
@@ -1167,6 +1168,8 @@ MainWindow::buildMenu (QString &msgs)
     formGroupBox->setLayout (layout);
     formGroupBox->setAlignment (Qt::AlignLeft);
     outerlayout->addWidget (formGroupBox);
+    delete aplWinFilter;
+    delete aplLineFilter;
   }
   {
     QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
@@ -1301,5 +1304,12 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 
 MainWindow::~MainWindow()
 {
+  int i;
+  for (i =  0; i < charts.size (); i++) {
+    delete charts[i]->getXIndex ();
+    delete charts[i]->getZIndex ();
+    delete charts[i];
+  }
+  delete history;
 }
 

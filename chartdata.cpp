@@ -141,7 +141,6 @@ void
 ChartData::setTheme ( int rtheme)
 {
   theme = (QChart::ChartTheme)rtheme;
-  fprintf (stderr, "settheme %d\n", theme);
 }
 
 QChart::ChartTheme

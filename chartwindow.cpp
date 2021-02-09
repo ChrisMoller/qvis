@@ -216,10 +216,12 @@ ChartWindow::handleExpression ()
 	release_value (res, loc);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
 	release_value (xvals, loc);
-	apl_command (cmd.toStdString ().c_str ());
+	const char *res = apl_command (cmd.toStdString ().c_str ());
+	if (res) free (res); 
 	if (zset) {
 	  cmd = QString (")erase %1").arg (curve.iz.name);
-	  apl_command (cmd.toStdString ().c_str ());
+	  res = apl_command (cmd.toStdString ().c_str ());
+	  if (res) free (res);
 	  // fixme
 	  // sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
 	  // release_value (zvals, loc);
