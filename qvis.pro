@@ -17,6 +17,8 @@ SOURCES += \
     history.cpp \
     main.cpp \
     mainwindow.cpp \
+    main_curves.cpp \
+    main_parameters.cpp \
     xml.cpp
 
 HEADERS += \
