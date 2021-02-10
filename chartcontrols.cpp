@@ -21,6 +21,7 @@
 #include <values.h>
 
 #include "chartcontrols.h"
+#include "chartwindow.h"
 #include "curves.h"
 
 void
@@ -280,6 +281,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	  &ChartControls::valChanged);
 
   setLayout (layout);
+
+  ChartWindow *cw = new ChartWindow ();
 }
 
 void

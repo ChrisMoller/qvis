@@ -342,13 +342,73 @@ ChartWindow::ChartWindow (MainWindow *parent)
   polarchart = new QPolarChart ();
   chartView = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
+
+  /******* fake ***********/
+
+  chartView->chart ()->setTheme (QChart::ChartThemeBlueCerulean);
+
+  chartView->setChart (chart);
   
-  create_menuBar ();
+  chartView->chart ()->setTitle ("Fake title");
+
+  QSplineSeries* series = new QSplineSeries();
+  series->append (0, 6);
+  series->append (2, 4);
+  series->append (5, 5);
+  series->append (3, 7);
+  series->append (7, 2);
+  chart->addSeries(series);
+
+  QSplineSeries* series2 = new QSplineSeries();
+  series2->append (2, 4);
+  series2->append (0, 6);
+  series2->append (7, 2);
+  series2->append (3, 7);
+  series2->append (5, 5);
+  series2->setColor (QColor ("red"));
+  chart->addSeries(series2);
+
+  chartView->chart ()->createDefaultAxes ();
+
+#if 1
+  chartView->chart ()->axes (Qt::Horizontal).first()
+    ->setTitleText (QString ("x title"));
+
+  chartView->chart ()->axes (Qt::Vertical).first()
+    ->setTitleText (QString ("y title"));
+
+  chartView->chart ()->axes (Qt::Vertical).first()
+    ->setGridLineVisible (true);
+
+  chartView->chart ()->axes (Qt::Horizontal).first()
+    ->setGridLineVisible (true);
+
+  chartView->chart ()->axes (Qt::Vertical).first()
+    ->setGridLineVisible (true);
+
+  chartView->chart ()->axes (Qt::Horizontal).first()
+    ->setLineVisible (true);
+
+  chartView->chart ()->axes (Qt::Vertical).first()
+    ->setLineVisible (true);
+
+  chartView->chart ()->axes (Qt::Horizontal).first()
+    ->setGridLineColor (QColor ("black"));
+
+  chartView->chart ()->axes (Qt::Vertical).first()
+    ->setGridLineColor (QColor ("black"));
+#endif
+
+  chartView->chart ()->setDropShadowEnabled(true);
+
+  
+  /******* end fake ***********/
+  //  create_menuBar ();
   
   this->setCentralWidget (chartView);
   this->show ();
 
-  curves.push_back (curve);
+  //curves.push_back (curve);
 }
 
 ChartWindow::~ChartWindow()
