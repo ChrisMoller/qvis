@@ -60,6 +60,18 @@ Index::getMax ()
 }
 
 void
+Index::setMin (double v)
+{
+  min = v;
+}
+
+void
+Index::setMax (double v)
+{
+  max = v;
+}
+
+void
 ChartData::setWindow (ChartWindow *win)
 {
   chartWindow = win;

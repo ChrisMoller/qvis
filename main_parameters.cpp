@@ -72,6 +72,7 @@ MainWindow::addParms()
 {
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *dialog_layout = new QGridLayout;
+  dialog.setModal (false);
   dialog.setLayout (dialog_layout);
 
   /***** existing parms *****/

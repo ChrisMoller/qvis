@@ -109,11 +109,14 @@ ChartWindow::handle_vector (APL_value res,
 
   return frc;
 #endif
+  return 0;
 }
 
 void
 ChartWindow::drawChart ()
 {
+  int i;
+  int incr = 16;  // fixme--make settable
   QString outString;
   QString errString;
   bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
@@ -126,7 +129,6 @@ ChartWindow::drawChart ()
   MainWindow *mw = chartControls->getMainWindow ();
   QList<Param> params = mw->getParams ();
 
-  int i;
   for (i = 0; i < params.size (); i++) {
     Param parm = params[i];
     QString vbl = parm.getName ();
@@ -138,6 +140,19 @@ ChartWindow::drawChart ()
       QString ("%1←%2j%3").arg (vbl).arg (realstring).arg (imagstring);
     AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
   }
+
+  Index *ix = chartControls->getChartData ()->getXIndex ();
+  Index *iz = chartControls->getChartData ()->getXIndex ();
+  QString ixName = ix->getName ();
+  double  ixMin  = ix->getMin ();
+  double  ixMax  = ix->getMax ();
+  QString izName = iz->getName ();
+  double  izMin  = iz->getMin ();
+  double  izMax  = iz->getMax ();
+  QString range_x =
+    QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
+    .arg (ixName).arg (ixMin).arg (incr).arg (ixMax);
+  AplExec::aplExec (APL_OP_EXEC, range_x, outString, errString);
 }
 
 #if 0

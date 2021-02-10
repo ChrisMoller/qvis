@@ -42,6 +42,8 @@ class Index
   QString	getLabel ();
   double	getMin ();
   double	getMax ();
+  void		setMin (double v);
+  void		setMax (double v);
   
  private:
   QString name;

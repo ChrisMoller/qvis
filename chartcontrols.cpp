@@ -211,8 +211,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   if (ix) x_var_min->setValue (ix->getMin ());
   QObject::connect (x_var_min,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-		    this,
-		    &ChartControls::valChanged);
+		    [=](double d)
+		    { ix->setMin (d); mainWindow->notifyAll (); });
   layout->addWidget (x_var_min, row, col++);
 
   x_var_max = new  QDoubleSpinBox ();
@@ -222,7 +222,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   QObject::connect (x_var_max,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
-		    &ChartControls::valChanged);
+		    [=](double d )
+		    { ix->setMax (d); mainWindow->notifyAll (); });
   layout->addWidget (x_var_max, row, col++);
   
   x_label = new  QLineEdit ();
@@ -250,7 +251,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   QObject::connect (z_var_min,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
-		    &ChartControls::valChanged);
+		    [=](double d )
+		    { iz->setMin (d); mainWindow->notifyAll (); });
   layout->addWidget (z_var_min, row, col++);
 
   z_var_max = new  QDoubleSpinBox ();
@@ -260,7 +262,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   QObject::connect (z_var_max,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
-		    &ChartControls::valChanged);
+		    [=](double d )
+		    { iz->setMax (d); mainWindow->notifyAll (); });
   layout->addWidget (z_var_max, row, col++);
   
   z_label = new  QLineEdit ();

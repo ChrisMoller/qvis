@@ -129,6 +129,7 @@ public:
   void		 initXmlHash ();
   void 		 setTabTitle (int ix, QString &title);
   QList<Param>	 getParams ();
+  void 		 notifyAll ();
 									  
 public slots:
 
@@ -158,7 +159,6 @@ private slots:
   bool writeVis (QString &fileName);
   void readVis (QString &fileName);
   void openVis ();
-  void notifyAll ();
   
   
 private:
