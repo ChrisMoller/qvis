@@ -149,10 +149,26 @@ ChartWindow::drawChart ()
   QString izName = iz->getName ();
   double  izMin  = iz->getMin ();
   double  izMax  = iz->getMax ();
-  QString range_x =
-    QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
-    .arg (ixName).arg (ixMin).arg (incr).arg (ixMax);
-  AplExec::aplExec (APL_OP_EXEC, range_x, outString, errString);
+  if (!ixName.isEmpty ()) {
+    QString range_x =
+      QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
+      .arg (ixName).arg (ixMin).arg (incr).arg (ixMax);
+    AplExec::aplExec (APL_OP_EXEC, range_x, outString, errString);
+  }
+  if (!izName.isEmpty ()) {
+    QString range_x =
+      QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
+      .arg (ixName).arg (ixMin).arg (incr).arg (ixMax);
+    AplExec::aplExec (APL_OP_EXEC, range_x, outString, errString);
+  }
+
+  for (i = 0; i < mw->getCurveCount (); i++) {
+    Curve curve = mw->getCurve (i);
+    QString fcn = curve.getFunction ();
+    QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
+    fprintf (stderr, "fcn %s\n", toCString (stmt));
+    AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
+  }
 }
 
 #if 0
