@@ -20,7 +20,14 @@
 
 #include <QtWidgets>
 
+class ChartWindow;
+class ChartData;
+class MainWindow;
+
+#include "mainwindow.h"
+#include "chartdata.h"
 #include "chartwindow.h"
+
 
 class ChartControls : public QWidget
 {
@@ -50,6 +57,8 @@ public:
   void		 setUseState (bool state);
   ChartData 	*getChartData ();
   void           setChartData (ChartData *cd);
+  MainWindow    *getMainWindow ();
+  ChartWindow	 *getChartWindow ();
 
  private:
   int		  tabIndex;
@@ -57,6 +66,7 @@ public:
   QVector<int>    curveList;
   ChartData 	 *chartData;
   bool 		  useState;
+  ChartWindow	 *chartWindow;
 
 private slots:
   void valChanged(bool enabled);

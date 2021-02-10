@@ -32,6 +32,10 @@ public:
   std::complex<double> getValue ();
   QString getName ();
   void setName (QString &newname);
+  //  void setValue (std::complex &val);
+  //  void setValue (double real, double imag);
+  void setReal (double real);
+  void setImag (double imag);
 
 private:
   QString name;

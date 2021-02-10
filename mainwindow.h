@@ -36,6 +36,9 @@ QT_CHARTS_USE_NAMESPACE
 #include "QtColorWidgets/color_selector.hpp"
 using namespace color_widgets;
 
+class ChartData;
+class Index;
+
 // for settings
 #define SETTINGS_EDITOR     "Editor"
 #define SETTINGS_FONT       "Font"
@@ -125,6 +128,7 @@ public:
   ChartData	*getChart (int i);
   void		 initXmlHash ();
   void 		 setTabTitle (int ix, QString &title);
+  QList<Param>	 getParams ();
 									  
 public slots:
 
@@ -132,7 +136,9 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
+#if 0
   void handleExpression ();
+#endif
   void byebye ();
   void loadapl();
   bool save();
@@ -152,6 +158,7 @@ private slots:
   bool writeVis (QString &fileName);
   void readVis (QString &fileName);
   void openVis ();
+  void notifyAll ();
   
   
 private:

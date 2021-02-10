@@ -30,9 +30,12 @@
 
 QT_CHARTS_USE_NAMESPACE
 
+class ChartWindow;
 #include "mainwindow.h"
+#include "chartcontrols.h"
 #include "chartwindow.h"
-#include "xml.h"
+#include "aplexec.h"
+
 
 #define expvar "expvarλ"
 
@@ -41,6 +44,7 @@ ChartWindow::handle_vector (APL_value res,
 			   APL_value xvals,
 			   QString flbl)
 {
+#if 0
   uint64_t count = get_element_count (res);
 
   int res_type = -1;
@@ -104,9 +108,39 @@ ChartWindow::handle_vector (APL_value res,
   }
 
   return frc;
+#endif
 }
 
+void
+ChartWindow::drawChart ()
+{
+  QString outString;
+  QString errString;
+  bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+  bool spline = (Qt::Checked == chartControls->do_spline->checkState ());
 
+  chartView->setChart (polar ? polarchart : chart);
+  chartView->chart ()->setTheme (chartControls->getChartData ()->getTheme ());
+  chartView->chart ()->setTitle (chartControls->chart_title->text ());
+
+  MainWindow *mw = chartControls->getMainWindow ();
+  QList<Param> params = mw->getParams ();
+
+  int i;
+  for (i = 0; i < params.size (); i++) {
+    Param parm = params[i];
+    QString vbl = parm.getName ();
+    QString realstring = QString::number (parm.getValue ().real ());
+    QString imagstring = QString::number (parm.getValue ().imag ());
+    realstring.replace (QString ("-"), QString ("¯"));
+    imagstring.replace (QString ("-"), QString ("¯"));
+    QString cmd =
+      QString ("%1←%2j%3").arg (vbl).arg (realstring).arg (imagstring);
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+  }
+}
+
+#if 0
 void
 ChartWindow::handleExpression ()
 {
@@ -114,7 +148,6 @@ ChartWindow::handleExpression ()
 
   int incr = 16;  // fixme--make settable
 
-#if 0
   if (!curve.ix.name.isEmpty ()) {
     /***
 	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
@@ -229,8 +262,8 @@ ChartWindow::handleExpression ()
       }
     }
   }
-#endif
 }
+#endif
 
 void
 ChartWindow::imageExport()
@@ -249,12 +282,14 @@ ChartWindow::imageExport()
   }
 }
 
+#if 0
 void
 ChartWindow::themeChanged (int newtheme __attribute__((unused)))
 {
   theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
   handleExpression ();
 }
+#endif
 
 #if 0
 void
@@ -288,6 +323,7 @@ ChartWindow::settheme()
 }
 #endif
 
+#if 0
 void
 ChartWindow::setfont()
 {
@@ -327,11 +363,12 @@ ChartWindow::create_menuBar ()
     settingsMenu->addAction(tr("&Font"), this, &ChartWindow::setfont);
   fontAct->setStatusTip(tr("Set font"));
 }
+#endif
 
-ChartWindow::ChartWindow (MainWindow *parent)
+ChartWindow::ChartWindow (ChartControls *parent)
   : QMainWindow(parent)
 {
-  mainWindow = parent;
+  chartControls = parent;
 
   QVariant ww = settings.value (SETTINGS_WIDTH);
   QVariant hh = settings.value (SETTINGS_HEIGHT);
@@ -340,9 +377,12 @@ ChartWindow::ChartWindow (MainWindow *parent)
 
   chart      = new QChart ();
   polarchart = new QPolarChart ();
-  chartView = new QChartView ();
+  chartView  = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
 
+  drawChart ();
+
+#if 0
   /******* fake ***********/
 
   chartView->chart ()->setTheme (QChart::ChartThemeBlueCerulean);
@@ -370,7 +410,6 @@ ChartWindow::ChartWindow (MainWindow *parent)
 
   chartView->chart ()->createDefaultAxes ();
 
-#if 1
   chartView->chart ()->axes (Qt::Horizontal).first()
     ->setTitleText (QString ("x title"));
 

@@ -24,10 +24,15 @@
 
 QT_CHARTS_USE_NAMESPACE
 
+#include "chartdata.h"
 #include "mainwindow.h"
+#include "chartcontrols.h"
+
+class ChartControls;
 
 class MainWindow;
 class ChartWindow;
+class CharData;
 
 class ChartEnter : public QObject
 {
@@ -51,40 +56,40 @@ class ChartWindow : public QMainWindow
   Q_OBJECT
   
 public:
-  ChartWindow(MainWindow *parent = nullptr);
+  ChartWindow (ChartControls *parent = nullptr);
   ~ChartWindow();
   QChartView	*chartView;
   QChart	*chart;
   QPolarChart	*polarchart;
-  std::vector<OldCurve> curves;
-  OldCurve		 curve;
+  //  OldCurve		 curve;
   bool		 changed;
-  //  bool 		 saveFile (QString &fileName);
-  //void 		 readFile (QString &fileName);
-  //  void		 initXmlHash ();
   QSettings 	 settings;
+  void		 drawChart ();
+  //  std::vector<OldCurve> curves;
 
 private slots:
   void imageExport();
+#if 0
   //  void settheme();
   void themeChanged(int newtheme);
   void setfont();
+#endif
   
 public slots:
-  void handleExpression ();
+  //  void handleExpression ();
   
 private:
   QFont titlefont;
   QChart::ChartTheme theme;
-  MainWindow	*mainWindow;
-  //  bool parseFunction (OldCurve &curve, QXmlStreamReader &stream);
-  //bool parseRange (Range &rng, QXmlStreamReader &stream);
-  void create_menuBar ();
-  QComboBox 	*themebox;
-  ChartEnter *chartEnter;
+  ChartControls	*chartControls;
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);
+#if 0
+  void create_menuBar ();
+  QComboBox 	*themebox;
+  ChartEnter *chartEnter;
+#endif
 };
 
 

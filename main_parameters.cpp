@@ -18,6 +18,7 @@
 #include <values.h>
 #include "mainwindow.h"
 #include "curves.h"
+#include "chartwindow.h"
 
 enum {
   PCOLUMN_NAME,
@@ -33,6 +34,17 @@ MainWindow::parmsCellPressed (int row, int column)
 #endif
 
 void
+MainWindow::notifyAll ()
+{
+  int i;
+  for (i = 0; i < charts.size (); i++) {
+    ChartData *cd = charts[i];
+    ChartWindow *win = cd->getWindow ();
+    win->drawChart ();
+  }
+}
+
+void
 MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
 {
   QTableWidgetItem *item_name =
@@ -44,11 +56,15 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
   item_real->setRange (-MAXDOUBLE, MAXDOUBLE);
   item_real->setValue (parms[i].getValue ().real ());
   parmsTable->setCellWidget (i, PCOLUMN_REAL, item_real);
+  connect (item_real, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  [=](double d){parms[i].setReal (d); notifyAll ();  });
 
   QDoubleSpinBox *item_imag = new QDoubleSpinBox ();
   item_imag->setRange (-MAXDOUBLE, MAXDOUBLE);
   item_imag->setValue (parms[i].getValue ().imag ());
   parmsTable->setCellWidget (i, PCOLUMN_IMAG, item_imag);
+  connect (item_imag, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  [=](double d){parms[i].setImag (d); notifyAll ();  });
 }
 
 void

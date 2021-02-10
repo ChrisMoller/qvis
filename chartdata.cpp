@@ -59,6 +59,19 @@ Index::getMax ()
   return max;
 }
 
+void
+ChartData::setWindow (ChartWindow *win)
+{
+  chartWindow = win;
+}
+
+ChartWindow *
+ChartData::getWindow ()
+{
+  return chartWindow;
+}
+
+
 ChartData::ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
 	   Index *rix, Index *riz, QList<int> &rselected)
 {
@@ -70,7 +83,6 @@ ChartData::ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
   selected = rselected;
   theme = (QChart::ChartTheme)rtheme;
 }
-
 
 void
 ChartData::showChart ()

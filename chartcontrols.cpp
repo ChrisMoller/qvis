@@ -24,6 +24,18 @@
 #include "chartwindow.h"
 #include "curves.h"
 
+MainWindow *
+ChartControls::getMainWindow ()
+{
+  return mainWindow;
+}
+
+ChartWindow *
+ChartControls::getChartWindow ()
+{
+  return chartWindow;
+}
+
 void
 ChartControls::curveSettings ()
 {
@@ -282,7 +294,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 
   setLayout (layout);
 
-  ChartWindow *cw = new ChartWindow ();
+  chartWindow = new ChartWindow (this);
+  chartData->setWindow (chartWindow);
 }
 
 void

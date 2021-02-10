@@ -66,6 +66,12 @@ static const QColor black = QColor (0, 0, 0);
 // #define DEFAULT_EDITOR "gvim \"+set number\""
 #define DEFAULT_EDITOR "gvim -c \"set nu\""
 
+QList<Param>
+MainWindow::getParams ()
+{
+  return parms;
+}
+
 void
 MainWindow::update_screen (QString &errString, QString &outString)
 {
@@ -118,11 +124,13 @@ MainWindow::byebye ()
   if (maybeSave ()) QCoreApplication::quit ();
 }
 
+#if 0
 void
 MainWindow::handleExpression ()
 {
   chartWindow->handleExpression ();
 }
+#endif
 
 
 void

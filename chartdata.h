@@ -22,7 +22,12 @@
 #include <QChart>
 #include <QtCharts/QChartView>
 
+#include "curves.h"
+#include "chartwindow.h"
+
 QT_CHARTS_USE_NAMESPACE
+
+class ChartWindow;
 
 #ifndef toCString
 #define toCString(v) ((v).toStdString ().c_str ())
@@ -60,8 +65,10 @@ class ChartData
   bool		getPolar ();
   Index		*getXIndex ();
   Index		*getZIndex ();
-  void		setTheme (int rtheme);
   QChart::ChartTheme getTheme ();
+  void		setTheme (int rtheme);
+  void		setWindow (ChartWindow *win);
+  ChartWindow  *getWindow ();
 
  private:
   QString title;
@@ -71,6 +78,7 @@ class ChartData
   Index *iz;
   QList<int> selected;
   QChart::ChartTheme theme;
+  ChartWindow *chartWindow;
 };
 
 #endif // CHARTDATA_H

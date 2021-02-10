@@ -29,6 +29,20 @@ Param::Param (QString &rname, std::complex<double> rval)
   val  = rval;
 }
 
+void
+Param::setReal (double real)
+{
+  double imag = val.imag ();
+  val = std::complex<double> (real, imag);
+}
+
+void
+Param::setImag (double imag)
+{
+  double real = val.real ();
+  val = std::complex<double> (real, imag);
+}
+
 std::complex<double>
 Param::getValue ()
 {
