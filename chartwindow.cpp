@@ -139,6 +139,7 @@ ChartWindow::drawChart ()
     QString cmd =
       QString ("%1←%2j%3").arg (vbl).arg (realstring).arg (imagstring);
     AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    mw->update_screen (errString, outString);
   }
 
   Index *ix = chartControls->getChartData ()->getXIndex ();
@@ -154,20 +155,22 @@ ChartWindow::drawChart ()
       QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
       .arg (ixName).arg (ixMin).arg (incr).arg (ixMax);
     AplExec::aplExec (APL_OP_EXEC, range_x, outString, errString);
+    mw->update_screen (errString, outString);
   }
   if (!izName.isEmpty ()) {
     QString range_x =
       QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
       .arg (ixName).arg (ixMin).arg (incr).arg (ixMax);
     AplExec::aplExec (APL_OP_EXEC, range_x, outString, errString);
+    mw->update_screen (errString, outString);
   }
 
   for (i = 0; i < mw->getCurveCount (); i++) {
     Curve curve = mw->getCurve (i);
     QString fcn = curve.getFunction ();
     QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
-    fprintf (stderr, "fcn %s\n", toCString (stmt));
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
+    mw->update_screen (errString, outString);
   }
 }
 

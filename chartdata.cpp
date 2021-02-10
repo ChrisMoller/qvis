@@ -71,6 +71,19 @@ Index::setMax (double v)
   max = v;
 }
 
+
+void
+Index::setName (const QString &text)
+{
+  name = text;
+}
+
+void
+Index::setLabel (const QString &text)
+{
+  label = text;
+}
+
 void
 ChartData::setWindow (ChartWindow *win)
 {

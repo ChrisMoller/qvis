@@ -200,10 +200,18 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   Index *ix = nullptr;
   if (chartData) ix = chartData->getXIndex ();
 
+  //		 QOverload<const QString &text>::of(&QLineEdit::textChanged),
+  //		    &QLineEdit::textChanged,
   x_var_name = new  QLineEdit ();
   x_var_name->setPlaceholderText ("x variable name");
   if (ix) x_var_name->setText (ix->getName ());
   layout->addWidget (x_var_name, row, col++);
+  QObject::connect (x_var_name,
+		    &QLineEdit::returnPressed,
+		    [=]()
+		    {Index *ix = chartData->getXIndex ();
+		      ix->setName (x_var_name->text ());
+		      mainWindow->notifyAll (); });
   
   x_var_min = new  QDoubleSpinBox ();
   x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
@@ -230,6 +238,12 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   x_label->setPlaceholderText ("x axix label");
   if (ix) x_label->setText (ix->getLabel ());
   layout->addWidget (x_label, row, col++);
+  QObject::connect (x_label,
+		    &QLineEdit::returnPressed,
+		    [=]()
+		    {Index *ix = chartData->getXIndex ();
+		      ix->setLabel (x_label->text ());
+		      mainWindow->notifyAll (); });
 
   /*  z indep vbl */
 
@@ -243,6 +257,12 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   z_var_name->setPlaceholderText ("z variable name");
   if (iz) z_var_name->setText (iz->getName ());
   layout->addWidget (z_var_name, row, col++);
+  QObject::connect (z_var_name,
+		    &QLineEdit::returnPressed,
+		    [=]()
+		    {Index *iz = chartData->getXIndex ();
+		      iz->setName (z_var_name->text ());
+		      mainWindow->notifyAll (); });
 
   z_var_min = new  QDoubleSpinBox ();
   z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
@@ -270,6 +290,12 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   z_label->setPlaceholderText ("z axix label");
   if (iz) z_label->setText (iz->getLabel ());
   layout->addWidget (z_label, row, col++);
+  QObject::connect (z_label,
+		    &QLineEdit::returnPressed,
+		    [=]()
+		    {Index *iz = chartData->getXIndex ();
+		      iz->setLabel (z_label->text ());
+		      mainWindow->notifyAll (); });
     
 
   /*  toggles */

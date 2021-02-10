@@ -130,6 +130,7 @@ public:
   void 		 setTabTitle (int ix, QString &title);
   QList<Param>	 getParams ();
   void 		 notifyAll ();
+  void    update_screen (QString &errString, QString &outString);
 									  
 public slots:
 
@@ -196,7 +197,6 @@ private:
   AplWinFilter		*aplWinFilter;
   QString		libpath;
   QFileSystemWatcher	watcher;
-  void update_screen (QString &errString, QString &outString);
   QString		editor;
   QTemporaryDir		tempdir;
   save_mode_e		save_mode;
