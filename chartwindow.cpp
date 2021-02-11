@@ -149,17 +149,18 @@ ChartWindow::drawChart ()
   MainWindow *mw = chartControls->getMainWindow ();
   QList<Param> params = mw->getParams ();
 
+  sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
   for (i = 0; i < params.size (); i++) {
     Param parm = params[i];
     QString vbl = parm.getName ();
-    QString realstring = QString::number (parm.getValue ().real ());
-    QString imagstring = QString::number (parm.getValue ().imag ());
-    realstring.replace (QString ("-"), QString ("¯"));
-    imagstring.replace (QString ("-"), QString ("¯"));
-    QString cmd =
-      QString ("%1←%2j%3").arg (vbl).arg (realstring).arg (imagstring);
-    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    mw->update_screen (errString, outString);
+    if (!vbl.isEmpty ()) {
+      double real = parm.getValue ().real ();
+      double imag = parm.getValue ().imag ();
+      APL_value res =
+	complex_scalar((APL_Float) real, (APL_Float) imag, loc);
+      QByteArray vblUtf8 = vbl.toUtf8();
+      set_var_value (vblUtf8.constData (), res, loc);
+    }
   }
 
   Index *ix = chartControls->getChartData ()->getXIndex ();
