@@ -44,7 +44,7 @@ ChartWindow::handle_vector (APL_value res,
 			   APL_value xvals,
 			   QString flbl)
 {
-#if 0
+#if 1
   uint64_t count = get_element_count (res);
 
   int res_type = -1;
@@ -79,9 +79,9 @@ ChartWindow::handle_vector (APL_value res,
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;
 
-    if (curve.spline) {
+    if (1) {
       sseries = new QSplineSeries ();
-      sseries->setName(flbl);
+      sseries->setName ("flbl");
     }
     else {
       pseries = new QLineSeries ();
@@ -116,6 +116,7 @@ void
 ChartWindow::drawChart ()
 {
   int i;
+  char loc[256];
   int incr = 16;  // fixme--make settable
   QString outString;
   QString errString;
@@ -150,6 +151,8 @@ ChartWindow::drawChart ()
   QString izName = iz->getName ();
   double  izMin  = iz->getMin ();
   double  izMax  = iz->getMax ();
+
+  APL_value xvals;
   if (!ixName.isEmpty ()) {
     QString range_x =
       QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
@@ -163,6 +166,8 @@ ChartWindow::drawChart ()
       .arg (ixName).arg (ixMin).arg (incr).arg (ixMax);
     AplExec::aplExec (APL_OP_EXEC, range_x, outString, errString);
     mw->update_screen (errString, outString);
+    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+    xvals = get_var_value (toCString (ixName), loc);
   }
 
   for (i = 0; i < mw->getCurveCount (); i++) {
@@ -171,6 +176,19 @@ ChartWindow::drawChart ()
     QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
     mw->update_screen (errString, outString);
+
+    if (!errString.isEmpty ()) {
+      sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+      APL_value res = get_var_value (expvar, loc);
+      if (res) {
+	int frc =  handle_vector (res, xvals, "mmmm");
+	QString cmd =
+	  QString (")erase %1").arg (expvar);
+	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+	release_value (res, loc);
+      }
+    }
   }
 }
 
