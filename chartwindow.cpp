@@ -115,11 +115,12 @@ ChartWindow::handle_vector (APL_value res,
 static void
 setIndex (QString &name, double min, double max, int incr)
 {
-  if (name.isEmpty ()) {
+  if (!name.isEmpty ()) {
     char loc[256];
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
     APL_value res = apl_vector ((int64_t)(incr +1), loc);
 
+    int i;
     for (i = 0; i <= incr; i++) {
       double val = min + ((double)i/(double)incr) * (max - min);
       set_double ((APL_Float)val, res, (uint64_t)i);
@@ -173,20 +174,6 @@ ChartWindow::drawChart ()
   setIndex (ixName, ixMin, ixMax, incr);
   setIndex (izName, izMin, izMax, incr);
   APL_value xvals;
-#if 0
-  if (!izName.isEmpty ()) {
-    QByteArray izUtf8 = izName.toUtf8();
-    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    APL_value res = apl_vector ((int64_t)(incr +1), loc);
-
-    for (i = 0; i <= incr; i++) {
-      double val = izMin + ((double)i/(double)incr) * (izMax - izMin);
-      set_double ((APL_Float)val, res, (uint64_t)i);
-    }
-    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    set_var_value (ixUtf8.constData (), res, loc);
-  }
-#endif
 
   for (i = 0; i < mw->getCurveCount (); i++) {
     Curve curve = mw->getCurve (i);
