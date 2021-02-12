@@ -129,7 +129,7 @@ public:
   void		 initXmlHash ();
   void 		 setTabTitle (int ix, QString &title);
   QList<Param>	 getParams ();
-  void 		 notifyAll ();
+  void 		 notifySelective (bool all);
   void    update_screen (QString &errString, QString &outString);
   int 		getIncr ();
   void		  setParams ();

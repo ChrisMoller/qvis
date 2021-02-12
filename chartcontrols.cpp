@@ -275,7 +275,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    {Index *ix = chartData->getXIndex ();
 		      ix->setName (x_var_name->text ());
 		      chartData->setChanged (true);
-		      mainWindow->notifyAll (); });
+		      mainWindow->notifySelective (false); });
   
   x_var_min = new  QDoubleSpinBox ();
   x_var_min->setAccelerated (true);
@@ -286,7 +286,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    [=](double d)
 		    { chartData->setChanged (true);
-		      ix->setMin (d); mainWindow->notifyAll (); });
+		      ix->setMin (d); mainWindow->notifySelective (false); });
   layout->addWidget (x_var_min, row, col++);
 
   x_var_max = new  QDoubleSpinBox ();
@@ -299,7 +299,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    this,
 		    [=](double d )
 		    { chartData->setChanged (true);
-		      ix->setMax (d); mainWindow->notifyAll (); });
+		      ix->setMax (d); mainWindow->notifySelective (false); });
   layout->addWidget (x_var_max, row, col++);
   
   x_label = new  QLineEdit ();
@@ -312,7 +312,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    {Index *ix = chartData->getXIndex ();
 		      ix->setLabel (x_label->text ());
 		      chartData->setChanged (true);
-		      mainWindow->notifyAll (); });
+		      mainWindow->notifySelective (false); });
 
   /*  z indep vbl */
 
@@ -332,7 +332,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    {Index *iz = chartData->getXIndex ();
 		      iz->setName (z_var_name->text ());
 		      chartData->setChanged (true);
-		      mainWindow->notifyAll (); });
+		      mainWindow->notifySelective (false); });
 
   z_var_min = new  QDoubleSpinBox ();
   z_var_min->setAccelerated (true);
@@ -344,7 +344,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    this,
 		    [=](double d )
 		    { chartData->setChanged (true);
-		      iz->setMin (d); mainWindow->notifyAll (); });
+		      iz->setMin (d); mainWindow->notifySelective (false); });
   layout->addWidget (z_var_min, row, col++);
 
   z_var_max = new  QDoubleSpinBox ();
@@ -357,7 +357,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    this,
 		    [=](double d )
 		    { chartData->setChanged (true);
-		      iz->setMax (d); mainWindow->notifyAll (); });
+		      iz->setMax (d); mainWindow->notifySelective (false); });
   layout->addWidget (z_var_max, row, col++);
   
   z_label = new  QLineEdit ();
@@ -370,7 +370,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    {Index *iz = chartData->getXIndex ();
 		      iz->setLabel (z_label->text ());
 		      chartData->setChanged (true);
-		      mainWindow->notifyAll (); });
+		      mainWindow->notifySelective (false); });
     
 
   /*  toggles */
@@ -382,37 +382,23 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   if (chartData && chartData->getSpline ())
     do_spline->setCheckState (Qt::Checked);
   layout->addWidget (do_spline, row, col++);
-#if 1
   connect(do_spline,
 	  &QCheckBox::stateChanged,
 	  this,
 	  [=]()
 	  {chartData->setChanged (true);
-	   mainWindow->notifyAll (); });
-#else
-  connect(do_spline,
-	  &QCheckBox::stateChanged,
-	  this,
-	  &ChartControls::valChanged);
-#endif
+	   mainWindow->notifySelective (false); });
   
   do_polar = new QCheckBox ("Polar");
   if (chartData && chartData->getPolar ())
     do_polar->setCheckState (Qt::Checked);
   layout->addWidget (do_polar, row, col++);
-#if 1
   connect(do_polar,
 	  &QCheckBox::stateChanged,
 	  this,
 	  [=]()
 	  {chartData->setChanged (true);
-	   mainWindow->notifyAll (); });
-#else
-  connect(do_polar,
-	  &QCheckBox::stateChanged,
-	  this,
-	  &ChartControls::valChanged);
-#endif
+	   mainWindow->notifySelective (false); });
 
   setLayout (layout);
 
