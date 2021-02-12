@@ -114,7 +114,7 @@ ChartWindow::handle_vector (APL_value res,
 }
 
 static void
-setIndex (QString &name, double min, double max, int incr)
+setIndex (QString &name, double min, double max, int incr, QString &title)
 {
   if (!name.isEmpty ()) {
     char loc[256];
@@ -128,12 +128,21 @@ setIndex (QString &name, double min, double max, int incr)
     }
     QByteArray nameUtf8 = name.toUtf8();
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    set_var_value (nameUtf8.constData (), res, loc);	// name it
+    int src = set_var_value (nameUtf8.constData (), res, loc);	// name it
+    if (src != 0) {
+      QMessageBox msgBox;
+      QString msg =
+	QString ("Error setting index %1 in chart %2").arg (name).arg (title);
+      msgBox.setText (msg);
+      msgBox.setIcon (QMessageBox::Warning);
+      msgBox.exec();
+    }
+    release_value (res, loc);
   }
 }
 
 void 
-ChartWindow::setIndices ()
+ChartWindow::setIndices (QString title)
 {
   int incr = chartControls->getMainWindow ()->getIncr ();
   Index *ix;
@@ -142,13 +151,13 @@ ChartWindow::setIndices ()
   QString ixName = ix->getName ();
   double  ixMin  = ix->getMin ();
   double  ixMax  = ix->getMax ();
-  setIndex (ixName, ixMin, ixMax, incr);
+  setIndex (ixName, ixMin, ixMax, incr, title);
   
   ix = chartControls->getChartData ()->getZIndex ();
   QString izName = ix->getName ();
   double  izMin  = ix->getMin ();
   double  izMax  = ix->getMax ();
-  setIndex (izName, izMin, izMax, incr);
+  setIndex (izName, izMin, izMax, incr, title);
 }
 
 void
@@ -170,7 +179,7 @@ ChartWindow::drawChart ()
   QList<Param> params = mw->getParams ();
 
   sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-  setIndices ();
+  setIndices (chartControls->chart_title->text ());
 
 #if 0
   for (i = 0; i < params.size (); i++) {

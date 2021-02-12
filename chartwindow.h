@@ -66,7 +66,7 @@ public:
   QSettings 	 settings;
   void		 drawChart ();
   //  std::vector<OldCurve> curves;
-  void setIndices ();
+  void setIndices (QString title);
 
 private slots:
   void imageExport();

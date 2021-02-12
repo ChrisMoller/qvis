@@ -57,7 +57,15 @@ MainWindow::setParams ()
       set_complex ((APL_Float) real, (APL_Float) imag, res, 0); // populate
       
       QByteArray vblUtf8 = vbl.toUtf8();
-      int src =  set_var_value (vblUtf8.constData (), res, loc);  //name
+      int src = set_var_value (vblUtf8.constData (), res, loc);  //name
+      if (src != 0) {
+	QMessageBox msgBox;
+	QString msg = QString ("Error setting parameter %1").arg (vbl);
+	msgBox.setText (msg);
+	msgBox.setIcon (QMessageBox::Warning);
+	msgBox.exec();
+      }
+      release_value (res, loc);
     }
   }
 }
