@@ -45,7 +45,6 @@ ChartWindow::handle_vector (APL_value res,
 			   QVector<double> &xvals,
 			   QString flbl)
 {
-  fprintf (stderr," handling vector\n");
 #if 1
   uint64_t count = get_element_count (res);
 
@@ -91,20 +90,13 @@ ChartWindow::handle_vector (APL_value res,
       pseries->setName(flbl);
     }
 
-#if 1
-  int i;
-  for (i = 0; i < xvals.size (); i++)
-    fprintf (stderr, "first xv %g\n", xvals[i]);
-#endif
-  
-    for (i = 0; i < count; i++) {
-      fprintf (stderr, "second xv %d %g\n", i, (qreal)xvals[i]);
+    int i;
+    for (i = 0; i < (int)count; i++) {
       qreal y_val = (qreal)vect[i].real ();
       if (y_max < y_val) y_max = y_val;
       if (y_min > y_val) y_min = y_val;
       if (sseries) sseries->append ((qreal)xvals[i], y_val);
       else pseries->append ((qreal)xvals[i], y_val);
-      fprintf (stderr, "appended %d %g %g\n", (int)i, (qreal)xvals[i], y_val);
     }
 
     if (sseries) chartView->chart ()->addSeries (sseries);
@@ -136,7 +128,6 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
     APL_value res = apl_vector ((int64_t)(incr +1), loc);  // create the value
 
     int i;
-    vals.resize (incr + 1);
     for (i = 0; i <= incr; i++) {
       double val = min + ((double)i/(double)incr) * (max - min);
       vals.append (val);
@@ -184,17 +175,12 @@ ChartWindow::drawChart ()
   QVector<double> zvals =
     setIndex (iz, incr, chartControls->chart_title->text ());
 
-  fprintf (stderr, "in drawChart\n");
-  
   sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
   QList<int> sels =  chartControls->getChartData ()->getSelected ();
-  fprintf (stderr, "nr sel %d\n", sels.size ());
   for (i =  0; i < sels.size (); i++) {
-    fprintf (stderr, "sel %d\n", sels[i]);
     Curve curve = mw->getCurve (sels[i]);
     QString fcn = curve.getFunction ();
     QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
-    fprintf (stderr, "execing \"%s\"\n", toCString (stmt));
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
     mw->update_screen (errString, outString);
     
@@ -202,7 +188,7 @@ ChartWindow::drawChart ()
       sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
       APL_value res = get_var_value (expvar, loc);
       if (res) {
-	int frc =  handle_vector (res, xvals, "mmmm");
+	int frc =  handle_vector (res, xvals, curve.getName ());
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
