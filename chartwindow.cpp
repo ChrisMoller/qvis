@@ -113,10 +113,13 @@ ChartWindow::handle_vector (APL_value res,
   return 0;
 }
 
-static void
-setIndex (QString &name, double min, double max, int incr, QString &title)
+void
+ChartWindow::setIndex (Index *idx, int incr, QString title)
 {
+  QString name = idx->getName ();
   if (!name.isEmpty ()) {
+    double  min  = idx->getMin ();
+    double  max  = idx->getMax ();
     char loc[256];
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
     APL_value res = apl_vector ((int64_t)(incr +1), loc);  // create the value
@@ -141,25 +144,6 @@ setIndex (QString &name, double min, double max, int incr, QString &title)
   }
 }
 
-void 
-ChartWindow::setIndices (QString title)
-{
-  int incr = chartControls->getMainWindow ()->getIncr ();
-  Index *ix;
-
-  ix = chartControls->getChartData ()->getXIndex ();
-  QString ixName = ix->getName ();
-  double  ixMin  = ix->getMin ();
-  double  ixMax  = ix->getMax ();
-  setIndex (ixName, ixMin, ixMax, incr, title);
-  
-  ix = chartControls->getChartData ()->getZIndex ();
-  QString izName = ix->getName ();
-  double  izMin  = ix->getMin ();
-  double  izMax  = ix->getMax ();
-  setIndex (izName, izMin, izMax, incr, title);
-}
-
 void
 ChartWindow::drawChart ()
 {
@@ -178,29 +162,14 @@ ChartWindow::drawChart ()
   MainWindow *mw = chartControls->getMainWindow ();
   QList<Param> params = mw->getParams ();
 
-  sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-  setIndices (chartControls->chart_title->text ());
-
-#if 0
-  for (i = 0; i < params.size (); i++) {
-    Param parm = params[i];
-    QString vbl = parm.getName ();
-    if (!vbl.isEmpty ()) {
-      fprintf (stderr, "setting parm %d %s\n", i, toCString (vbl));
-      double real = parm.getValue ().real ();
-      double imag = parm.getValue ().imag ();
-
-      APL_value res = apl_scalar (loc);  // create the value
-      set_complex ((APL_Float) real, (APL_Float) imag, res, 0); // populate
-      
-      QByteArray vblUtf8 = vbl.toUtf8();
-      int src =  set_var_value (vblUtf8.constData (), res, loc);  //name
-    }
-  }
-#endif
+  Index *ix = chartControls->getChartData ()->getXIndex ();
+  setIndex (ix, incr, chartControls->chart_title->text ());
+  Index *iz = chartControls->getChartData ()->getZIndex ();
+  setIndex (iz, incr, chartControls->chart_title->text ());
 
   APL_value xvals;
 
+  sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
   for (i = 0; i < mw->getCurveCount (); i++) {
     Curve curve = mw->getCurve (i);
     QString fcn = curve.getFunction ();

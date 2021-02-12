@@ -29,10 +29,10 @@ QT_CHARTS_USE_NAMESPACE
 #include "chartcontrols.h"
 
 class ChartControls;
-
 class MainWindow;
 class ChartWindow;
 class CharData;
+class Index;
 
 class ChartEnter : public QObject
 {
@@ -66,7 +66,6 @@ public:
   QSettings 	 settings;
   void		 drawChart ();
   //  std::vector<OldCurve> curves;
-  void setIndices (QString title);
 
 private slots:
   void imageExport();
@@ -86,6 +85,7 @@ private:
   int	         handle_vector (APL_value res,
 				APL_value xvals,
 				QString flbl);
+  void setIndex (Index *idx, int incr, QString title);
 #if 0
   void create_menuBar ();
   QComboBox 	*themebox;
