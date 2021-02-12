@@ -277,6 +277,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		      mainWindow->notifyAll (); });
   
   x_var_min = new  QDoubleSpinBox ();
+  x_var_min->setAccelerated (true);
   x_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
   x_var_min->setToolTip ("x minimum value");
   if (ix) x_var_min->setValue (ix->getMin ());
@@ -287,6 +288,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   layout->addWidget (x_var_min, row, col++);
 
   x_var_max = new  QDoubleSpinBox ();
+  x_var_max->setAccelerated (true);
   x_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
   x_var_max->setToolTip ("x maximum value");
   if (ix) x_var_max->setValue (ix->getMax ());
@@ -328,6 +330,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		      mainWindow->notifyAll (); });
 
   z_var_min = new  QDoubleSpinBox ();
+  z_var_min->setAccelerated (true);
   z_var_min->setRange (-MAXDOUBLE, MAXDOUBLE);
   z_var_min->setToolTip ("z minimum value");
   if (iz) z_var_min->setValue (iz->getMin ());
@@ -339,6 +342,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   layout->addWidget (z_var_min, row, col++);
 
   z_var_max = new  QDoubleSpinBox ();
+  z_var_max->setAccelerated (true);
   z_var_max->setRange (-MAXDOUBLE, MAXDOUBLE);
   z_var_max->setToolTip ("z maximum value");
   if (iz) z_var_max->setValue (iz->getMax ());

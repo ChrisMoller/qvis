@@ -91,6 +91,7 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
   parmsTable->setItem (i, PCOLUMN_NAME, item_name);
 
   QDoubleSpinBox *item_real = new QDoubleSpinBox ();
+  item_real->setAccelerated (true);
   item_real->setRange (-MAXDOUBLE, MAXDOUBLE);
   item_real->setValue (parms[i].getValue ().real ());
   parmsTable->setCellWidget (i, PCOLUMN_REAL, item_real);
@@ -98,6 +99,7 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
 	  [=](double d){parms[i].setReal (d); notifyAll ();  });
 
   QDoubleSpinBox *item_imag = new QDoubleSpinBox ();
+  item_imag->setAccelerated (true);
   item_imag->setRange (-MAXDOUBLE, MAXDOUBLE);
   item_imag->setValue (parms[i].getValue ().imag ());
   parmsTable->setCellWidget (i, PCOLUMN_IMAG, item_imag);
@@ -154,10 +156,12 @@ MainWindow::addParms()
   layout->addWidget (parm_name, row, col++);
   
   QDoubleSpinBox *parm_real = new QDoubleSpinBox ();
+  parm_real->setAccelerated (true);
   parm_real->setRange (-MAXDOUBLE, MAXDOUBLE);
   layout->addWidget (parm_real, row, col++);
   
   QDoubleSpinBox *parm_imag = new QDoubleSpinBox ();
+  parm_imag->setAccelerated (true);
   parm_imag->setRange (-MAXDOUBLE, MAXDOUBLE);
   layout->addWidget (parm_imag, row, col++);
 
