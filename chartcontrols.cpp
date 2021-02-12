@@ -382,19 +382,37 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   if (chartData && chartData->getSpline ())
     do_spline->setCheckState (Qt::Checked);
   layout->addWidget (do_spline, row, col++);
+#if 1
+  connect(do_spline,
+	  &QCheckBox::stateChanged,
+	  this,
+	  [=]()
+	  {chartData->setChanged (true);
+	   mainWindow->notifyAll (); });
+#else
   connect(do_spline,
 	  &QCheckBox::stateChanged,
 	  this,
 	  &ChartControls::valChanged);
+#endif
   
   do_polar = new QCheckBox ("Polar");
   if (chartData && chartData->getPolar ())
     do_polar->setCheckState (Qt::Checked);
   layout->addWidget (do_polar, row, col++);
+#if 1
+  connect(do_polar,
+	  &QCheckBox::stateChanged,
+	  this,
+	  [=]()
+	  {chartData->setChanged (true);
+	   mainWindow->notifyAll (); });
+#else
   connect(do_polar,
 	  &QCheckBox::stateChanged,
 	  this,
 	  &ChartControls::valChanged);
+#endif
 
   setLayout (layout);
 

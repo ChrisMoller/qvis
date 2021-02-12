@@ -84,6 +84,7 @@ private:
   ChartControls	*chartControls;
   int	         handle_vector (APL_value res,
 				QVector<double> &xvals,
+				bool spline,
 				QString flbl);
   QVector<double> setIndex (Index *idx, int incr, QString title);
 #if 0

@@ -42,10 +42,9 @@ class ChartWindow;
 
 int
 ChartWindow::handle_vector (APL_value res,
-			   QVector<double> &xvals,
-			   QString flbl)
+			    QVector<double> &xvals,
+			    bool spline, QString flbl)
 {
-#if 1
   uint64_t count = get_element_count (res);
 
 
@@ -81,7 +80,7 @@ ChartWindow::handle_vector (APL_value res,
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;
 
-    if (1) {
+    if (spline) {
       sseries = new QSplineSeries ();
       sseries->setName ("flbl");
     }
@@ -111,8 +110,6 @@ ChartWindow::handle_vector (APL_value res,
   }
 
   return frc;
-#endif
-  return 0;
 }
 
 QVector<double> 
@@ -188,7 +185,7 @@ ChartWindow::drawChart ()
       sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
       APL_value res = get_var_value (expvar, loc);
       if (res) {
-	int frc =  handle_vector (res, xvals, curve.getName ());
+	int frc =  handle_vector (res, xvals, spline, curve.getName ());
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
