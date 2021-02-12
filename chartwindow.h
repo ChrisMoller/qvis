@@ -56,7 +56,7 @@ class ChartWindow : public QMainWindow
   Q_OBJECT
   
 public:
-  ChartWindow (ChartControls *parent = nullptr);
+  ChartWindow  (ChartControls *parent = nullptr);
   ~ChartWindow();
   QChartView	*chartView;
   QChart	*chart;
@@ -66,6 +66,7 @@ public:
   QSettings 	 settings;
   void		 drawChart ();
   //  std::vector<OldCurve> curves;
+  void setIndices ();
 
 private slots:
   void imageExport();

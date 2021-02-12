@@ -922,8 +922,6 @@ MainWindow::buildMenu (QString &msgs)
     formGroupBox->setLayout (layout);
     formGroupBox->setAlignment (Qt::AlignLeft);
     outerlayout->addWidget (formGroupBox);
-    delete aplWinFilter;
-    delete aplLineFilter;
   }
   {
     QGroupBox *formGroupBox = new QGroupBox (QString ("Chart control"));
@@ -1002,6 +1000,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 			QString &lp, QWidget *parent)
   : QMainWindow(parent)
 {
+  incr = 16;		// fixme, make settable
   QSettings settings;
   editor = settings.value (SETTINGS_EDITOR).toString ();
   if (editor.isEmpty ()) 
@@ -1099,5 +1098,7 @@ MainWindow::~MainWindow()
     delete charts[i];
   }
   delete history;
+  delete aplWinFilter;
+  delete aplLineFilter;
 }
 

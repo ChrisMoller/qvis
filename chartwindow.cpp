@@ -25,6 +25,7 @@
 #include <QMenuBar>
 #include <complex>
 #include <values.h>
+#include <iconv.h>
 
 #include <apl/libapl.h>
 
@@ -118,17 +119,36 @@ setIndex (QString &name, double min, double max, int incr)
   if (!name.isEmpty ()) {
     char loc[256];
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    APL_value res = apl_vector ((int64_t)(incr +1), loc);
+    APL_value res = apl_vector ((int64_t)(incr +1), loc);  // create the value
 
     int i;
     for (i = 0; i <= incr; i++) {
       double val = min + ((double)i/(double)incr) * (max - min);
-      set_double ((APL_Float)val, res, (uint64_t)i);
+      set_double ((APL_Float)val, res, (uint64_t)i);	// populate it
     }
     QByteArray nameUtf8 = name.toUtf8();
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    set_var_value (nameUtf8.constData (), res, loc);
+    set_var_value (nameUtf8.constData (), res, loc);	// name it
   }
+}
+
+void 
+ChartWindow::setIndices ()
+{
+  int incr = chartControls->getMainWindow ()->getIncr ();
+  Index *ix;
+
+  ix = chartControls->getChartData ()->getXIndex ();
+  QString ixName = ix->getName ();
+  double  ixMin  = ix->getMin ();
+  double  ixMax  = ix->getMax ();
+  setIndex (ixName, ixMin, ixMax, incr);
+  
+  ix = chartControls->getChartData ()->getZIndex ();
+  QString izName = ix->getName ();
+  double  izMin  = ix->getMin ();
+  double  izMax  = ix->getMax ();
+  setIndex (izName, izMin, izMax, incr);
 }
 
 void
@@ -150,30 +170,26 @@ ChartWindow::drawChart ()
   QList<Param> params = mw->getParams ();
 
   sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+  setIndices ();
+
+#if 0
   for (i = 0; i < params.size (); i++) {
     Param parm = params[i];
     QString vbl = parm.getName ();
     if (!vbl.isEmpty ()) {
+      fprintf (stderr, "setting parm %d %s\n", i, toCString (vbl));
       double real = parm.getValue ().real ();
       double imag = parm.getValue ().imag ();
-      APL_value res =
-	complex_scalar((APL_Float) real, (APL_Float) imag, loc);
+
+      APL_value res = apl_scalar (loc);  // create the value
+      set_complex ((APL_Float) real, (APL_Float) imag, res, 0); // populate
+      
       QByteArray vblUtf8 = vbl.toUtf8();
-      set_var_value (vblUtf8.constData (), res, loc);
+      int src =  set_var_value (vblUtf8.constData (), res, loc);  //name
     }
   }
+#endif
 
-  Index *ix = chartControls->getChartData ()->getXIndex ();
-  Index *iz = chartControls->getChartData ()->getXIndex ();
-  QString ixName = ix->getName ();
-  double  ixMin  = ix->getMin ();
-  double  ixMax  = ix->getMax ();
-  QString izName = iz->getName ();
-  double  izMin  = iz->getMin ();
-  double  izMax  = iz->getMax ();
-
-  setIndex (ixName, ixMin, ixMax, incr);
-  setIndex (izName, izMin, izMax, incr);
   APL_value xvals;
 
   for (i = 0; i < mw->getCurveCount (); i++) {
@@ -423,7 +439,7 @@ ChartWindow::create_menuBar ()
 }
 #endif
 
-ChartWindow::ChartWindow (ChartControls *parent)
+ChartWindow::ChartWindow  (ChartControls *parent)
   : QMainWindow(parent)
 {
   chartControls = parent;
@@ -438,6 +454,7 @@ ChartWindow::ChartWindow (ChartControls *parent)
   chartView  = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
 
+  chartControls->getMainWindow ()->setParams ();
   drawChart ();
 
 #if 0

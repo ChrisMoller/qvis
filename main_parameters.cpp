@@ -33,10 +33,40 @@ MainWindow::parmsCellPressed (int row, int column)
 }
 #endif
 
+int
+MainWindow::getIncr ()
+{
+  return incr;
+}
+
+void
+MainWindow::setParams ()
+{
+  int i;
+  char loc[256];
+
+  sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+  for (i = 0; i < parms.size (); i++) {
+    Param parm = parms[i];
+    QString vbl = parm.getName ();
+    if (!vbl.isEmpty ()) {
+      double real = parm.getValue ().real ();
+      double imag = parm.getValue ().imag ();
+
+      APL_value res = apl_scalar (loc);  // create the value
+      set_complex ((APL_Float) real, (APL_Float) imag, res, 0); // populate
+      
+      QByteArray vblUtf8 = vbl.toUtf8();
+      int src =  set_var_value (vblUtf8.constData (), res, loc);  //name
+    }
+  }
+}
+
 void
 MainWindow::notifyAll ()
 {
   int i;
+  setParams ();
   for (i = 0; i < charts.size (); i++) {
     ChartData *cd = charts[i];
     ChartWindow *win = cd->getWindow ();

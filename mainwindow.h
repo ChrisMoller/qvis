@@ -131,6 +131,8 @@ public:
   QList<Param>	 getParams ();
   void 		 notifyAll ();
   void    update_screen (QString &errString, QString &outString);
+  int 		getIncr ();
+  void		  setParams ();
 									  
 public slots:
 
@@ -207,5 +209,6 @@ private:
   QTableWidget 		*parmsTable;
   QList<ChartData*>	charts;
   QString		styledesc;
+  int 			incr;
 };
 #endif // MAINWINDOW_H
