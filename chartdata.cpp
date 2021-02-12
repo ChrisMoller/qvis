@@ -107,6 +107,7 @@ ChartData::ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
   iz     = riz;
   selected = rselected;
   theme = (QChart::ChartTheme)rtheme;
+  changed = true;
 }
 
 void
@@ -186,3 +187,15 @@ ChartData::getTheme ()
   return theme;
 }
 
+
+void
+ChartData::setChanged (bool state)
+{
+  changed = state;
+}
+
+bool
+ChartData::hasChanged ()
+{
+  return changed;
+}

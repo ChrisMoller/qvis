@@ -77,8 +77,11 @@ MainWindow::notifyAll ()
   setParams ();
   for (i = 0; i < charts.size (); i++) {
     ChartData *cd = charts[i];
-    ChartWindow *win = cd->getWindow ();
-    win->drawChart ();
+    if (cd->hasChanged ()) {
+      ChartWindow *win = cd->getWindow ();
+      win->drawChart ();
+      cd->setChanged (false);
+    }
   }
 }
 

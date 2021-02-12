@@ -73,6 +73,8 @@ class ChartData
   void		setTheme (int rtheme);
   void		setWindow (ChartWindow *win);
   ChartWindow  *getWindow ();
+  void	        setChanged (bool state);
+  bool	        hasChanged ();
 
  private:
   QString title;
@@ -83,6 +85,7 @@ class ChartData
   QList<int> selected;
   QChart::ChartTheme theme;
   ChartWindow *chartWindow;
+  bool 	       changed;
 };
 
 #endif // CHARTDATA_H
