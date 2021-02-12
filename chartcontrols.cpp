@@ -154,6 +154,69 @@ ChartControls::setChartData (ChartData *cd)
   chartData = cd;
 }
 
+void
+ChartControls::valChanged (bool enabled __attribute__((unused)))
+{
+#if 0
+  chartWindow->curve.polar  = (Qt::Checked == do_polar->checkState());
+  chartWindow->curve.spline = (Qt::Checked == do_spline->checkState());
+  //  curve.shorttitle
+  chartWindow->curve.title			= chart_title->text ();
+  //  chartWindow->curve.function.title		= y_label->text ();
+  // chartWindow->curve.function.label		= fcn_label->text ();
+  chartWindow->curve.function.expression	= apl_expression->text ();
+  chartWindow->curve.ix.name			= x_var_name->text ();
+  chartWindow->curve.ix.title			= x_label->text ();
+  chartWindow->curve.ix.range.min		= x_var_min->value ();
+  chartWindow->curve.ix.range.max		= x_var_max->value ();
+  chartWindow->curve.iz.name			= z_var_name->text ();
+  chartWindow->curve.iz.title			= z_label->text ();
+  chartWindow->curve.iz.range.min 		= z_var_min->value ();
+  chartWindow->curve.iz.range.max 		= z_var_max->value ();
+  chartWindow->changed = true;
+  chartWindow->handleExpression ();
+#endif
+}
+
+void
+ChartControls::valChangedv ()
+{
+  valChanged (true);
+}
+
+void
+ChartControls::titleChangedv ()
+{
+  QString title = chart_title->text ();
+  mainWindow->setTabTitle (tabIndex, title);
+}
+
+#if 0
+void
+ChartControls::enterChart (ChartWindow *cw)
+{
+  chart_title->setText (cw->curve.title);
+  y_label->setText (cw->curve.function.label);
+
+  x_var_name->setText (cw->curve.ix.name);
+  x_var_min->setValue (cw->curve.ix.range.min);
+  x_var_max->setValue (cw->curve.ix.range.max);
+  x_label->setText (cw->curve.ix.title);
+
+  z_var_name->setText (cw->curve.iz.name);
+  z_var_min->setValue (cw->curve.iz.range.min);
+  z_var_max->setValue (cw->curve.iz.range.max);
+  z_label->setText (cw->curve.iz.title);
+
+  fcn_label->setText (chartWindow->curve.function.title);
+  apl_expression->setText (cw->curve.function.expression);
+
+  do_spline->setCheckState (cw->curve.spline ? Qt::Checked : Qt::Unchecked);
+  do_polar->setCheckState (cw->curve.polar   ? Qt::Checked : Qt::Unchecked);
+  chartWindow = cw;
+}
+#endif
+
 ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   : QWidget(parent)
 {
@@ -326,69 +389,6 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   chartWindow = new ChartWindow (this);
   chartData->setWindow (chartWindow);
 }
-
-void
-ChartControls::valChanged (bool enabled __attribute__((unused)))
-{
-#if 0
-  chartWindow->curve.polar  = (Qt::Checked == do_polar->checkState());
-  chartWindow->curve.spline = (Qt::Checked == do_spline->checkState());
-  //  curve.shorttitle
-  chartWindow->curve.title			= chart_title->text ();
-  //  chartWindow->curve.function.title		= y_label->text ();
-  // chartWindow->curve.function.label		= fcn_label->text ();
-  chartWindow->curve.function.expression	= apl_expression->text ();
-  chartWindow->curve.ix.name			= x_var_name->text ();
-  chartWindow->curve.ix.title			= x_label->text ();
-  chartWindow->curve.ix.range.min		= x_var_min->value ();
-  chartWindow->curve.ix.range.max		= x_var_max->value ();
-  chartWindow->curve.iz.name			= z_var_name->text ();
-  chartWindow->curve.iz.title			= z_label->text ();
-  chartWindow->curve.iz.range.min 		= z_var_min->value ();
-  chartWindow->curve.iz.range.max 		= z_var_max->value ();
-  chartWindow->changed = true;
-  chartWindow->handleExpression ();
-#endif
-}
-
-void
-ChartControls::valChangedv ()
-{
-  valChanged (true);
-}
-
-void
-ChartControls::titleChangedv ()
-{
-  QString title = chart_title->text ();
-  mainWindow->setTabTitle (tabIndex, title);
-}
-
-#if 0
-void
-ChartControls::enterChart (ChartWindow *cw)
-{
-  chart_title->setText (cw->curve.title);
-  y_label->setText (cw->curve.function.label);
-
-  x_var_name->setText (cw->curve.ix.name);
-  x_var_min->setValue (cw->curve.ix.range.min);
-  x_var_max->setValue (cw->curve.ix.range.max);
-  x_label->setText (cw->curve.ix.title);
-
-  z_var_name->setText (cw->curve.iz.name);
-  z_var_min->setValue (cw->curve.iz.range.min);
-  z_var_max->setValue (cw->curve.iz.range.max);
-  z_label->setText (cw->curve.iz.title);
-
-  fcn_label->setText (chartWindow->curve.function.title);
-  apl_expression->setText (cw->curve.function.expression);
-
-  do_spline->setCheckState (cw->curve.spline ? Qt::Checked : Qt::Unchecked);
-  do_polar->setCheckState (cw->curve.polar   ? Qt::Checked : Qt::Unchecked);
-  chartWindow = cw;
-}
-#endif
 
 ChartControls::~ChartControls()
 {

@@ -83,9 +83,9 @@ private:
   QChart::ChartTheme theme;
   ChartControls	*chartControls;
   int	         handle_vector (APL_value res,
-				APL_value xvals,
+				QVector<double> &xvals,
 				QString flbl);
-  void setIndex (Index *idx, int incr, QString title);
+  QVector<double> setIndex (Index *idx, int incr, QString title);
 #if 0
   void create_menuBar ();
   QComboBox 	*themebox;

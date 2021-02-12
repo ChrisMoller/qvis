@@ -568,6 +568,8 @@ MainWindow::readVis (QString &fileName)
 	tabs->removeTab (ix);
       }
     }
+    fprintf (stderr, "in xml chart \"%s\"\n",
+	     toCString (charts[i]->getTitle ()));
     ChartControls *tab1 = new ChartControls (i, charts[i], this);
     tab1->setUseState (true);
     tabs->addTab (tab1, charts[i]->getTitle ());

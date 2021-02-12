@@ -42,14 +42,16 @@ class ChartWindow;
 
 int
 ChartWindow::handle_vector (APL_value res,
-			   APL_value xvals,
+			   QVector<double> &xvals,
 			   QString flbl)
 {
+  fprintf (stderr," handling vector\n");
 #if 1
   uint64_t count = get_element_count (res);
 
+
   int res_type = -1;
-  std::vector<std::complex<double>> vect (count);
+  std::vector<std::complex<double>> vect (count);  // fixme use qvector
   for (uint64_t c = 0; c < count; c++) {
     if (is_numeric (res, c)) {
       if (res_type == -1) res_type = CCT_NUMERIC;
@@ -89,12 +91,20 @@ ChartWindow::handle_vector (APL_value res,
       pseries->setName(flbl);
     }
 
-    for (uint64_t i = 0; i < count; i++) {
+#if 1
+  int i;
+  for (i = 0; i < xvals.size (); i++)
+    fprintf (stderr, "first xv %g\n", xvals[i]);
+#endif
+  
+    for (i = 0; i < count; i++) {
+      fprintf (stderr, "second xv %d %g\n", i, (qreal)xvals[i]);
       qreal y_val = (qreal)vect[i].real ();
       if (y_max < y_val) y_max = y_val;
       if (y_min > y_val) y_min = y_val;
-      if (sseries) sseries->append ((qreal)get_real (xvals, i), y_val);
-      else pseries->append ((qreal)get_real (xvals, i), y_val);
+      if (sseries) sseries->append ((qreal)xvals[i], y_val);
+      else pseries->append ((qreal)xvals[i], y_val);
+      fprintf (stderr, "appended %d %g %g\n", (int)i, (qreal)xvals[i], y_val);
     }
 
     if (sseries) chartView->chart ()->addSeries (sseries);
@@ -113,9 +123,10 @@ ChartWindow::handle_vector (APL_value res,
   return 0;
 }
 
-void
+QVector<double> 
 ChartWindow::setIndex (Index *idx, int incr, QString title)
 {
+  QVector<double>vals;
   QString name = idx->getName ();
   if (!name.isEmpty ()) {
     double  min  = idx->getMin ();
@@ -125,8 +136,10 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
     APL_value res = apl_vector ((int64_t)(incr +1), loc);  // create the value
 
     int i;
+    vals.resize (incr + 1);
     for (i = 0; i <= incr; i++) {
       double val = min + ((double)i/(double)incr) * (max - min);
+      vals.append (val);
       set_double ((APL_Float)val, res, (uint64_t)i);	// populate it
     }
     QByteArray nameUtf8 = name.toUtf8();
@@ -142,6 +155,7 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
     }
     release_value (res, loc);
   }
+  return vals;
 }
 
 void
@@ -163,21 +177,28 @@ ChartWindow::drawChart ()
   QList<Param> params = mw->getParams ();
 
   Index *ix = chartControls->getChartData ()->getXIndex ();
-  setIndex (ix, incr, chartControls->chart_title->text ());
+  QVector<double> xvals =
+    setIndex (ix, incr, chartControls->chart_title->text ());
+  
   Index *iz = chartControls->getChartData ()->getZIndex ();
-  setIndex (iz, incr, chartControls->chart_title->text ());
+  QVector<double> zvals =
+    setIndex (iz, incr, chartControls->chart_title->text ());
 
-  APL_value xvals;
-
+  fprintf (stderr, "in drawChart\n");
+  
   sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-  for (i = 0; i < mw->getCurveCount (); i++) {
-    Curve curve = mw->getCurve (i);
+  QList<int> sels =  chartControls->getChartData ()->getSelected ();
+  fprintf (stderr, "nr sel %d\n", sels.size ());
+  for (i =  0; i < sels.size (); i++) {
+    fprintf (stderr, "sel %d\n", sels[i]);
+    Curve curve = mw->getCurve (sels[i]);
     QString fcn = curve.getFunction ();
     QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
+    fprintf (stderr, "execing \"%s\"\n", toCString (stmt));
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
     mw->update_screen (errString, outString);
-
-    if (!errString.isEmpty ()) {
+    
+    if (errString.isEmpty ()) {
       sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
       APL_value res = get_var_value (expvar, loc);
       if (res) {
@@ -190,6 +211,32 @@ ChartWindow::drawChart ()
       }
     }
   }
+
+#if 0
+  for (i = 0; i < mw->getCurveCount (); i++) {
+    Curve curve = mw->getCurve (i);
+    QString fcn = curve.getFunction ();
+    QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
+    fprintf (stderr, "execing \"%s\"\n", toCString (stmt));
+    AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
+    mw->update_screen (errString, outString);
+
+#if 0
+    if (!errString.isEmpty ()) {
+      sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+      APL_value res = get_var_value (expvar, loc);
+      if (res) {
+	//	int frc =  handle_vector (res, xvals, "mmmm");
+	QString cmd =
+	  QString (")erase %1").arg (expvar);
+	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+	release_value (res, loc);
+      }
+    }
+#endif
+  }
+#endif
 }
 
 #if 0
