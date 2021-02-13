@@ -104,75 +104,15 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 	    updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_PEN, curve_pen);
 
-#if 1
   const QIcon deleteIcon = QIcon (":/images/edit-delete.png");
   QPushButton *deleteButton =
     new QPushButton (deleteIcon, QObject::tr ("Delete"));
   connect (deleteButton,
 	   &QAbstractButton::clicked,
-	   [=](bool checked){deleteCurve (i);
+	   [=](){deleteCurve (i);
 	    updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_X, deleteButton);
-#else
-  QTableWidgetItem *item_delete =
-    new QTableWidgetItem (QIcon (":/images/edit-delete.png"), "Delete");
-  curvesTable->setItem (i, COLUMN_X, item_delete);
-#endif
 }
-
-#if 0
-void
-MainWindow::cellPressed (int row, int column)
-{
-  switch(column) {
-  case COLUMN_X:
-    {
-      if (row >= 0 && row < curves.size ()) {
-	QMessageBox msgBox;
-	msgBox.setText ("Did you really mean that?");
-	msgBox.setStandardButtons (QMessageBox::Yes |
-				   QMessageBox::Cancel);
-	msgBox.setDefaultButton (QMessageBox::Cancel);
-	QPoint loc = this->pos ();
-	msgBox.move (loc.x () + 200, loc.y () + 200);
-	if (msgBox.exec() == QMessageBox::Yes) {
-	  curves.removeAt (row);
-	  curvesTable->removeRow (row);
-	}
-      }
-    }
-    break;
-#if 0
-  case  COLUMN_PEN:
-    {
-     QDialog dialog (this, Qt::Dialog);
-     QGridLayout *layout = new QGridLayout;
-     dialog.setLayout (layout);
-     
-     QComboBox *linestyle_combo = linestyleCombo (Qt::SolidLine);
-     int penIdx = (int)curves[row].getPen ();
-     int found = linestyle_combo->findData (QVariant(penIdx));
-     if (found != -1) linestyle_combo->setCurrentIndex (found);
-     layout->addWidget (linestyle_combo, 0, 0, 1, 2);
-
-     QPushButton *acceptButton = new QPushButton (QObject::tr ("Accept"));
-     acceptButton->setAutoDefault (true);
-     acceptButton->setDefault (true);
-     layout->addWidget (acceptButton, 1, 1);
-     QObject::connect (acceptButton, &QPushButton::clicked,
-		       &dialog, &QDialog::accept);
-     if (QDialog::Accepted == dialog.exec ()) {
-       int pen	= (linestyle_combo->currentData ()).toInt ();
-       curves[row].setPen ((Qt::PenStyle)pen);
-       QTableWidgetItem *item = curvesTable->item (row, COLUMN_PEN);
-       item->setText (curves[row].getPenName ());
-     }
-    }
-    break;
-#endif
-  }
-}
-#endif
 
 void
 MainWindow::addCurve()
