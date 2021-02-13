@@ -146,6 +146,14 @@ ChartData::getSelected ()
   return selected;
 }
 
+void
+ChartData::setSelected (int idx, bool state)
+{
+  int found = selected.indexOf (idx);
+  if (state == Qt::Checked && found == -1) selected.append (idx);
+  else if (state != Qt::Checked && found != -1) selected.removeAt (idx);
+}
+
 QString
 ChartData::getTitle ()
 {

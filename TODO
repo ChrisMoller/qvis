@@ -22,4 +22,4 @@ on open vis file, check if existing tab is empty.  if so, kill it or fill it in.
 
 clear curves, clear charts
 
-
+auto-update on curve selection

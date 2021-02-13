@@ -101,25 +101,41 @@ ChartControls::selectCurves ()
 
   int i;
   for (i = 0; i < mainWindow->getCurveCount (); i++) {
-    QTableWidgetItem *item_lbl =
-      new QTableWidgetItem (mainWindow->getCurve (i).getLabel ());
     bool active;
     if (chartData)
       active = chartData->getSelected ().contains (i);
     else active = false;
+#if 1
+    QCheckBox *label_check =
+      new QCheckBox (mainWindow->getCurve (i).getLabel ());
+    label_check->setCheckState (active ? Qt::Checked : Qt::Unchecked);
+    connect (label_check, QOverload<int>::of(&QCheckBox::stateChanged),
+	     [=](bool state)
+	     {chartData->setSelected (i, state);
+	       mainWindow->notifySelective (true); });
+    curvesTable->setCellWidget (i, 0, label_check);
+#else
+    QTableWidgetItem *item_lbl =
+      new QTableWidgetItem (mainWindow->getCurve (i).getLabel ());
     item_lbl->setCheckState(active ? Qt::Checked : Qt::Unchecked);
     curvesTable->setItem (i, 0, item_lbl);
+#endif
   }
 
   dialog_layout->addWidget (curvesTable);
 
-  QPushButton *closeButton = new QPushButton (QObject::tr ("Accept"));
+  QPushButton *closeButton = new QPushButton (QObject::tr ("Close"));
   dialog_layout->addWidget (closeButton);
   QObject::connect (closeButton, &QPushButton::clicked,
-		    &dialog, &QDialog::accept);
+		    &dialog, &QDialog::reject);
 
-  QPoint loc = mainWindow->pos ();
-  dialog.move (loc.x () + 200, loc.y () + 200);
+  bool run = true;
+  while (run) {
+    QPoint loc = mainWindow->pos ();
+    dialog.move (loc.x () + 200, loc.y () + 200);
+    if (QDialog::Rejected == dialog.exec ()) run = false;
+  }
+#if 0
   if (QDialog::Accepted == dialog.exec ()) {
     selected.clear ();
     for (i = 0; i < mainWindow->getCurveCount (); i++) {
@@ -128,6 +144,7 @@ ChartControls::selectCurves ()
       if (cs == Qt::Checked) selected.append (i);
     }
   }
+#endif
 }
 
 void
