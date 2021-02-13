@@ -130,9 +130,10 @@ public:
   void 		 setTabTitle (int ix, QString &title);
   QList<Param>	 getParams ();
   void 		 notifySelective (bool all);
-  void    update_screen (QString &errString, QString &outString);
-  int 		getIncr ();
-  void		  setParams ();
+  void           update_screen (QString &errString, QString &outString);
+  int 		 getIncr ();
+  void		 setParams ();
+  void		 updateAll ();
 									  
 public slots:
 

@@ -74,21 +74,6 @@ MainWindow::setParams ()
 }
 
 void
-MainWindow::notifySelective (bool all)
-{
-  int i;
-  setParams ();
-  for (i = 0; i < charts.size (); i++) {
-    ChartData *cd = charts[i];
-    if (all || cd->needsUpdate ()) {
-      ChartWindow *win = cd->getWindow ();
-      win->drawChart ();
-      cd->setUpdate (false);
-    }
-  }
-}
-
-void
 MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
 {
   QTableWidgetItem *item_name =

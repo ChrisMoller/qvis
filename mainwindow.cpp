@@ -66,6 +66,31 @@ static const QColor black = QColor (0, 0, 0);
 // #define DEFAULT_EDITOR "gvim \"+set number\""
 #define DEFAULT_EDITOR "gvim -c \"set nu\""
 
+
+void
+MainWindow::notifySelective (bool all)
+{
+  int i;
+  setParams ();
+  for (i = 0; i < charts.size (); i++) {
+    ChartData *cd = charts[i];
+    if (all || cd->needsUpdate ()) {
+      ChartWindow *win = cd->getWindow ();
+      win->drawChart ();
+      cd->setUpdate (false);
+    }
+  }
+}
+
+void
+MainWindow::updateAll ()
+{
+  int i;
+  for (i = 0; i <  charts.size (); i++)
+    charts[i]->setUpdate (true);
+}
+
+
 QList<Param>
 MainWindow::getParams ()
 {

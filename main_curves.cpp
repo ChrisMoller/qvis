@@ -32,10 +32,21 @@ enum {
 void
 MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 {
+#if 1
+  QLineEdit *curve_name = new QLineEdit (curves[i].getName ());
+  QObject::connect (curve_name,
+		    &QLineEdit::returnPressed,
+		    [=]()
+		    {QString name = curve_name->text ();
+		      curves[i].setName (name);
+		      updateAll (); notifySelective (false); });
+  curvesTable->setCellWidget (i, COLUMN_NAME, curve_name);
+#else
   QTableWidgetItem *item_name =
     new QTableWidgetItem (curves[i].getName ());
   item_name->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
   curvesTable->setItem (i, COLUMN_NAME, item_name);
+#endif
 
   QTableWidgetItem *item_lbl =
     new QTableWidgetItem (curves[i].getLabel ());
@@ -262,6 +273,7 @@ MainWindow::addCurve()
     else run = false;
   }
 
+#if 0
   int j;
   for (j = 0; j < curves.size (); j++) {
     QTableWidgetItem *item = curvesTable->item (j, 0);
@@ -270,4 +282,5 @@ MainWindow::addCurve()
     if (name.compare (oldname))
       curves[j].setName (name);
   }
+#endif
 }
