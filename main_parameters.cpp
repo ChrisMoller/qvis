@@ -53,11 +53,14 @@ MainWindow::setParams ()
       double real = parm.getValue ().real ();
       double imag = parm.getValue ().imag ();
 
-      APL_value res = apl_scalar (loc);  // create the value
-      set_complex ((APL_Float) real, (APL_Float) imag, res, 0); // populate
+      APL_value res = apl_scalar (loc); 
+      if (imag == 0.0)
+	set_double ((APL_Float) real, res, 0);
+      else
+	set_complex ((APL_Float) real, (APL_Float) imag, res, 0);
       
       QByteArray vblUtf8 = vbl.toUtf8();
-      int src = set_var_value (vblUtf8.constData (), res, loc);  //name
+      int src = set_var_value (vblUtf8.constData (), res, loc);
       if (src != 0) {
 	QMessageBox msgBox;
 	QString msg = QString ("Error setting parameter %1").arg (vbl);

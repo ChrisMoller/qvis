@@ -122,17 +122,17 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
     double  max  = idx->getMax ();
     char loc[256];
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    APL_value res = apl_vector ((int64_t)(incr +1), loc);  // create the value
+    APL_value res = apl_vector ((int64_t)(incr +1), loc);
 
     int i;
     for (i = 0; i <= incr; i++) {
       double val = min + ((double)i/(double)incr) * (max - min);
       vals.append (val);
-      set_double ((APL_Float)val, res, (uint64_t)i);	// populate it
+      set_double ((APL_Float)val, res, (uint64_t)i);
     }
     QByteArray nameUtf8 = name.toUtf8();
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    int src = set_var_value (nameUtf8.constData (), res, loc);	// name it
+    int src = set_var_value (nameUtf8.constData (), res, loc);
     if (src != 0) {
       QMessageBox msgBox;
       QString msg =
@@ -177,7 +177,7 @@ ChartWindow::drawChart ()
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
     QString fcn = curve.getFunction ();
-    QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
+    QString stmt = QString ("%1←%2").arg (expvar).arg (fcn);
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
     mw->update_screen (errString, outString);
     
