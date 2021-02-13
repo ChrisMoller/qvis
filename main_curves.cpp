@@ -29,7 +29,7 @@ enum {
 };
 
 static QComboBox *
-linestyleCombo (int sel)
+linestyleCombo (Qt::PenStyle sel)
 {
   QComboBox *linestyle_combo = new QComboBox ();
   linestyle_combo->addItem ("Solid Line",
@@ -42,7 +42,9 @@ linestyleCombo (int sel)
 			    QVariant((int)Qt::DashDotLine));
   linestyle_combo->addItem ("Dash Dot Dot Line",
 			    QVariant((int)Qt::DashDotDotLine));
-  linestyle_combo->setCurrentIndex (sel);
+  int found = linestyle_combo->findData (QVariant ((int)sel));
+  if (found != -1)
+    linestyle_combo->setCurrentIndex (found);
   
   return linestyle_combo;
 }
@@ -88,29 +90,13 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 		      updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_COLOUR, curve_colour);
 
-#if 1
-  QComboBox *curve_pen =  linestyleCombo ((int)curves[i].getPen ());
-#if 1
+  QComboBox *curve_pen =  linestyleCombo (curves[i].getPen ());
   connect (curve_pen, QOverload<int>::of(&QComboBox::activated),
 	  [=](int index)
-	  {QVariant sel = curve_pen->currentData (index);
+	  {QVariant sel = curve_pen->itemData (index);
 	    curves[i].setPen ((Qt::PenStyle)sel.toInt ());
 	    updateAll (); notifySelective (false); });
-	  
-#else
-  QObject::connect (curve_pen,
-		    &QComboBox::activated,
-		    [=](int index)
-		    {QVariant sel = curve_pen->currentData (index);
-		      curves[i].setPen ((Qt::PenStyle)sel.toInt ());
-		      updateAll (); notifySelective (false); });
-#endif
   curvesTable->setCellWidget (i, COLUMN_PEN, curve_pen);
-#else
-  QTableWidgetItem *item_pen =
-    new QTableWidgetItem (curves[i].getPenName ());
-  curvesTable->setItem (i, COLUMN_PEN, item_pen);
-#endif
 
   QTableWidgetItem *item_delete =
     new QTableWidgetItem (QIcon (":/images/edit-delete.png"), "Delete");
@@ -145,7 +131,7 @@ MainWindow::cellPressed (int row, int column)
      QGridLayout *layout = new QGridLayout;
      dialog.setLayout (layout);
      
-     QComboBox *linestyle_combo = linestyleCombo (0);
+     QComboBox *linestyle_combo = linestyleCombo (Qt::SolidLine);
      int penIdx = (int)curves[row].getPen ();
      int found = linestyle_combo->findData (QVariant(penIdx));
      if (found != -1) linestyle_combo->setCurrentIndex (found);
@@ -232,7 +218,7 @@ MainWindow::addCurve()
   curve_colour.setUpdateMode (ColorSelector::Confirm);
   layout->addWidget (&curve_colour, row, col++);
 
-  QComboBox *linestyle_combo = linestyleCombo (0);
+  QComboBox *linestyle_combo = linestyleCombo (Qt::SolidLine);
   layout->addWidget (linestyle_combo, row, col++);
   
   row++;
