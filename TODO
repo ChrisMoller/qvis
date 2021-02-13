@@ -23,6 +23,3 @@ on open vis file, check if existing tab is empty.  if so, kill it or fill it in.
 clear curves, clear charts
 
 
-storeback fcn, etc. from edit curve
-
-functors on spline, polar, etc

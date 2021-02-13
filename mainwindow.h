@@ -156,8 +156,8 @@ private slots:
   void about();
   void returnPressed ();
   void fileChanged(const QString &path);
-  void cellPressed (int row, int column);
 #if 0
+  void cellPressed (int row, int column);
   void parmsCellPressed (int row, int column);
 #endif
   bool writeVis (QString &fileName);
@@ -166,6 +166,7 @@ private slots:
   
   
 private:
+  void		 deleteCurve (int idx);
   void 		 setEditor ();
   void 		 setGlobalStyle ();
   void		 setGlobalFont ();

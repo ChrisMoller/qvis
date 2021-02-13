@@ -28,6 +28,12 @@ enum {
   COLUMN_X
 };
 
+void
+MainWindow::deleteCurve (int idx)
+{
+  fprintf (stderr, "deleting %d\n", idx);	// fixme
+}
+
 static QComboBox *
 linestyleCombo (Qt::PenStyle sel)
 {
@@ -98,12 +104,23 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 	    updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_PEN, curve_pen);
 
+#if 1
+  const QIcon deleteIcon = QIcon (":/images/edit-delete.png");
+  QPushButton *deleteButton =
+    new QPushButton (deleteIcon, QObject::tr ("Delete"));
+  connect (deleteButton,
+	   &QAbstractButton::clicked,
+	   [=](bool checked){deleteCurve (i);
+	    updateAll (); notifySelective (false); });
+  curvesTable->setCellWidget (i, COLUMN_X, deleteButton);
+#else
   QTableWidgetItem *item_delete =
     new QTableWidgetItem (QIcon (":/images/edit-delete.png"), "Delete");
   curvesTable->setItem (i, COLUMN_X, item_delete);
+#endif
 }
 
-
+#if 0
 void
 MainWindow::cellPressed (int row, int column)
 {
@@ -125,6 +142,7 @@ MainWindow::cellPressed (int row, int column)
       }
     }
     break;
+#if 0
   case  COLUMN_PEN:
     {
      QDialog dialog (this, Qt::Dialog);
@@ -151,8 +169,10 @@ MainWindow::cellPressed (int row, int column)
      }
     }
     break;
+#endif
   }
 }
+#endif
 
 void
 MainWindow::addCurve()
@@ -169,8 +189,10 @@ MainWindow::addCurve()
   dialog_layout->addWidget (gbox);
     
   curvesTable       = new QTableWidget (this);
+#if 0
   connect (curvesTable, &QTableWidget::cellPressed,
 	   this, &MainWindow::cellPressed);
+#endif
   
   curvesTable->setColumnCount (6);
   curvesTable->setRowCount (curves.size ());
