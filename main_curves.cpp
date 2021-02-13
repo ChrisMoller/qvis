@@ -28,6 +28,24 @@ enum {
   COLUMN_X
 };
 
+static QComboBox *
+linestyleCombo (int sel)
+{
+  QComboBox *linestyle_combo = new QComboBox ();
+  linestyle_combo->addItem ("Solid Line",
+			    QVariant((int)Qt::SolidLine));
+  linestyle_combo->addItem ("Dash Line,",
+			    QVariant((int)Qt::DashLine));
+  linestyle_combo->addItem ("Dot Line,",
+			    QVariant((int)Qt::DotLine));
+  linestyle_combo->addItem ("Dash Dot Line,",
+			    QVariant((int)Qt::DashDotLine));
+  linestyle_combo->addItem ("Dash Dot Dot Line",
+			    QVariant((int)Qt::DashDotDotLine));
+  linestyle_combo->setCurrentIndex (sel);
+  
+  return linestyle_combo;
+}
 
 void
 MainWindow::insertItem (int i, QTableWidget* &curvesTable)
@@ -71,6 +89,23 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
   curvesTable->setCellWidget (i, COLUMN_COLOUR, curve_colour);
 
 #if 1
+  QComboBox *curve_pen =  linestyleCombo ((int)curves[i].getPen ());
+#if 1
+  connect (curve_pen, QOverload<int>::of(&QComboBox::activated),
+	  [=](int index)
+	  {QVariant sel = curve_pen->currentData (index);
+	    curves[i].setPen ((Qt::PenStyle)sel.toInt ());
+	    updateAll (); notifySelective (false); });
+	  
+#else
+  QObject::connect (curve_pen,
+		    &QComboBox::activated,
+		    [=](int index)
+		    {QVariant sel = curve_pen->currentData (index);
+		      curves[i].setPen ((Qt::PenStyle)sel.toInt ());
+		      updateAll (); notifySelective (false); });
+#endif
+  curvesTable->setCellWidget (i, COLUMN_PEN, curve_pen);
 #else
   QTableWidgetItem *item_pen =
     new QTableWidgetItem (curves[i].getPenName ());
@@ -80,26 +115,6 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
   QTableWidgetItem *item_delete =
     new QTableWidgetItem (QIcon (":/images/edit-delete.png"), "Delete");
   curvesTable->setItem (i, COLUMN_X, item_delete);
-}
-
-
-static QComboBox *
-linestyleCombo (int sel)
-{
-  QComboBox *linestyle_combo = new QComboBox ();
-  linestyle_combo->addItem ("Solid Line",
-			    QVariant((int)Qt::SolidLine));
-  linestyle_combo->addItem ("Dash Line,",
-			    QVariant((int)Qt::DashLine));
-  linestyle_combo->addItem ("Dot Line,",
-			    QVariant((int)Qt::DotLine));
-  linestyle_combo->addItem ("Dash Dot Line,",
-			    QVariant((int)Qt::DashDotLine));
-  linestyle_combo->addItem ("Dash Dot Dot Line",
-			    QVariant((int)Qt::DashDotDotLine));
-  linestyle_combo->setCurrentIndex (sel);
-  
-  return linestyle_combo;
 }
 
 
