@@ -32,7 +32,6 @@ enum {
 void
 MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 {
-#if 1
   QLineEdit *curve_name = new QLineEdit (curves[i].getName ());
   QObject::connect (curve_name,
 		    &QLineEdit::returnPressed,
@@ -41,31 +40,42 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 		      curves[i].setName (name);
 		      updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_NAME, curve_name);
-#else
-  QTableWidgetItem *item_name =
-    new QTableWidgetItem (curves[i].getName ());
-  item_name->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
-  curvesTable->setItem (i, COLUMN_NAME, item_name);
-#endif
 
-  QTableWidgetItem *item_lbl =
-    new QTableWidgetItem (curves[i].getLabel ());
-  item_lbl->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
-  curvesTable->setItem (i, COLUMN_LABEL, item_lbl);
+  QLineEdit *curve_label = new QLineEdit (curves[i].getLabel ());
+  QObject::connect (curve_label,
+		    &QLineEdit::returnPressed,
+		    [=]()
+		    {QString label = curve_label->text ();
+		      curves[i].setLabel (label);
+		      updateAll (); notifySelective (false); });
+  curvesTable->setCellWidget (i, COLUMN_LABEL, curve_label);
 
-  QTableWidgetItem *item_fcn =
-    new QTableWidgetItem (curves[i].getFunction ());
-  item_fcn->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
-  curvesTable->setItem (i, COLUMN_FCN, item_fcn);
+  QLineEdit *curve_fcn = new QLineEdit (curves[i].getFunction ());
+  QObject::connect (curve_fcn,
+		    &QLineEdit::returnPressed,
+		    [=]()
+		    {QString fcn = curve_fcn->text ();
+		      curves[i].setFunction (fcn);
+		      updateAll (); notifySelective (false); });
+  curvesTable->setCellWidget (i, COLUMN_FCN, curve_fcn);
 
   ColorSelector *curve_colour = new ColorSelector ();
   curve_colour->setUpdateMode (ColorSelector::Confirm);
   curve_colour->setColor (curves[i].getColour ());
+  QObject::connect (curve_colour,
+		    &ColorSelector::colorSelected,
+		    [=]()
+		    {QColor colour = curve_colour->color ();
+		      curves[i].setColour (colour);
+		      updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_COLOUR, curve_colour);
 
+#if 1
+#else
   QTableWidgetItem *item_pen =
     new QTableWidgetItem (curves[i].getPenName ());
   curvesTable->setItem (i, COLUMN_PEN, item_pen);
+#endif
 
   QTableWidgetItem *item_delete =
     new QTableWidgetItem (QIcon (":/images/edit-delete.png"), "Delete");

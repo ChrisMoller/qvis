@@ -131,6 +131,18 @@ Curve::setPen (Qt::PenStyle rpen)
   pen = rpen;
 }
 
+void
+Curve::setLabel (QString &newlabel)
+{
+  label = newlabel;
+}
+
+void
+Curve::setFunction (QString &newfunction)
+{
+  fcn = newfunction;
+}
+
 QString
 Curve::getPenName ()
 {

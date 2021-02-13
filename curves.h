@@ -47,16 +47,18 @@ class Curve
  public:
   Curve (QString &rname, QString &rlabel,
 	 QString &rfcn, Qt::PenStyle rpen, QColor rcolour);
-  void showCurve ();
-  QString getName ();
-  void setName (QString &newname);
-  QString getLabel ();
-  QString getFunction ();
-  Qt::PenStyle getPen ();
-  QColor  getColour ();
-  void    setColour (QColor rcolour);
-  void    setPen (Qt::PenStyle rpen);
-  QString getPenName ();
+  void 		showCurve ();
+  QString 	getName ();
+  void 		setName (QString &newname);
+  QString 	getLabel ();
+  void 		setLabel (QString &newlabel);
+  QString	getFunction ();
+  void		setFunction (QString &newfunction);
+  Qt::PenStyle	getPen ();
+  void    	setPen (Qt::PenStyle rpen);
+  QColor  	getColour ();
+  void    	setColour (QColor rcolour);
+  QString 	getPenName ();
 
  private:
   QString name;			// key 
