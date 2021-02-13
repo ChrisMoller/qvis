@@ -110,7 +110,8 @@ MainWindow::cellPressed (int row, int column)
      dialog.setLayout (layout);
      
      QComboBox *linestyle_combo = linestyleCombo (0);
-     int found = linestyle_combo->findData (QVariant(curves[row].getPen ()));
+     int penIdx = (int)curves[row].getPen ();
+     int found = linestyle_combo->findData (QVariant(penIdx));
      if (found != -1) linestyle_combo->setCurrentIndex (found);
      layout->addWidget (linestyle_combo, 0, 0, 1, 2);
 
@@ -122,7 +123,7 @@ MainWindow::cellPressed (int row, int column)
 		       &dialog, &QDialog::accept);
      if (QDialog::Accepted == dialog.exec ()) {
        int pen	= (linestyle_combo->currentData ()).toInt ();
-       curves[row].setPen (pen);
+       curves[row].setPen ((Qt::PenStyle)pen);
        QTableWidgetItem *item = curvesTable->item (row, COLUMN_PEN);
        item->setText (curves[row].getPenName ());
      }
@@ -226,7 +227,8 @@ MainWindow::addCurve()
       QVariant pen	= linestyle_combo->currentData ();
       QColor  colour = curve_colour.color ();
       if (!name.isEmpty () && !function.isEmpty ()) {
-	Curve   curve = Curve (name, label, function, pen.toInt (), colour);
+	Curve   curve = Curve (name, label, function,
+			       (Qt::PenStyle)(pen.toInt ()), colour);
 	curves.append (curve);
 	int nextRow = curvesTable->rowCount();
 	curvesTable->setRowCount (1 + nextRow);

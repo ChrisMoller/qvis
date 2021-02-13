@@ -62,13 +62,13 @@ Param::setName (QString &newname)
 }
 
 Curve::Curve (QString &rname, QString &rlabel,
-       QString &rfcn, int rpen, QColor rcolour)
+       QString &rfcn, Qt::PenStyle rpen, QColor rcolour)
 {
   name	= rname;
   label	= rlabel;
   fcn	= rfcn;
   pen	= rpen;
-  colour	= rcolour;
+  colour = rcolour;
 }
 
 void
@@ -107,7 +107,7 @@ Curve::getFunction ()
   return fcn;
 }
 
-int
+Qt::PenStyle
 Curve::getPen ()
 {
   return pen;
@@ -126,7 +126,7 @@ Curve::setColour (QColor rcolour)
 }
 
 void
-Curve::setPen (int rpen)
+Curve::setPen (Qt::PenStyle rpen)
 {
   pen = rpen;
 }

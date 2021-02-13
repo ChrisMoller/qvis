@@ -43,10 +43,12 @@ class ChartWindow;
 int
 ChartWindow::handle_vector (APL_value res,
 			    QVector<double> &xvals,
-			    bool spline, QString flbl)
+			    bool spline, Curve *curve)
 {
-  uint64_t count = get_element_count (res);
-
+  QString flbl      = curve->getName ();
+  QColor  fcolour   = curve->getColour ();
+  Qt::PenStyle fpen = curve->getPen ();
+  uint64_t count    = get_element_count (res);
 
   int res_type = -1;
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
@@ -79,14 +81,20 @@ ChartWindow::handle_vector (APL_value res,
     // real vector vs idx, rank = 1
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;
+    QPen pen (fcolour);
+    pen.setStyle (fpen);
 
     if (spline) {
       sseries = new QSplineSeries ();
-      sseries->setName ("flbl");
+      sseries->setName (flbl);
+      sseries->setColor (fcolour);
+      sseries->setPen (pen);
     }
     else {
       pseries = new QLineSeries ();
       pseries->setName(flbl);
+      pseries->setColor (fcolour);
+      pseries->setPen (pen);
     }
 
     int i;
@@ -171,11 +179,17 @@ ChartWindow::drawChart ()
   Index *iz = chartControls->getChartData ()->getZIndex ();
   QVector<double> zvals =
     setIndex (iz, incr, chartControls->chart_title->text ());
+  
+  //  QString iz_label = iz->getLabel ();
 
   sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
   QList<int> sels =  chartControls->getChartData ()->getSelected ();
+  bool chart_created = false;
+
+  QString curve_label;
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
+    curve_label = curve.getLabel ();		// set to last curve
     QString fcn = curve.getFunction ();
     QString stmt = QString ("%1←%2").arg (expvar).arg (fcn);
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
@@ -185,14 +199,22 @@ ChartWindow::drawChart ()
       sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
       APL_value res = get_var_value (expvar, loc);
       if (res) {
-	int frc =  handle_vector (res, xvals, spline, curve.getName ());
+	handle_vector (res, xvals, spline, &curve);
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
 	release_value (res, loc);
+	chart_created = true;
       }
     }
+  }
+  if (chart_created) {
+    QString ix_label = ix->getLabel ();
+    chartView->chart ()->axes (Qt::Horizontal).first()
+      ->setTitleText (ix_label);
+    chartView->chart ()->axes (Qt::Vertical).first()
+      ->setTitleText (curve_label);
   }
 
 #if 0

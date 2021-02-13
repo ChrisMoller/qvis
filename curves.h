@@ -46,23 +46,23 @@ class Curve
 {
  public:
   Curve (QString &rname, QString &rlabel,
-	 QString &rfcn, int rpen, QColor rcolour);
+	 QString &rfcn, Qt::PenStyle rpen, QColor rcolour);
   void showCurve ();
   QString getName ();
   void setName (QString &newname);
   QString getLabel ();
   QString getFunction ();
-  int     getPen ();
+  Qt::PenStyle getPen ();
   QColor  getColour ();
   void    setColour (QColor rcolour);
-  void    setPen (int rpen);
+  void    setPen (Qt::PenStyle rpen);
   QString getPenName ();
 
  private:
   QString name;			// key 
   QString label;		// y-axis key
   QString fcn;
-  int pen;
+  Qt::PenStyle pen;
   QColor colour;
   QStringList penNames = {
     "No Pen",

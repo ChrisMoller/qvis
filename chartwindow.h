@@ -85,7 +85,7 @@ private:
   int	         handle_vector (APL_value res,
 				QVector<double> &xvals,
 				bool spline,
-				QString flbl);
+				Curve *curve);
   QVector<double> setIndex (Index *idx, int incr, QString title);
 #if 0
   void create_menuBar ();

@@ -107,7 +107,7 @@ ChartData::ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
   iz     = riz;
   selected = rselected;
   theme = (QChart::ChartTheme)rtheme;
-  changed = true;
+  changed = false;
 }
 
 void
