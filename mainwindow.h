@@ -177,7 +177,6 @@ private:
   void 		 buildMenu (QString &msgs);
   QGroupBox *	 chartControls ();
   QComboBox 	 *themebox;
-  bool		  changed;
   QString 	  curFile;
   QString 	  visCurFile;
   QChart::ChartTheme theme;	// fixme--copy to chartwin

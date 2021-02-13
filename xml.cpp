@@ -177,6 +177,7 @@ MainWindow::writeVis (QString &fileName)
       }
       
       stream.writeEndElement(); // chart
+      charts[i]->setChanged (false); 
     }
     stream.writeEndElement(); // charts
   }

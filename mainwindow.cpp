@@ -103,6 +103,12 @@ MainWindow::themeChanged (int newtheme __attribute__((unused)))
 bool
 MainWindow::maybeSave()
 {
+  bool changed = false;
+
+  int i;
+  for (i = 0; changed == false && i < charts.size (); i++)
+    if (charts[i]->hasChanged ()) changed = true;
+  
   bool rc = true;	// true => ok to zap, false => don't zap;
   if (changed) {
     QMessageBox::StandardButton ret;
@@ -111,7 +117,7 @@ MainWindow::maybeSave()
 				  "Do you want to save your changes?"),
 			       QMessageBox::Save | QMessageBox::Discard
 			       | QMessageBox::Cancel);
-    if (ret == QMessageBox::Save) save();
+    if (ret == QMessageBox::Save) saveVis();
     else if (ret == QMessageBox::Cancel) rc = false;
   }
   return rc;
@@ -1055,8 +1061,6 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   
   aplline->setFocus ();
   this->show ();
-
-  changed = false;
 }
 
 int

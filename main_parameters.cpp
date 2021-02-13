@@ -80,10 +80,10 @@ MainWindow::notifySelective (bool all)
   setParams ();
   for (i = 0; i < charts.size (); i++) {
     ChartData *cd = charts[i];
-    if (all || cd->hasChanged ()) {
+    if (all || cd->needsUpdate ()) {
       ChartWindow *win = cd->getWindow ();
       win->drawChart ();
-      cd->setChanged (false);
+      cd->setUpdate (false);
     }
   }
 }

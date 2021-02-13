@@ -187,7 +187,6 @@ ChartData::getTheme ()
   return theme;
 }
 
-
 void
 ChartData::setChanged (bool state)
 {
@@ -198,4 +197,17 @@ bool
 ChartData::hasChanged ()
 {
   return changed;
+}
+
+void
+ChartData::setUpdate (bool state)
+{
+  do_update = state;
+  if (state) changed = true;
+}
+
+bool
+ChartData::needsUpdate ()
+{
+  return do_update;
 }

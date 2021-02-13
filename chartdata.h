@@ -75,6 +75,8 @@ class ChartData
   ChartWindow  *getWindow ();
   void	        setChanged (bool state);
   bool	        hasChanged ();
+  void	        setUpdate (bool state);
+  bool	        needsUpdate ();
 
  private:
   QString title;
@@ -86,6 +88,7 @@ class ChartData
   QChart::ChartTheme theme;
   ChartWindow *chartWindow;
   bool 	       changed;
+  bool 	       do_update;
 };
 
 #endif // CHARTDATA_H

@@ -274,7 +274,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    [=]()
 		    {Index *ix = chartData->getXIndex ();
 		      ix->setName (x_var_name->text ());
-		      chartData->setChanged (true);
+		      chartData->setUpdate (true);
 		      mainWindow->notifySelective (false); });
   
   x_var_min = new  QDoubleSpinBox ();
@@ -285,7 +285,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   QObject::connect (x_var_min,
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    [=](double d)
-		    { chartData->setChanged (true);
+		    { chartData->setUpdate (true);
 		      ix->setMin (d); mainWindow->notifySelective (false); });
   layout->addWidget (x_var_min, row, col++);
 
@@ -298,7 +298,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
 		    [=](double d )
-		    { chartData->setChanged (true);
+		    { chartData->setUpdate (true);
 		      ix->setMax (d); mainWindow->notifySelective (false); });
   layout->addWidget (x_var_max, row, col++);
   
@@ -311,7 +311,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    [=]()
 		    {Index *ix = chartData->getXIndex ();
 		      ix->setLabel (x_label->text ());
-		      chartData->setChanged (true);
+		      chartData->setUpdate (true);
 		      mainWindow->notifySelective (false); });
 
   /*  z indep vbl */
@@ -331,7 +331,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    [=]()
 		    {Index *iz = chartData->getXIndex ();
 		      iz->setName (z_var_name->text ());
-		      chartData->setChanged (true);
+		      chartData->setUpdate (true);
 		      mainWindow->notifySelective (false); });
 
   z_var_min = new  QDoubleSpinBox ();
@@ -343,7 +343,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
 		    [=](double d )
-		    { chartData->setChanged (true);
+		    { chartData->setUpdate (true);
 		      iz->setMin (d); mainWindow->notifySelective (false); });
   layout->addWidget (z_var_min, row, col++);
 
@@ -356,7 +356,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 		    this,
 		    [=](double d )
-		    { chartData->setChanged (true);
+		    { chartData->setUpdate (true);
 		      iz->setMax (d); mainWindow->notifySelective (false); });
   layout->addWidget (z_var_max, row, col++);
   
@@ -369,7 +369,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 		    [=]()
 		    {Index *iz = chartData->getXIndex ();
 		      iz->setLabel (z_label->text ());
-		      chartData->setChanged (true);
+		      chartData->setUpdate (true);
 		      mainWindow->notifySelective (false); });
     
 
@@ -386,7 +386,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	  &QCheckBox::stateChanged,
 	  this,
 	  [=]()
-	  {chartData->setChanged (true);
+	  {chartData->setUpdate (true);
 	   mainWindow->notifySelective (false); });
   
   do_polar = new QCheckBox ("Polar");
@@ -397,7 +397,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	  &QCheckBox::stateChanged,
 	  this,
 	  [=]()
-	  {chartData->setChanged (true);
+	  {chartData->setUpdate (true);
 	   mainWindow->notifySelective (false); });
 
   setLayout (layout);
