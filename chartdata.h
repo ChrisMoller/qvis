@@ -64,7 +64,7 @@ class ChartData
   void	  	appendSelected (int i);
   void	  	clearSelected ();
   QList<int>	getSelected ();
-  void		setSelected (int idx, bool state);
+  void		setSelected (int idx, int state);
   QString	getTitle ();
   bool		getSpline ();
   bool		getPolar ();

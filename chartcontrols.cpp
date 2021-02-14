@@ -110,7 +110,7 @@ ChartControls::selectCurves ()
       new QCheckBox (mainWindow->getCurve (i).getLabel ());
     label_check->setCheckState (active ? Qt::Checked : Qt::Unchecked);
     connect (label_check, QOverload<int>::of(&QCheckBox::stateChanged),
-	     [=](bool state)
+	     [=](int state)
 	     {chartData->setSelected (i, state);
 	       mainWindow->notifySelective (true); });
     curvesTable->setCellWidget (i, 0, label_check);

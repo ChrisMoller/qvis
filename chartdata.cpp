@@ -147,11 +147,16 @@ ChartData::getSelected ()
 }
 
 void
-ChartData::setSelected (int idx, bool state)
+ChartData::setSelected (int idx, int state)
 {
   int found = selected.indexOf (idx);
   if (state == Qt::Checked && found == -1) selected.append (idx);
   else if (state != Qt::Checked && found != -1) selected.removeAt (idx);
+  int i;
+  fprintf (stderr, "sel: ");
+  for (i = 0; i < selected.size (); i++)
+    fprintf (stderr, "%d ", selected[i]);
+  fprintf (stderr, "\n");
 }
 
 QString
