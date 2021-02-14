@@ -48,6 +48,8 @@ class Index;
 
 #define toCString(v)	((v).toStdString ().c_str ())
 
+#define expvar "expvarλ"
+
 typedef enum {
   SAVE_MODE_NONE,
   SAVE_MODE_SAVE,

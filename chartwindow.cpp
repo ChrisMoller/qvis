@@ -27,6 +27,7 @@
 #include <values.h>
 #include <iconv.h>
 
+
 #include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
@@ -36,8 +37,6 @@ class ChartWindow;
 #include "chartcontrols.h"
 #include "chartwindow.h"
 #include "aplexec.h"
-
-#define expvar "expvarλ"
 
 QAbstractSeries *
 ChartWindow::handle_vector (qreal &y_max,
@@ -154,6 +153,14 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
       msgBox.setIcon (QMessageBox::Warning);
       msgBox.exec();
     }
+#if 0
+    else {
+      QString outString;
+      QString errString;
+      QString cmd = QString ("%1 ← %2").arg (expvar).arg (name);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    }
+#endif
     release_value (res, loc);
   }
   return vals;
@@ -175,7 +182,9 @@ ChartWindow::drawChart ()
   chartView->chart ()->setTitle (chartControls->chart_title->text ());
 
   MainWindow *mw = chartControls->getMainWindow ();
+
   QList<Param> params = mw->getParams ();
+  mw->setParams ();
 
   Index *ix = chartControls->getChartData ()->getXIndex ();
   QVector<double> xvals =
@@ -185,9 +194,6 @@ ChartWindow::drawChart ()
   QVector<double> zvals =
     setIndex (iz, incr, chartControls->chart_title->text ());
   
-  //  QString iz_label = iz->getLabel ();
-
-  sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
   QList<int> sels =  chartControls->getChartData ()->getSelected ();
   bool chart_created = false;
 
@@ -196,11 +202,15 @@ ChartWindow::drawChart ()
   qreal y_max = -MAXDOUBLE;
   qreal y_min =  MAXDOUBLE;
   
+	
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
     curve_label = curve.getLabel ();		// set to last curve
     QString fcn = curve.getFunction ();
-    QString stmt = QString ("%1←%2").arg (expvar).arg (fcn);
+    QString stmt = QString ("%1 ← %2").arg (expvar).arg (fcn);
+      
+    outString.clear ();
+    errString.clear ();
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
     mw->update_screen (errString, outString);
 
@@ -215,9 +225,9 @@ ChartWindow::drawChart ()
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+#endif
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
 	release_value (res, loc);
-#endif
       }
     }
   }
@@ -509,7 +519,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   chartView  = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
 
-  chartControls->getMainWindow ()->setParams ();
+  //  chartControls->getMainWindow ()->setParams ();
   drawChart ();
 
 #if 0

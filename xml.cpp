@@ -394,7 +394,7 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
 	  QString cstr = stream.readElementText ();
 	  QStringList cvec = cstr.trimmed ().split (QRegExp ("\\s+"));
 	  int k;
-	  for (k = 0; k < cvec.size (); k++)
+	  for (k = 0; k < cvec.size (); k++) 
 	    selected.append (cvec[k].toInt ());
 	}
 	break;

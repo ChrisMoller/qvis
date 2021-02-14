@@ -80,21 +80,6 @@ ChartControls::curveSettings ()
     dialog.move (loc.x () + 200, loc.y () + 200);
     if (QDialog::Rejected == dialog.exec ()) run = false;
   }
-#if 0
-  QPushButton *acceptButton = new QPushButton (QObject::tr ("Accept"));
-  acceptButton->setAutoDefault (true);
-  acceptButton->setDefault (true);
-  layout->addWidget (acceptButton, 1, 1);
-  QObject::connect (acceptButton, &QPushButton::clicked,
-		    &dialog, &QDialog::accept);
-
-  QPoint loc = mainWindow->pos ();
-  dialog.move (loc.x () + 200, loc.y () + 200);
-  if (QDialog::Accepted == dialog.exec ()) {
-    theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
-    chartData->setTheme (theme);
-  }
-#endif
 }
 
 void
@@ -124,6 +109,7 @@ ChartControls::selectCurves ()
     connect (label_check, QOverload<int>::of(&QCheckBox::stateChanged),
 	     [=](int state)
 	     {chartData->setSelected (i, state);
+	       chartData->setUpdate (true);
 	       mainWindow->notifySelective (true); });
     curvesTable->setCellWidget (i, 0, label_check);
   }

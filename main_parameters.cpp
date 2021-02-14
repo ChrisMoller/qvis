@@ -19,6 +19,9 @@
 #include "mainwindow.h"
 #include "curves.h"
 #include "chartwindow.h"
+#include "aplexec.h"
+
+
 
 enum {
   PCOLUMN_NAME,
