@@ -20,6 +20,8 @@
 
 #include <QMainWindow>
 #include <QtCharts/QChartView>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QSplineSeries>
 #include <QPolarChart>
 
 QT_CHARTS_USE_NAMESPACE
@@ -82,10 +84,12 @@ private:
   QFont titlefont;
   QChart::ChartTheme theme;
   ChartControls	*chartControls;
-  int	         handle_vector (APL_value res,
-				QVector<double> &xvals,
-				bool spline,
-				Curve *curve);
+  QAbstractSeries *handle_vector (qreal &y_max,
+				  qreal &y_min,
+				  APL_value res,
+				  QVector<double> &xvals,
+				  bool spline,
+				  Curve *curve);
   QVector<double> setIndex (Index *idx, int incr, QString title);
 #if 0
   void create_menuBar ();

@@ -37,18 +37,22 @@ class ChartWindow;
 #include "chartwindow.h"
 #include "aplexec.h"
 
-
 #define expvar "expvarλ"
 
-int
-ChartWindow::handle_vector (APL_value res,
+QAbstractSeries *
+ChartWindow::handle_vector (qreal &y_max,
+			    qreal &y_min,
+			    APL_value res,
 			    QVector<double> &xvals,
-			    bool spline, Curve *curve)
+			    bool spline,
+			    Curve *curve)
 {
   QString flbl      = curve->getName ();
   QColor  fcolour   = curve->getColour ();
   Qt::PenStyle fpen = curve->getPen ();
   uint64_t count    = get_element_count (res);
+  //  union QVunion series;
+  QAbstractSeries *series;
 
   int res_type = -1;
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
@@ -65,11 +69,6 @@ ChartWindow::handle_vector (APL_value res,
     }
   }
   
-  int frc = 0;
-  
-  chartView->chart ()->removeAllSeries();
-  qreal y_max = -MAXDOUBLE;
-  qreal y_min =  MAXDOUBLE;
   //  qreal z_max = -MAXDOUBLE;
   //  qreal z_min =  MAXDOUBLE;
 
@@ -89,12 +88,14 @@ ChartWindow::handle_vector (APL_value res,
       sseries->setName (flbl);
       sseries->setColor (fcolour);
       sseries->setPen (pen);
+      series = sseries;
     }
     else {
       pseries = new QLineSeries ();
       pseries->setName(flbl);
       pseries->setColor (fcolour);
       pseries->setPen (pen);
+      series = pseries;
     }
 
     int i;
@@ -106,6 +107,8 @@ ChartWindow::handle_vector (APL_value res,
       else pseries->append ((qreal)xvals[i], y_val);
     }
 
+#if 0
+    chartView->chart ()->removeAllSeries();
     if (sseries) chartView->chart ()->addSeries (sseries);
     else         chartView->chart ()->addSeries (pseries);
 
@@ -114,10 +117,12 @@ ChartWindow::handle_vector (APL_value res,
     qreal dy = 0.075 * (y_max - y_min);
     chartView->chart ()->axes (Qt::Vertical).first()
       ->setRange(y_min-dy, y_max+dy);
-    frc = 1;
+#endif
   }
 
-  return frc;
+  //  QVariant frc;
+  //  frc.setValue (series);
+  return series;
 }
 
 QVector<double> 
@@ -187,6 +192,10 @@ ChartWindow::drawChart ()
   bool chart_created = false;
 
   QString curve_label;
+  QList<QAbstractSeries *>series_list;
+  qreal y_max = -MAXDOUBLE;
+  qreal y_min =  MAXDOUBLE;
+  
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
     curve_label = curve.getLabel ();		// set to last curve
@@ -194,22 +203,38 @@ ChartWindow::drawChart ()
     QString stmt = QString ("%1←%2").arg (expvar).arg (fcn);
     AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
     mw->update_screen (errString, outString);
-    
+
     if (errString.isEmpty ()) {
       sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
       APL_value res = get_var_value (expvar, loc);
       if (res) {
-	handle_vector (res, xvals, spline, &curve);
+	QAbstractSeries *frc =
+	  handle_vector (y_max, y_min, res, xvals, spline, &curve);
+	series_list.append (frc);
+#if 0
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
 	release_value (res, loc);
-	chart_created = true;
+#endif
       }
     }
   }
+
+  chartView->chart ()->removeAllSeries();
+  for (i = 0; i < series_list.size (); i++) {
+    chartView->chart ()->addSeries (series_list[i]);
+    chart_created = true;
+  }
+
   if (chart_created) {
+    chartView->chart ()->createDefaultAxes ();
+    
+    qreal dy = 0.075 * (y_max - y_min);
+    chartView->chart ()->axes (Qt::Vertical).first()
+      ->setRange(y_min-dy, y_max+dy);  
+  
     QString ix_label = ix->getLabel ();
     chartView->chart ()->axes (Qt::Horizontal).first()
       ->setTitleText (ix_label);
