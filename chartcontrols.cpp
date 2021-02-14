@@ -42,6 +42,8 @@ ChartControls::curveSettings ()
   QDialog dialog (this, Qt::Dialog);
   QGridLayout *layout = new QGridLayout;
   dialog.setLayout (layout);
+  
+  chartData = this->getChartData ();
 
   QLabel lbl ("Theme");
   layout->addWidget (&lbl, 0, 0);
@@ -55,21 +57,30 @@ ChartControls::curveSettings ()
   themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
   themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
   themebox->addItem ("Qt", QChart::ChartThemeQt);
-
-#if 1
-  chartData = this->getChartData ();
-#else
-#endif
   int sel = (int)chartData->getTheme ();
   themebox->setCurrentIndex (sel);
-  
+  connect (themebox, QOverload<int>::of(&QComboBox::activated),
+	  [=](int index)
+	  {QVariant sel = themebox->itemData (index);
+	    chartData->setTheme (sel.toInt ());
+	    mainWindow->updateAll ();
+	    mainWindow->notifySelective (true); });
   layout->addWidget(themebox, 0, 1);
+  
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
   cancelButton->setAutoDefault (false);
   cancelButton->setDefault (false);
-  layout->addWidget (cancelButton, 1, 0);
+  layout->addWidget (cancelButton, 1, 1);
   QObject::connect (cancelButton, &QPushButton::clicked,
 		    &dialog, &QDialog::reject);
+
+  bool run = true;
+  while (run) {
+    QPoint loc = mainWindow->pos ();
+    dialog.move (loc.x () + 200, loc.y () + 200);
+    if (QDialog::Rejected == dialog.exec ()) run = false;
+  }
+#if 0
   QPushButton *acceptButton = new QPushButton (QObject::tr ("Accept"));
   acceptButton->setAutoDefault (true);
   acceptButton->setDefault (true);
@@ -83,6 +94,7 @@ ChartControls::curveSettings ()
     theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
     chartData->setTheme (theme);
   }
+#endif
 }
 
 void
@@ -105,7 +117,7 @@ ChartControls::selectCurves ()
     if (chartData)
       active = chartData->getSelected ().contains (i);
     else active = false;
-#if 1
+
     QCheckBox *label_check =
       new QCheckBox (mainWindow->getCurve (i).getLabel ());
     label_check->setCheckState (active ? Qt::Checked : Qt::Unchecked);
@@ -114,12 +126,6 @@ ChartControls::selectCurves ()
 	     {chartData->setSelected (i, state);
 	       mainWindow->notifySelective (true); });
     curvesTable->setCellWidget (i, 0, label_check);
-#else
-    QTableWidgetItem *item_lbl =
-      new QTableWidgetItem (mainWindow->getCurve (i).getLabel ());
-    item_lbl->setCheckState(active ? Qt::Checked : Qt::Unchecked);
-    curvesTable->setItem (i, 0, item_lbl);
-#endif
   }
 
   dialog_layout->addWidget (curvesTable);
