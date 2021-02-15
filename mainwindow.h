@@ -137,6 +137,7 @@ public:
   void		 setParams ();
   void		 eraseParams ();
   void		 updateAll ();
+  void 		 setCurves (int which);
 									  
 public slots:
 

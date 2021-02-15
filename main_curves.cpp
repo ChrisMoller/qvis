@@ -23,9 +23,9 @@ enum {
   COLUMN_NAME,
   COLUMN_LABEL,
   COLUMN_FCN,
-  COLUMN_COLOUR,
-  COLUMN_PEN,
-  COLUMN_X
+  COLUMN_SETTINGS,
+  COLUMN_X,
+  COLUMN_COUNT
 };
 
 void
@@ -53,6 +53,12 @@ linestyleCombo (Qt::PenStyle sel)
     linestyle_combo->setCurrentIndex (found);
   
   return linestyle_combo;
+}
+
+void
+MainWindow::setCurves (int which)
+{
+  fprintf (stderr, "in sc %d\n", which);
 }
 
 void
@@ -85,6 +91,14 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 		      updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_FCN, curve_fcn);
 
+#if 1
+  QPushButton *settings_pb = new QPushButton (QObject::tr ("Settings"));
+  connect (settings_pb,
+	   &QAbstractButton::clicked,
+	   [=](){setCurves (i);
+	    updateAll (); notifySelective (false); });
+  curvesTable->setCellWidget (i, COLUMN_SETTINGS, settings_pb);
+#else
   ColorSelector *curve_colour = new ColorSelector ();
   curve_colour->setUpdateMode (ColorSelector::Confirm);
   curve_colour->setColor (curves[i].getColour ());
@@ -103,6 +117,7 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 	    curves[i].setPen ((Qt::PenStyle)sel.toInt ());
 	    updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_PEN, curve_pen);
+#endif
 
   const QIcon deleteIcon = QIcon (":/images/edit-delete.png");
   QPushButton *deleteButton =
@@ -133,22 +148,41 @@ MainWindow::addCurve()
   connect (curvesTable, &QTableWidget::cellPressed,
 	   this, &MainWindow::cellPressed);
 #endif
-  
-  curvesTable->setColumnCount (6);
+
+#define CH_NAME		"Name"
+#define CH_LABEL	"Label"
+#define CH_FCN		"Function"
+#define CH_SETTINGS	"Settings"
+#define CH_DELETE	"Delete"
+  curvesTable->setColumnCount (COLUMN_COUNT);
   curvesTable->setRowCount (curves.size ());
-  QTableWidgetItem *column_name   = new QTableWidgetItem(tr("Name"));
-  QTableWidgetItem *column_label  = new QTableWidgetItem(tr("Label"));
-  QTableWidgetItem *column_fcn    = new QTableWidgetItem(tr("Function"));
-  QTableWidgetItem *column_colour = new QTableWidgetItem(tr("Colour"));
-  QTableWidgetItem *column_pen    = new QTableWidgetItem(tr("Pen"));
-  QTableWidgetItem *column_x      = new QTableWidgetItem(tr("Delete"));
+  QTableWidgetItem *column_name     = new QTableWidgetItem(CH_NAME);
+  QTableWidgetItem *column_label    = new QTableWidgetItem(CH_LABEL);
+  QTableWidgetItem *column_fcn      = new QTableWidgetItem(CH_FCN);
+  QTableWidgetItem *column_settings = new QTableWidgetItem(CH_SETTINGS);
+  QTableWidgetItem *column_x        = new QTableWidgetItem(CH_DELETE);
   QString colour_style_style ("background-color: yellow; color: red;");
-  curvesTable->setHorizontalHeaderItem (COLUMN_NAME,	column_name);
-  curvesTable->setHorizontalHeaderItem (COLUMN_LABEL,	column_label);
-  curvesTable->setHorizontalHeaderItem (COLUMN_FCN,	column_fcn);
-  curvesTable->setHorizontalHeaderItem (COLUMN_COLOUR,	column_colour);
-  curvesTable->setHorizontalHeaderItem (COLUMN_PEN,	column_pen);
-  curvesTable->setHorizontalHeaderItem (COLUMN_X,	column_x);
+  curvesTable->setHorizontalHeaderItem (COLUMN_NAME,	 column_name);
+  curvesTable->setHorizontalHeaderItem (COLUMN_LABEL,	 column_label);
+  curvesTable->setHorizontalHeaderItem (COLUMN_FCN,	 column_fcn);
+  curvesTable->setHorizontalHeaderItem (COLUMN_SETTINGS, column_settings);
+  curvesTable->setHorizontalHeaderItem (COLUMN_X,	 column_x);
+  int available_width = gbox->width ();
+  QFontMetrics fm = QWidget::fontMetrics();
+  int name_width     = 60 + fm.horizontalAdvance (CH_NAME);
+  available_width -= name_width;
+  int label_width    = 20 + fm.horizontalAdvance (CH_LABEL);
+  available_width -= label_width;
+  int settings_width = 20 + fm.horizontalAdvance (CH_SETTINGS);
+  available_width -= settings_width;
+  int delete_width   = 20 + fm.horizontalAdvance (CH_DELETE);
+  available_width -= delete_width;
+  
+  curvesTable->setColumnWidth (COLUMN_NAME, 	name_width);
+  curvesTable->setColumnWidth (COLUMN_LABEL, 	label_width);
+  curvesTable->setColumnWidth (COLUMN_FCN, 	available_width);
+  curvesTable->setColumnWidth (COLUMN_SETTINGS, settings_width);
+  curvesTable->setColumnWidth (COLUMN_X,	delete_width);
   int i;
   for (i = 0; i < curves.size (); i++)
     insertItem (i, curvesTable);
@@ -221,11 +255,13 @@ MainWindow::addCurve()
       curve_name->clear ();
       curve_label->clear ();
       curve_function->clear ();
+#if 0
       for (i = 0; i < curves.size (); i++) {
 	QWidget *widget = curvesTable->cellWidget (i, COLUMN_COLOUR);
 	QColor colour = ((ColorSelector *)widget)->color ();
 	curves[i].setColour (colour);
       }
+#endif
 #if 0
       {
 	int i;
