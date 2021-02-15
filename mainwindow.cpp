@@ -213,7 +213,7 @@ MainWindow::fileChanged(const QString &path)
       cmd = QString ("⎕fx %1").arg (expvar);
       AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
       update_screen (errString, outString);
-      release_value (aplv, "qvis");
+      //release_value (aplv, "qvis");
       cmd = QString (")erase %1").arg (expvar);
       AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
     }

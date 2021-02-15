@@ -2,7 +2,8 @@ QT += core gui widgets charts
 
 CONFIG += c++11
 
-LIBS += -L`apl --show_lib_dir` -lapl -lreadline
+#LIBS += -L`apl --show_lib_dir` -lapl -lreadline
+LIBS += -L/home/moller/Downloads/apl-1.8.1402/src/.libs -lapl -lreadline
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.

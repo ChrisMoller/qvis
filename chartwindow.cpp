@@ -51,7 +51,7 @@ ChartWindow::handle_vector (qreal &y_max,
   Qt::PenStyle fpen = curve->getPen ();
   uint64_t count    = get_element_count (res);
   //  union QVunion series;
-  QAbstractSeries *series;
+  QAbstractSeries *series = nullptr;
 
   int res_type = -1;
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
@@ -130,20 +130,34 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
   QVector<double>vals;
   QString name = idx->getName ();
   if (!name.isEmpty ()) {
+    int i;
     double  min  = idx->getMin ();
     double  max  = idx->getMax ();
+    QByteArray nameUtf8 = name.toUtf8();
     char loc[256];
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
+#if 0
+    QString mins = QString::number (min);
+    QString maxs = QString::number (max);
+    mins.replace ("-", "¯");
+    maxs.replace ("-", "¯");
+    QString outString;
+    QString errString;
+    QString cmd = QString ("%1←%2+(((⍳(%4+1))-⎕io)÷%4)×(%3-%2)")
+      .arg (name).arg (mins).arg (maxs).arg (incr);
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    APL_value val = get_var_value (nameUtf8.constData (), loc);
+    uint64_t j;
+    for (j = 0; j < (uint64_t)(incr + 1); j++)
+      vals.append (get_real (val, j));
+#else
     APL_value res = apl_vector ((int64_t)(incr +1), loc);
 
-    int i;
     for (i = 0; i <= incr; i++) {
       double val = min + ((double)i/(double)incr) * (max - min);
       vals.append (val);
       set_double ((APL_Float)val, res, (uint64_t)i);
     }
-    QByteArray nameUtf8 = name.toUtf8();
-    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
     int src = set_var_value (nameUtf8.constData (), res, loc);
     if (src != 0) {
       QMessageBox msgBox;
@@ -153,6 +167,8 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
       msgBox.setIcon (QMessageBox::Warning);
       msgBox.exec();
     }
+    //release_value (res, loc);
+#endif
 #if 0
     else {
       QString outString;
@@ -161,7 +177,6 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
       AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
     }
 #endif
-    release_value (res, loc);
   }
   return vals;
 }
@@ -227,16 +242,18 @@ ChartWindow::drawChart ()
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
 #endif
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	release_value (res, loc);
+	//release_value (res, loc);
       }
     }
   }
-
+  
+#if 1
   chartView->chart ()->removeAllSeries();
   for (i = 0; i < series_list.size (); i++) {
-    chartView->chart ()->addSeries (series_list[i]);
+    if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
     chart_created = true;
   }
+#endif
 
   if (chart_created) {
     chartView->chart ()->createDefaultAxes ();
@@ -271,7 +288,7 @@ ChartWindow::drawChart ()
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	release_value (res, loc);
+	r//elease_value (res, loc);
       }
     }
 #endif
@@ -385,9 +402,9 @@ ChartWindow::handleExpression ()
 	QString cmd =
 	  QString (")erase %1 %2").arg (expvar).arg (curve.ix.name);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	release_value (res, loc);
+	//release_value (res, loc);
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	release_value (xvals, loc);
+	//release_value (xvals, loc);
 	const char *res = apl_command (cmd.toStdString ().c_str ());
 	if (res) free (res); 
 	if (zset) {

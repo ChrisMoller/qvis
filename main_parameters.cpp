@@ -56,6 +56,17 @@ MainWindow::setParams ()
       double real = parm.getValue ().real ();
       double imag = parm.getValue ().imag ();
 
+#if 0
+      QString cmd;
+      if (imag == 0.0)
+	cmd = QString ("%1 ← %2j%3").arg (vbl).arg (real).arg (imag);
+      else
+	cmd = QString ("%1 ← %2").arg (vbl).arg (real);
+      cmd.replace ("-", "¯");
+      QString outString;
+      QString errString;
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+#else
       APL_value res = apl_scalar (loc); 
       if (imag == 0.0)
 	set_double ((APL_Float) real, res, 0);
@@ -71,7 +82,8 @@ MainWindow::setParams ()
 	msgBox.setIcon (QMessageBox::Warning);
 	msgBox.exec();
       }
-      release_value (res, loc);
+      //release_value (res, loc);
+#endif
     }
   }
 }
