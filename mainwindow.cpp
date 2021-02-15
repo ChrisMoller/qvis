@@ -71,14 +71,17 @@ void
 MainWindow::notifySelective (bool all)
 {
   int i;
-  setParams ();
-  for (i = 0; i < charts.size (); i++) {
-    ChartData *cd = charts[i];
-    if (all || cd->needsUpdate ()) {
-      ChartWindow *win = cd->getWindow ();
-      win->drawChart ();
-      cd->setUpdate (false);
+  if (charts.size () > 0) {
+    setParams ();
+    for (i = 0; i < charts.size (); i++) {
+      ChartData *cd = charts[i];
+      if (all || cd->needsUpdate ()) {
+	ChartWindow *win = cd->getWindow ();
+	win->drawChart ();
+	cd->setUpdate (false);
+      }
     }
+    eraseParams ();
   }
 }
 

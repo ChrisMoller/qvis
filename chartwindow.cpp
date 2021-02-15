@@ -169,8 +169,6 @@ ChartWindow::drawChart ()
   chartView->chart ()->setTheme (chartControls->getChartData ()->getTheme ());
   chartView->chart ()->setTitle (chartControls->chart_title->text ());
 
-  mw->setParams ();
-
   Index *ix = chartControls->getChartData ()->getXIndex ();
   QVector<double> xvals =
     setIndex (ix, incr, chartControls->chart_title->text ());
@@ -215,13 +213,11 @@ ChartWindow::drawChart ()
     }
   }
   
-#if 1
   chartView->chart ()->removeAllSeries();
   for (i = 0; i < series_list.size (); i++) {
     if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
     chart_created = true;
   }
-#endif
 
   if (chart_created) {
     chartView->chart ()->createDefaultAxes ();
@@ -239,7 +235,6 @@ ChartWindow::drawChart ()
 
   eraseIndex (ix);
   eraseIndex (iz);
-  mw->eraseParams ();
 }
 
 void
@@ -304,8 +299,9 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   chartView  = new QChartView ();
   chartView->setRenderHint (QPainter::Antialiasing);
 
-  //  chartControls->getMainWindow ()->setParams ();
+  chartControls->getMainWindow ()->setParams ();
   drawChart ();
+  chartControls->getMainWindow ()->eraseParams ();
 
 #if 0
   chartView->chart ()->axes (Qt::Vertical).first()

@@ -70,6 +70,21 @@ MainWindow::setParams ()
     Param parm = parms[i];
     QString vbl = parm.getName ();
     if (!vbl.isEmpty ()) {
+      QByteArray vblUtf8 = vbl.toUtf8();
+
+#if 0
+      APL_value ores = get_var_value (vblUtf8.constData (), loc);
+      if (ores) {
+	QMessageBox::StandardButton ret;
+	QString msg
+	  = QString ("Variable %1 is about to be overwritten.  Okay?")
+	  .arg (vbl);
+	ret = QMessageBox::warning(this, tr("Variable in use."), msg,
+				   QMessageBox::Yes | QMessageBox::No);
+	if (ret == QMessageBox::No) break;
+      }
+#endif
+      
       double real = parm.getValue ().real ();
       double imag = parm.getValue ().imag ();
 
@@ -79,7 +94,6 @@ MainWindow::setParams ()
       else
 	set_complex ((APL_Float) real, (APL_Float) imag, res, 0);
       
-      QByteArray vblUtf8 = vbl.toUtf8();
       int src = set_var_value (vblUtf8.constData (), res, loc);
       if (src != 0) {
 	QMessageBox msgBox;
