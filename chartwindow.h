@@ -91,6 +91,7 @@ private:
 				  bool spline,
 				  Curve *curve);
   QVector<double> setIndex (Index *idx, int incr, QString title);
+  void	eraseIndex (Index *idx);
 #if 0
   void create_menuBar ();
   QComboBox 	*themebox;

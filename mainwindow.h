@@ -135,6 +135,7 @@ public:
   void           update_screen (QString &errString, QString &outString);
   int 		 getIncr ();
   void		 setParams ();
+  void		 eraseParams ();
   void		 updateAll ();
 									  
 public slots:

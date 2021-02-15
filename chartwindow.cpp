@@ -68,9 +68,6 @@ ChartWindow::handle_vector (qreal &y_max,
     }
   }
   
-  //  qreal z_max = -MAXDOUBLE;
-  //  qreal z_min =  MAXDOUBLE;
-
   if (res_type == CCT_COMPLEX) {
     // fixme
     // complex vector vs idx, rank = 1
@@ -105,23 +102,22 @@ ChartWindow::handle_vector (qreal &y_max,
       if (sseries) sseries->append ((qreal)xvals[i], y_val);
       else pseries->append ((qreal)xvals[i], y_val);
     }
-
-#if 0
-    chartView->chart ()->removeAllSeries();
-    if (sseries) chartView->chart ()->addSeries (sseries);
-    else         chartView->chart ()->addSeries (pseries);
-
-    chartView->chart ()->createDefaultAxes ();
-    
-    qreal dy = 0.075 * (y_max - y_min);
-    chartView->chart ()->axes (Qt::Vertical).first()
-      ->setRange(y_min-dy, y_max+dy);
-#endif
   }
 
-  //  QVariant frc;
-  //  frc.setValue (series);
   return series;
+}
+
+void
+ChartWindow::eraseIndex (Index *idx)
+{
+  QString outString;
+  QString errString;
+  QString name = idx->getName ();
+  if (!name.isEmpty ()) {
+    QString cmd =
+      QString (")erase %1").arg (name);
+    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+  }
 }
 
 QVector<double> 
@@ -136,21 +132,6 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
     QByteArray nameUtf8 = name.toUtf8();
     char loc[256];
     sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-#if 0
-    QString mins = QString::number (min);
-    QString maxs = QString::number (max);
-    mins.replace ("-", "¯");
-    maxs.replace ("-", "¯");
-    QString outString;
-    QString errString;
-    QString cmd = QString ("%1←%2+(((⍳(%4+1))-⎕io)÷%4)×(%3-%2)")
-      .arg (name).arg (mins).arg (maxs).arg (incr);
-    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    APL_value val = get_var_value (nameUtf8.constData (), loc);
-    uint64_t j;
-    for (j = 0; j < (uint64_t)(incr + 1); j++)
-      vals.append (get_real (val, j));
-#else
     APL_value res = apl_vector ((int64_t)(incr +1), loc);
 
     for (i = 0; i <= incr; i++) {
@@ -167,16 +148,7 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
       msgBox.setIcon (QMessageBox::Warning);
       msgBox.exec();
     }
-    //release_value (res, loc);
-#endif
-#if 0
-    else {
-      QString outString;
-      QString errString;
-      QString cmd = QString ("%1 ← %2").arg (expvar).arg (name);
-      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-    }
-#endif
+    release_value (res, loc);
   }
   return vals;
 }
@@ -187,6 +159,7 @@ ChartWindow::drawChart ()
   int i;
   char loc[256];
   int incr = 16;  // fixme--make settable
+  MainWindow *mw = chartControls->getMainWindow ();
   QString outString;
   QString errString;
   bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
@@ -196,9 +169,6 @@ ChartWindow::drawChart ()
   chartView->chart ()->setTheme (chartControls->getChartData ()->getTheme ());
   chartView->chart ()->setTitle (chartControls->chart_title->text ());
 
-  MainWindow *mw = chartControls->getMainWindow ();
-
-  QList<Param> params = mw->getParams ();
   mw->setParams ();
 
   Index *ix = chartControls->getChartData ()->getXIndex ();
@@ -236,13 +206,11 @@ ChartWindow::drawChart ()
 	QAbstractSeries *frc =
 	  handle_vector (y_max, y_min, res, xvals, spline, &curve);
 	series_list.append (frc);
-#if 0
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-#endif
 	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	//release_value (res, loc);
+	release_value (res, loc);
       }
     }
   }
@@ -269,157 +237,10 @@ ChartWindow::drawChart ()
       ->setTitleText (curve_label);
   }
 
-#if 0
-  for (i = 0; i < mw->getCurveCount (); i++) {
-    Curve curve = mw->getCurve (i);
-    QString fcn = curve.getFunction ();
-    QString stmt = QString ("%1  ← %2").arg (expvar).arg (fcn);
-    fprintf (stderr, "execing \"%s\"\n", toCString (stmt));
-    AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
-    mw->update_screen (errString, outString);
-
-#if 0
-    if (!errString.isEmpty ()) {
-      sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-      APL_value res = get_var_value (expvar, loc);
-      if (res) {
-	//	int frc =  handle_vector (res, xvals, "mmmm");
-	QString cmd =
-	  QString (")erase %1").arg (expvar);
-	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
-	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	r//elease_value (res, loc);
-      }
-    }
-#endif
-  }
-#endif
+  eraseIndex (ix);
+  eraseIndex (iz);
+  mw->eraseParams ();
 }
-
-#if 0
-void
-ChartWindow::handleExpression ()
-{
-  chartView->setChart (curve.polar ? polarchart : chart);
-
-  int incr = 16;  // fixme--make settable
-
-  if (!curve.ix.name.isEmpty ()) {
-    /***
-	lbl ← min + ((⍳incr+1)-⎕io) × (max - min) ÷ incr
-    ***/
-    QString range_x =
-      QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
-      .arg(curve.ix.name).arg(curve.ix.range.min).arg(incr)
-      .arg(curve.ix.range.max);
-    apl_exec (range_x.toStdString ().c_str ());
-    
-    char loc[256];
-    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    APL_value xvals =
-      get_var_value (curve.ix.name.toStdString ().c_str (), loc);
-
-    //    https://doc.qt.io/qt-5/qtcharts-splinechart-example.html
-
-    bool zset = false;
-    if (!curve.iz.name.isEmpty ()) {
-      QString range_z =
-	QString ("%1 ← (%2) + ((⍳%3+1)-⎕io) × (%4 - %2) ÷ %3")
-	.arg(curve.iz.name).arg(curve.iz.range.min)
-	.arg(incr).arg(curve.iz.range.max);
-      zset = true;
-      apl_exec (range_z.toStdString ().c_str ());
-    }
-
-    QString input = curve.function.expression;
-
-    if (input.isEmpty ()) return;
-    QString fcn = QString ("%1  ← %2").arg (expvar).arg (input);
-    int xrc = apl_exec (fcn.toStdString ().c_str ());
-    if (xrc != LAE_NO_ERROR) return;
-
-    sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-    APL_value res = get_var_value (expvar, loc);
-
-    if (res) {
-      int frc = 0;
-
-      int rank = get_rank (res);
-
-      // curves
-
-      switch (rank)  {
-      case 1:
-	// fixme -- don't need to  pass lbl
-	frc =  handle_vector (res, xvals, curve.function.title);
-	break;
-      case 2:
-	// real array vs idx, rank = 2, one curve per row
-
-	// real parametric array, rank = 2, row !sel vs row sel,
-	//       one curve per !sel
-
-      
-	// complex array vs idx, rank = 2, one curve per row
-
-	// complex parametric array, rank = 2, row !sel vs row sel, sel real
-      
-	// real parametric array, rank > 2, row !sel vs row sel,
-	//       one curve per !sel, sel real
-
-	// surfaces
-
-	// real array vs ix, iz, rank = 2
-
-
-	// complex array rank = 2, !sel vs re(sel),im(sel)
-
-	  break;
-      case 3:
-	// real array vs ix, iz, rank = 3. one surface plane
-	break;
-
-      default:
-	break;
-      }
-
-      if (frc) {
-	chartView->chart ()->setTheme (theme);	// fixme
-	chart->setTitleFont (titlefont);	// fixme
-	chart->legend ()->setFont (titlefont);
-	chartView->chart ()->setTitle (curve.title);
-      
-	chartView->chart ()->axes (Qt::Horizontal).first()
-	  ->setTitleText(curve.ix.title);
-	chartView->chart ()->axes (Qt::Horizontal).first()
-	  ->setTitleFont(titlefont);
-
-	chartView->chart ()->axes (Qt::Vertical).first()
-	  ->setTitleText(curve.function.label);
-	chartView->chart ()->axes (Qt::Vertical).first()
-	  ->setTitleFont(titlefont);
-
-	QString cmd =
-	  QString (")erase %1 %2").arg (expvar).arg (curve.ix.name);
-	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	//release_value (res, loc);
-	sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	//release_value (xvals, loc);
-	const char *res = apl_command (cmd.toStdString ().c_str ());
-	if (res) free (res); 
-	if (zset) {
-	  cmd = QString (")erase %1").arg (curve.iz.name);
-	  res = apl_command (cmd.toStdString ().c_str ());
-	  if (res) free (res);
-	  // fixme
-	  // sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
-	  // release_value (zvals, loc);
-	}
-      }
-    }
-  }
-}
-#endif
 
 void
 ChartWindow::imageExport()
@@ -439,59 +260,6 @@ ChartWindow::imageExport()
 }
 
 #if 0
-void
-ChartWindow::themeChanged (int newtheme __attribute__((unused)))
-{
-  theme = (QChart::ChartTheme)themebox->currentData ().toInt ();
-  handleExpression ();
-}
-#endif
-
-#if 0
-void
-ChartWindow::settheme()
-{
-  QGridLayout *layout = new QGridLayout;
-  
-  themebox = new QComboBox ();
-  themebox->addItem ("Light", QChart::ChartThemeLight);
-  themebox->addItem ("Blue Cerulean", QChart::ChartThemeBlueCerulean);
-  themebox->addItem ("Dark", QChart::ChartThemeDark);
-  themebox->addItem ("Brown Sand", QChart::ChartThemeBrownSand);
-  themebox->addItem ("Blue Ncs", QChart::ChartThemeBlueNcs);
-  themebox->addItem ("High Contrast", QChart::ChartThemeHighContrast);
-  themebox->addItem ("Blue Icy", QChart::ChartThemeBlueIcy);
-  themebox->addItem ("Qt", QChart::ChartThemeQt);
-
-  themebox->setCurrentIndex (theme);
-  
-  connect(themebox,
-	  QOverload<int>::of(&QComboBox::activated),
-	  this,
-	  &ChartWindow::themeChanged);
-  
-  layout->addWidget(themebox, 0, 0);
-  
-  QDialog dialog;
-  dialog.setLayout (layout);
-  dialog.exec ();
-  changed = true;
-}
-#endif
-
-#if 0
-void
-ChartWindow::setfont()
-{
-  QFontDialog dialog (chart->titleFont ());
-  bool ok;
-  QFont newfont = QFontDialog::getFont(&ok, chart->font (), this);
-  if (ok) {
-    titlefont = newfont;
-    handleExpression ();
-  }
-}
-
 void
 ChartWindow::create_menuBar ()
 {
@@ -540,39 +308,6 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   drawChart ();
 
 #if 0
-  /******* fake ***********/
-
-  chartView->chart ()->setTheme (QChart::ChartThemeBlueCerulean);
-
-  chartView->setChart (chart);
-  
-  chartView->chart ()->setTitle ("Fake title");
-
-  QSplineSeries* series = new QSplineSeries();
-  series->append (0, 6);
-  series->append (2, 4);
-  series->append (5, 5);
-  series->append (3, 7);
-  series->append (7, 2);
-  chart->addSeries(series);
-
-  QSplineSeries* series2 = new QSplineSeries();
-  series2->append (2, 4);
-  series2->append (0, 6);
-  series2->append (7, 2);
-  series2->append (3, 7);
-  series2->append (5, 5);
-  series2->setColor (QColor ("red"));
-  chart->addSeries(series2);
-
-  chartView->chart ()->createDefaultAxes ();
-
-  chartView->chart ()->axes (Qt::Horizontal).first()
-    ->setTitleText (QString ("x title"));
-
-  chartView->chart ()->axes (Qt::Vertical).first()
-    ->setTitleText (QString ("y title"));
-
   chartView->chart ()->axes (Qt::Vertical).first()
     ->setGridLineVisible (true);
 
