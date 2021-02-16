@@ -93,12 +93,17 @@ MainWindow::setCurves (int which)
 
   row++;
   
-  QLabel lblf ("Fonnt");
+  QLabel lblf ("Font");
   layout->addWidget (&lblf, row, 0);
 
-  QFont fn =  QWidget::font ();
-  /String fname = fn.accessibleName();
-  //fprintf (stderr, "fn = \"%s\"\n", toCString (fname));
+  QPushButton *fontButton = new QPushButton (QWidget::font ().family ());
+  layout->addWidget (fontButton, row, 1);
+  connect (fontButton,
+	   &QAbstractButton::clicked,
+	   [=](){ bool ok;
+	     QFont newfont = QFontDialog::getFont(&ok, this);
+	     fprintf (stderr, "nf = %s\n", toCString (newfont.family ()));
+	     updateAll (); notifySelective (false); });
 #if 0
   bool ok;
   QFont newfont = QFontDialog::getFont(&ok, this);
