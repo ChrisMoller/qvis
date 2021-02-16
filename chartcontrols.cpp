@@ -36,6 +36,18 @@ ChartControls::getChartWindow ()
   return chartWindow;
 }
 
+QString
+ChartControls::getBGFile ()
+{
+  return backgroundFile;
+}
+
+void
+ChartControls::setCBGFile (QString &fn)
+{
+  backgroundFile = fn;
+}
+
 void
 ChartControls::curveSettings ()
 {
@@ -45,8 +57,10 @@ ChartControls::curveSettings ()
   
   chartData = this->getChartData ();
 
+  int row = 0;
+  
   QLabel lbl ("Theme");
-  layout->addWidget (&lbl, 0, 0);
+  layout->addWidget (&lbl, row, 0);
   
   QComboBox *themebox = new QComboBox ();
   themebox->addItem ("Light", QChart::ChartThemeLight);
@@ -65,12 +79,37 @@ ChartControls::curveSettings ()
 	    chartData->setTheme (sel.toInt ());
 	    mainWindow->updateAll ();
 	    mainWindow->notifySelective (true); });
-  layout->addWidget(themebox, 0, 1);
+  layout->addWidget(themebox, row, 1);
+
+  row++;
   
+  QLabel lblb ("Background");
+  layout->addWidget (&lblb, row, 0);
+
+  QFileInfo fi (getBGFile ());
+  QPushButton *imgButton = new QPushButton (fi.baseName ());
+  layout->addWidget(imgButton, row, 1);
+  connect (imgButton,
+	   &QAbstractButton::clicked,
+	   [=](){ 
+	     QString fileName =
+	       QFileDialog::getOpenFileName (this,
+				     tr("Open Image"),
+				     ".",
+			     tr("Image Files (*.png *.jpg *.bmp)"));
+	     setCBGFile (fileName);
+	     QFileInfo fi (fileName);
+	     imgButton->setText (fi.baseName ());
+	     mainWindow->updateAll ();
+	     mainWindow->notifySelective (true);
+	   });
+  
+  row++;
+
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
   cancelButton->setAutoDefault (false);
   cancelButton->setDefault (false);
-  layout->addWidget (cancelButton, 1, 1);
+  layout->addWidget (cancelButton, row, 1);
   QObject::connect (cancelButton, &QPushButton::clicked,
 		    &dialog, &QDialog::reject);
 

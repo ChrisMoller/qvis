@@ -129,7 +129,7 @@ MainWindow::setCurves (int which)
 
   bool activel = curves[which].getPointLabelsVisible ();
   QCheckBox *pointls_check = new QCheckBox ();
-  pointls_check->setCheckState (active ? Qt::Checked : Qt::Unchecked);
+  pointls_check->setCheckState (activel ? Qt::Checked : Qt::Unchecked);
   connect (pointls_check, QOverload<int>::of(&QCheckBox::stateChanged),
 	   [=](int state)
 	   { curves[which].setPointLabelsVisible (state);

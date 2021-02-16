@@ -59,6 +59,8 @@ public:
   void           setChartData (ChartData *cd);
   MainWindow    *getMainWindow ();
   ChartWindow	 *getChartWindow ();
+  QString 	 getBGFile ();
+  void           setCBGFile (QString &fn);
 
  private:
   int		  tabIndex;
@@ -67,6 +69,7 @@ public:
   ChartData 	 *chartData;
   bool 		  useState;
   ChartWindow	 *chartWindow;
+  QString	  backgroundFile;
 
 private slots:
   void valChanged(bool enabled);
