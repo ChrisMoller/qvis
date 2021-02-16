@@ -58,7 +58,54 @@ linestyleCombo (Qt::PenStyle sel)
 void
 MainWindow::setCurves (int which)
 {
-  fprintf (stderr, "in sc %d\n", which);
+  QDialog dialog (this, Qt::Dialog);
+  QGridLayout *layout = new QGridLayout;
+  dialog.setLayout (layout);
+
+  int row = 0;
+  
+  QLabel lbl ("Colour");
+  layout->addWidget (&lbl, row, 0);
+
+  ColorSelector *curve_colour = new ColorSelector ();
+  curve_colour->setUpdateMode (ColorSelector::Confirm);
+  curve_colour->setColor (curves[which].getColour ());
+  QObject::connect (curve_colour,
+		    &ColorSelector::colorSelected,
+		    [=]()
+		    {QColor colour = curve_colour->color ();
+		      curves[which].setColour (colour);
+		      updateAll (); notifySelective (false); });
+  layout->addWidget (curve_colour, row, 1);
+
+  row++;
+  
+  QLabel lbll ("Linestyle");
+  layout->addWidget (&lbll, row, 0);
+  
+  QComboBox *curve_pen =  linestyleCombo (curves[which].getPen ());
+  connect (curve_pen, QOverload<int>::of(&QComboBox::activated),
+	  [=](int index)
+	  {QVariant sel = curve_pen->itemData (index);
+	    curves[which].setPen ((Qt::PenStyle)sel.toInt ());
+	    updateAll (); notifySelective (false); });
+  layout->addWidget (curve_pen, row, 1);
+
+  row++;
+
+  QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
+  cancelButton->setAutoDefault (false);
+  cancelButton->setDefault (false);
+  layout->addWidget (cancelButton, row, 0, 1, 2);
+  QObject::connect (cancelButton, &QPushButton::clicked,
+                    &dialog, &QDialog::reject);
+
+  bool run = true;
+  while(run) {
+    QPoint loc = this->pos ();
+    dialog.move (loc.x () + 200, loc.y () + 200);
+    if (QDialog::Rejected == dialog.exec ()) run = false;
+  }
 }
 
 void
