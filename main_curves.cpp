@@ -92,6 +92,20 @@ MainWindow::setCurves (int which)
   layout->addWidget (curve_pen, row, 1);
 
   row++;
+  
+  QLabel lblf ("Fonnt");
+  layout->addWidget (&lblf, row, 0);
+
+  QFont fn =  QWidget::font ();
+  /String fname = fn.accessibleName();
+  //fprintf (stderr, "fn = \"%s\"\n", toCString (fname));
+#if 0
+  bool ok;
+  QFont newfont = QFontDialog::getFont(&ok, this);
+#endif
+
+
+  row++;
 
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
   cancelButton->setAutoDefault (false);
