@@ -36,6 +36,7 @@ ChartControls::getChartWindow ()
   return chartWindow;
 }
 
+#if 0
 QString
 ChartControls::getBGFile ()
 {
@@ -53,6 +54,7 @@ ChartControls::clearBGFile ()
 {
   backgroundFile.clear ();
 }
+#endif
 
 void
 ChartControls::curveSettings ()
@@ -92,7 +94,7 @@ ChartControls::curveSettings ()
   QLabel lblb ("Background");
   layout->addWidget (&lblb, row, 0);
 
-  QFileInfo fi (getBGFile ());
+  QFileInfo fi (chartData->getBGFile ());
   QPushButton *imgButton = new QPushButton (fi.baseName ());
   layout->addWidget(imgButton, row, 1);
   connect (imgButton,
@@ -103,7 +105,7 @@ ChartControls::curveSettings ()
 				     tr("Open Image"),
 				     ".",
 			     tr("Image Files (*.png *.jpg *.bmp)"));
-	     setCBGFile (fileName);
+	     chartData->setCBGFile (fileName);
 	     QFileInfo fi (fileName);
 	     imgButton->setText (fi.baseName ());
 	     chartData->setUpdate (true); // mainWindow->updateAll ();
@@ -112,9 +114,9 @@ ChartControls::curveSettings ()
 
   QPushButton *clearButton = new QPushButton ("Clear");
   layout->addWidget(clearButton, row, 2);
-  connect (imgButton,
+  connect (clearButton,
 	   &QAbstractButton::clicked,
-	   [=](){ clearBGFile ();
+	   [=](){ chartData->clearBGFile ();
 	     clearButton->setText ("");
 	     chartData->setUpdate (true); // mainWindow->updateAll ();
 	     mainWindow->notifySelective (true);

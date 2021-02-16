@@ -96,6 +96,23 @@ ChartData::getWindow ()
   return chartWindow;
 }
 
+QString
+ChartData::getBGFile ()
+{
+  return backgroundFile;
+}
+
+void
+ChartData::setCBGFile (QString &fn)
+{
+  backgroundFile = fn;
+}
+
+void
+ChartData::clearBGFile ()
+{
+  backgroundFile.clear ();
+}
 
 ChartData::ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
 	   Index *rix, Index *riz, QList<int> &rselected)

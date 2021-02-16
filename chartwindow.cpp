@@ -168,9 +168,10 @@ ChartWindow::drawChart ()
 
   chartView->setChart (polar ? polarchart : chart);
 
-  chartView->chart ()->setTheme (chartControls->getChartData ()->getTheme ());
+  ChartData *cd = chartControls->getChartData ();
+  chartView->chart ()->setTheme (cd->getTheme ());
   if (!polar) {
-    QString fn = chartControls->getBGFile ();
+    QString fn = chartControls->getChartData ()->getBGFile ();
     if (!fn.isEmpty ()) {
       QImage gep (fn);
       chartView->setRenderHint(QPainter::Antialiasing, true);
@@ -189,16 +190,9 @@ ChartWindow::drawChart ()
 
       chart->setPlotAreaBackgroundBrush(translated);
       chart->setPlotAreaBackgroundVisible(true);
-      //      fprintf (stderr, "setting %s\n",
-      //	       toCString (chartControls->chart_title->text ()));
     }
-#if 0
-    else {
-      fprintf (stderr, "unsetting %s\n",
-	       toCString (chartControls->chart_title->text ()));
+    else 
       chart->setPlotAreaBackgroundVisible(false);
-    }
-#endif
   }
   
   chartView->chart ()->setTitle (chartControls->chart_title->text ());
