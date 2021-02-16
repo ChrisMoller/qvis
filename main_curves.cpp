@@ -136,8 +136,6 @@ MainWindow::setCurves (int which)
 	     updateAll (); notifySelective (false); });
   layout->addWidget (pointls_check, row, 1);
 
-
-
   row++;
 
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));
