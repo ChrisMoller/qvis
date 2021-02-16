@@ -39,6 +39,7 @@
 	  <range min="." max="."/>
         </iz>
 	<selected>. . .</selected>
+	<bgimage>. </bgimage>
       </chart>
     </charts>
     <parameters>
@@ -85,6 +86,14 @@ MainWindow::writeVis (QString &fileName)
     for (i = 0; i < curves.size (); i++) {
       stream.writeStartElement(xml_tags[XML_curve].tag);
       stream.writeAttribute(xml_tags[XML_idx].tag, QString::number (i));
+      stream.writeAttribute(xml_tags[XML_pointsvisible].tag,
+			    curves[i].getPointsVisible ()
+			    ? xml_tags[XML_true].tag
+			    : xml_tags[XML_false].tag);
+      stream.writeAttribute(xml_tags[XML_labelsvisible].tag,
+			    curves[i].getPointLabelsVisible ()
+			    ? xml_tags[XML_true].tag
+			    : xml_tags[XML_false].tag);
     
       stream.writeTextElement(xml_tags[XML_name].tag,
 			      curves[i].getName ());
@@ -175,6 +184,10 @@ MainWindow::writeVis (QString &fileName)
 	  stream.writeCharacters (" " + QString::number (selList[j]));
 	stream.writeEndElement(); // selected
       }
+
+      QString bgf = cd->getBGFile ();
+      if (!bgf.isEmpty ()) 
+	stream.writeTextElement(xml_tags[XML_bgimage].tag, bgf);
       
       stream.writeEndElement(); // chart
       charts[i]->setChanged (false); 
@@ -263,7 +276,7 @@ MainWindow::parseIz (QXmlStreamReader &stream)
 
 
 bool
-MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
+MainWindow::parseCurve (int idx, bool pv, bool lv, QXmlStreamReader &stream)
 {
   bool rc = true;
   bool run = true;
@@ -326,6 +339,8 @@ MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
 
   Curve   curve = Curve (name, label, function, (Qt::PenStyle)pen,
 			 colour);
+  curve.setPointsVisible (pv);
+  curve.setPointLabelsVisible (lv);
   curves.insert (idx, curve);
   return rc;
 }
@@ -345,7 +360,13 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	QXmlStreamAttributes attrs = stream.attributes();
 	if (!attrs.isEmpty ()) {
 	  int idx = (attrs.value (xml_tags[XML_idx].tag)).toInt ();
-	  parseCurve (idx, stream);
+	  bool pv  =
+	    attrs.value (xml_tags[XML_pointsvisible].tag)
+	    == xml_tags[XML_true].tag;
+	  bool lv  =
+	    attrs.value (xml_tags[XML_labelsvisible].tag)
+	    == xml_tags[XML_true].tag;
+	  parseCurve (idx, pv, lv, stream);
 	}
 	break;
       }
@@ -370,6 +391,7 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
   bool rc = true;
   bool run = true;
   QString title;
+  QString bgimage;
 
   Index *ix = nullptr;
   Index *iz = nullptr;
@@ -383,6 +405,9 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
       switch (xmlhash.value (sn)) {
       case XML_title:
 	title = stream.readElementText ();
+	break;
+      case XML_bgimage:
+	bgimage = stream.readElementText ();
 	break;
       case XML_ix:
 	ix = parseIx (stream);
@@ -414,6 +439,7 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
 
   ChartData *cd = new ChartData (title, spline, polar, theme,
 				 ix, iz, selected);
+  if (!bgimage.isEmpty ()) cd->setBGFile (bgimage);
   charts.append (cd);
 
   return rc;

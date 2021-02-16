@@ -59,11 +59,6 @@ public:
   void           setChartData (ChartData *cd);
   MainWindow    *getMainWindow ();
   ChartWindow	 *getChartWindow ();
-#if 0
-  QString 	 getBGFile ();
-  void           setCBGFile (QString &fn);
-  void 	 	 clearBGFile ();
-#endif
 
  private:
   int		  tabIndex;

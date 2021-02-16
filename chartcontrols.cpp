@@ -36,26 +36,6 @@ ChartControls::getChartWindow ()
   return chartWindow;
 }
 
-#if 0
-QString
-ChartControls::getBGFile ()
-{
-  return backgroundFile;
-}
-
-void
-ChartControls::setCBGFile (QString &fn)
-{
-  backgroundFile = fn;
-}
-
-void
-ChartControls::clearBGFile ()
-{
-  backgroundFile.clear ();
-}
-#endif
-
 void
 ChartControls::curveSettings ()
 {
@@ -105,7 +85,7 @@ ChartControls::curveSettings ()
 				     tr("Open Image"),
 				     ".",
 			     tr("Image Files (*.png *.jpg *.bmp)"));
-	     chartData->setCBGFile (fileName);
+	     chartData->setBGFile (fileName);
 	     QFileInfo fi (fileName);
 	     imgButton->setText (fi.baseName ());
 	     chartData->setUpdate (true); // mainWindow->updateAll ();

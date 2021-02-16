@@ -103,7 +103,7 @@ ChartData::getBGFile ()
 }
 
 void
-ChartData::setCBGFile (QString &fn)
+ChartData::setBGFile (QString &fn)
 {
   backgroundFile = fn;
 }

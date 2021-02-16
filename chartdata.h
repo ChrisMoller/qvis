@@ -79,7 +79,7 @@ class ChartData
   void	        setUpdate (bool state);
   bool	        needsUpdate ();
   QString 	getBGFile ();
-  void          setCBGFile (QString &fn);
+  void          setBGFile (QString &fn);
   void 	 	clearBGFile ();
 
  private:
@@ -93,7 +93,7 @@ class ChartData
   ChartWindow *chartWindow;
   bool 	       changed;
   bool 	       do_update;
-  QString	  backgroundFile;
+  QString      backgroundFile;
 };
 
 #endif // CHARTDATA_H
