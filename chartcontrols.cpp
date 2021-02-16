@@ -49,6 +49,12 @@ ChartControls::setCBGFile (QString &fn)
 }
 
 void
+ChartControls::clearBGFile ()
+{
+  backgroundFile.clear ();
+}
+
+void
 ChartControls::curveSettings ()
 {
   QDialog dialog (this, Qt::Dialog);
@@ -100,10 +106,20 @@ ChartControls::curveSettings ()
 	     setCBGFile (fileName);
 	     QFileInfo fi (fileName);
 	     imgButton->setText (fi.baseName ());
-	     mainWindow->updateAll ();
+	     chartData->setUpdate (true); // mainWindow->updateAll ();
 	     mainWindow->notifySelective (true);
 	   });
-  
+
+  QPushButton *clearButton = new QPushButton ("Clear");
+  layout->addWidget(clearButton, row, 2);
+  connect (imgButton,
+	   &QAbstractButton::clicked,
+	   [=](){ clearBGFile ();
+	     clearButton->setText ("");
+	     chartData->setUpdate (true); // mainWindow->updateAll ();
+	     mainWindow->notifySelective (true);
+	   });
+
   row++;
 
   QPushButton *cancelButton = new QPushButton (QObject::tr ("Close"));

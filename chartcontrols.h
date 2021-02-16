@@ -61,6 +61,7 @@ public:
   ChartWindow	 *getChartWindow ();
   QString 	 getBGFile ();
   void           setCBGFile (QString &fn);
+  void 	 	 clearBGFile ();
 
  private:
   int		  tabIndex;

@@ -189,7 +189,16 @@ ChartWindow::drawChart ()
 
       chart->setPlotAreaBackgroundBrush(translated);
       chart->setPlotAreaBackgroundVisible(true);
+      //      fprintf (stderr, "setting %s\n",
+      //	       toCString (chartControls->chart_title->text ()));
     }
+#if 0
+    else {
+      fprintf (stderr, "unsetting %s\n",
+	       toCString (chartControls->chart_title->text ()));
+      chart->setPlotAreaBackgroundVisible(false);
+    }
+#endif
   }
   
   chartView->chart ()->setTitle (chartControls->chart_title->text ());
