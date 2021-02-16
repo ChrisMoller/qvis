@@ -50,7 +50,6 @@ ChartWindow::handle_vector (qreal &y_max,
   QColor  fcolour   = curve->getColour ();
   Qt::PenStyle fpen = curve->getPen ();
   uint64_t count    = get_element_count (res);
-  //  union QVunion series;
   QAbstractSeries *series = nullptr;
 
   int res_type = -1;
@@ -91,9 +90,11 @@ ChartWindow::handle_vector (qreal &y_max,
       pseries->setName(flbl);
       pseries->setColor (fcolour);
       pseries->setPen (pen);
+      pseries->setPointsVisible (curve->getPointsVisible ());
+      pseries->setPointLabelsVisible (curve->getPointLabelsVisible ());
       series = pseries;
     }
-
+    
     int i;
     for (i = 0; i < (int)count; i++) {
       qreal y_val = (qreal)vect[i].real ();

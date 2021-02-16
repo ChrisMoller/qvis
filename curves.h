@@ -56,9 +56,17 @@ class Curve
   void		setFunction (QString &newfunction);
   Qt::PenStyle	getPen ();
   void    	setPen (Qt::PenStyle rpen);
+  QString 	getPenName ();
   QColor  	getColour ();
   void    	setColour (QColor rcolour);
-  QString 	getPenName ();
+#if 0
+  QFont  	getFont ();
+  void    	setFont (QFont &rfont);
+#endif
+  bool  	getPointsVisible ();
+  void    	setPointsVisible (bool state);
+  bool  	getPointLabelsVisible ();
+  void    	setPointLabelsVisible (bool state);
 
  private:
   QString name;			// key 
@@ -74,6 +82,11 @@ class Curve
     "Dash Dot Line",
     "Dash DotDot Line"
   };
+#if 0
+  QFont	  font;
+#endif
+  bool pointsVisible;
+  bool pointLabelsVisible;
 };
 
 #endif // CURVES_H

@@ -91,6 +91,7 @@ MainWindow::setCurves (int which)
 	    updateAll (); notifySelective (false); });
   layout->addWidget (curve_pen, row, 1);
 
+#if 0
   row++;
   
   QLabel lblf ("Font");
@@ -102,12 +103,39 @@ MainWindow::setCurves (int which)
 	   &QAbstractButton::clicked,
 	   [=](){ bool ok;
 	     QFont newfont = QFontDialog::getFont(&ok, this);
-	     fprintf (stderr, "nf = %s\n", toCString (newfont.family ()));
+	     curves[which].setFont (newfont);
+	     fontButton->setText (newfont.family ());
 	     updateAll (); notifySelective (false); });
-#if 0
-  bool ok;
-  QFont newfont = QFontDialog::getFont(&ok, this);
 #endif
+  
+  row++;
+  
+  QLabel lblp ("Points");
+  layout->addWidget (&lblp, row, 0);
+
+  bool active = curves[which].getPointsVisible ();
+  QCheckBox *points_check = new QCheckBox ();
+  points_check->setCheckState (active ? Qt::Checked : Qt::Unchecked);
+  connect (points_check, QOverload<int>::of(&QCheckBox::stateChanged),
+	   [=](int state)
+	   { curves[which].setPointsVisible (state);
+	     updateAll (); notifySelective (false); });
+  layout->addWidget (points_check, row, 1);
+  
+  row++;
+  
+  QLabel lblpl ("Point Labelss");
+  layout->addWidget (&lblpl, row, 0);
+
+  bool activel = curves[which].getPointLabelsVisible ();
+  QCheckBox *pointls_check = new QCheckBox ();
+  pointls_check->setCheckState (active ? Qt::Checked : Qt::Unchecked);
+  connect (pointls_check, QOverload<int>::of(&QCheckBox::stateChanged),
+	   [=](int state)
+	   { curves[which].setPointLabelsVisible (state);
+	     updateAll (); notifySelective (false); });
+  layout->addWidget (pointls_check, row, 1);
+
 
 
   row++;
@@ -157,33 +185,12 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 		      updateAll (); notifySelective (false); });
   curvesTable->setCellWidget (i, COLUMN_FCN, curve_fcn);
 
-#if 1
   QPushButton *settings_pb = new QPushButton (QObject::tr ("Settings"));
   connect (settings_pb,
 	   &QAbstractButton::clicked,
 	   [=](){setCurves (i);
-	    updateAll (); notifySelective (false); });
+	     /*updateAll (); notifySelective (false); */ });
   curvesTable->setCellWidget (i, COLUMN_SETTINGS, settings_pb);
-#else
-  ColorSelector *curve_colour = new ColorSelector ();
-  curve_colour->setUpdateMode (ColorSelector::Confirm);
-  curve_colour->setColor (curves[i].getColour ());
-  QObject::connect (curve_colour,
-		    &ColorSelector::colorSelected,
-		    [=]()
-		    {QColor colour = curve_colour->color ();
-		      curves[i].setColour (colour);
-		      updateAll (); notifySelective (false); });
-  curvesTable->setCellWidget (i, COLUMN_COLOUR, curve_colour);
-
-  QComboBox *curve_pen =  linestyleCombo (curves[i].getPen ());
-  connect (curve_pen, QOverload<int>::of(&QComboBox::activated),
-	  [=](int index)
-	  {QVariant sel = curve_pen->itemData (index);
-	    curves[i].setPen ((Qt::PenStyle)sel.toInt ());
-	    updateAll (); notifySelective (false); });
-  curvesTable->setCellWidget (i, COLUMN_PEN, curve_pen);
-#endif
 
   const QIcon deleteIcon = QIcon (":/images/edit-delete.png");
   QPushButton *deleteButton =
@@ -321,13 +328,6 @@ MainWindow::addCurve()
       curve_name->clear ();
       curve_label->clear ();
       curve_function->clear ();
-#if 0
-      for (i = 0; i < curves.size (); i++) {
-	QWidget *widget = curvesTable->cellWidget (i, COLUMN_COLOUR);
-	QColor colour = ((ColorSelector *)widget)->color ();
-	curves[i].setColour (colour);
-      }
-#endif
 #if 0
       {
 	int i;

@@ -324,7 +324,8 @@ MainWindow::parseCurve (int idx, QXmlStreamReader &stream)
     }
   }
 
-  Curve   curve = Curve (name, label, function, (Qt::PenStyle)pen, colour);
+  Curve   curve = Curve (name, label, function, (Qt::PenStyle)pen,
+			 colour);
   curves.insert (idx, curve);
   return rc;
 }

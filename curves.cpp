@@ -62,13 +62,18 @@ Param::setName (QString &newname)
 }
 
 Curve::Curve (QString &rname, QString &rlabel,
-       QString &rfcn, Qt::PenStyle rpen, QColor rcolour)
+	      QString &rfcn, Qt::PenStyle rpen, QColor rcolour)
 {
-  name	= rname;
-  label	= rlabel;
-  fcn	= rfcn;
-  pen	= rpen;
+  name	=  rname;
+  label	=  rlabel;
+  fcn	=  rfcn;
+  pen	=  rpen;
   colour = rcolour;
+#if 0
+  font  =  parent->font ();
+#endif
+  pointsVisible = false;
+  pointLabelsVisible = false;
 }
 
 void
@@ -150,5 +155,43 @@ Curve::getPenName ()
   if (pen >=0 && pen < penNames.size ()) 
     name = penNames[pen];
   return name;
+}
+
+#if 0
+QFont
+Curve::getFont ()
+{
+  return font;
+}
+  
+void
+Curve::setFont (QFont &rfont)
+{
+  font = rfont;
+}
+#endif
+
+bool
+Curve::getPointsVisible ()
+{
+  return pointsVisible;
+}
+  
+void
+Curve::setPointsVisible (bool state)
+{
+  pointsVisible = state;
+}
+
+bool
+Curve::getPointLabelsVisible ()
+{
+  return pointLabelsVisible;
+}
+  
+void
+Curve::setPointLabelsVisible (bool state)
+{
+  pointLabelsVisible = state;
 }
 
