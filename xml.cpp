@@ -385,7 +385,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	    == xml_tags[XML_true].tag;
 	  int mode = CPX_REAL;
 	  {
-	    fprintf (stderr, "modes = \"%s\"\n", toCString (modes));
+	    QString modes = (attrs.value (xml_tags[XML_mode].tag)).toString ();
 	    switch(xmlhash.value (modes)) {
 	    case XML_real:
 	      mode = CPX_REAL;
