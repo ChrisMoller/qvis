@@ -25,6 +25,13 @@
 #define toCString(v) ((v).toStdString ().c_str ())
 #endif
 
+enum {
+  CPX_REAL,
+  CPX_IMAG,
+  CPX_MAG,
+  CPX_PHASE
+};
+
 class Param
 {
 public:
@@ -59,14 +66,12 @@ class Curve
   QString 	getPenName ();
   QColor  	getColour ();
   void    	setColour (QColor rcolour);
-#if 0
-  QFont  	getFont ();
-  void    	setFont (QFont &rfont);
-#endif
   bool  	getPointsVisible ();
   void    	setPointsVisible (bool state);
   bool  	getPointLabelsVisible ();
   void    	setPointLabelsVisible (bool state);
+  int  		getCpx ();
+  void    	setCpx (int rcpx);
 
  private:
   QString name;			// key 
@@ -87,6 +92,7 @@ class Curve
 #endif
   bool pointsVisible;
   bool pointLabelsVisible;
+  int  cpx;
 };
 
 #endif // CURVES_H

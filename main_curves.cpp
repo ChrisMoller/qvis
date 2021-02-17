@@ -24,6 +24,7 @@ enum {
   COLUMN_LABEL,
   COLUMN_FCN,
   COLUMN_SETTINGS,
+  COLUMN_CPX,
   COLUMN_X,
   COLUMN_COUNT
 };
@@ -32,6 +33,22 @@ void
 MainWindow::deleteCurve (int idx)
 {
   fprintf (stderr, "deleting %d\n", idx);	// fixme
+}
+
+static QComboBox *
+cpxCombo (int sel)
+{
+  QComboBox *cpx_combo = new QComboBox ();
+  cpx_combo->addItem ("Real",  QVariant((int)CPX_REAL));
+  cpx_combo->addItem ("Imag",  QVariant((int)CPX_IMAG));
+  cpx_combo->addItem ("Mag",   QVariant((int)CPX_MAG));
+  cpx_combo->addItem ("Phase", QVariant((int)CPX_PHASE));
+
+  int found = cpx_combo->findData (QVariant (sel));
+  if (found != -1)
+    cpx_combo->setCurrentIndex (found);
+
+  return cpx_combo;
 }
 
 static QComboBox *
@@ -124,7 +141,7 @@ MainWindow::setCurves (int which)
   
   row++;
   
-  QLabel lblpl ("Point Labelss");
+  QLabel lblpl ("Point Labels");
   layout->addWidget (&lblpl, row, 0);
 
   bool activel = curves[which].getPointLabelsVisible ();
@@ -189,6 +206,24 @@ MainWindow::insertItem (int i, QTableWidget* &curvesTable)
 	   [=](){setCurves (i);
 	     /*updateAll (); notifySelective (false); */ });
   curvesTable->setCellWidget (i, COLUMN_SETTINGS, settings_pb);
+  
+  QComboBox *curve_cpx =  cpxCombo (curves[i].getCpx ());
+  connect (curve_cpx, QOverload<int>::of(&QComboBox::activated),
+	  [=](int index)
+	  {QVariant sel = curve_cpx->itemData (index);
+	    curves[i].setCpx (sel.toInt ());
+	    updateAll (); notifySelective (false); });
+  curvesTable->setCellWidget (i, COLUMN_CPX, curve_cpx);
+
+#if 0
+  QComboBox *curve_pen =  linestyleCombo (curves[which].getPen ());
+  connect (curve_pen, QOverload<int>::of(&QComboBox::activated),
+	  [=](int index)
+	  {QVariant sel = curve_pen->itemData (index);
+	    curves[which].setPen ((Qt::PenStyle)sel.toInt ());
+	    updateAll (); notifySelective (false); });
+  layout->addWidget (curve_pen, row, 1);
+#endif
 
   const QIcon deleteIcon = QIcon (":/images/edit-delete.png");
   QPushButton *deleteButton =
@@ -224,6 +259,7 @@ MainWindow::addCurve()
 #define CH_LABEL	"Label"
 #define CH_FCN		"Function"
 #define CH_SETTINGS	"Settings"
+#define CH_CPX		"Mode"
 #define CH_DELETE	"Delete"
   curvesTable->setColumnCount (COLUMN_COUNT);
   curvesTable->setRowCount (curves.size ());
@@ -231,12 +267,14 @@ MainWindow::addCurve()
   QTableWidgetItem *column_label    = new QTableWidgetItem(CH_LABEL);
   QTableWidgetItem *column_fcn      = new QTableWidgetItem(CH_FCN);
   QTableWidgetItem *column_settings = new QTableWidgetItem(CH_SETTINGS);
+  QTableWidgetItem *column_cpx      = new QTableWidgetItem(CH_CPX);
   QTableWidgetItem *column_x        = new QTableWidgetItem(CH_DELETE);
   QString colour_style_style ("background-color: yellow; color: red;");
   curvesTable->setHorizontalHeaderItem (COLUMN_NAME,	 column_name);
   curvesTable->setHorizontalHeaderItem (COLUMN_LABEL,	 column_label);
   curvesTable->setHorizontalHeaderItem (COLUMN_FCN,	 column_fcn);
   curvesTable->setHorizontalHeaderItem (COLUMN_SETTINGS, column_settings);
+  curvesTable->setHorizontalHeaderItem (COLUMN_CPX,      column_cpx);
   curvesTable->setHorizontalHeaderItem (COLUMN_X,	 column_x);
   int available_width = gbox->width ();
   QFontMetrics fm = QWidget::fontMetrics();
@@ -246,6 +284,8 @@ MainWindow::addCurve()
   available_width -= label_width;
   int settings_width = 20 + fm.horizontalAdvance (CH_SETTINGS);
   available_width -= settings_width;
+  int settings_cpx   = 20 + fm.horizontalAdvance (CH_CPX);
+  available_width -= settings_cpx;
   int delete_width   = 20 + fm.horizontalAdvance (CH_DELETE);
   available_width -= delete_width;
   
@@ -253,6 +293,7 @@ MainWindow::addCurve()
   curvesTable->setColumnWidth (COLUMN_LABEL, 	label_width);
   curvesTable->setColumnWidth (COLUMN_FCN, 	available_width);
   curvesTable->setColumnWidth (COLUMN_SETTINGS, settings_width);
+  curvesTable->setColumnWidth (COLUMN_CPX,      settings_cpx);
   curvesTable->setColumnWidth (COLUMN_X,	delete_width);
   int i;
   for (i = 0; i < curves.size (); i++)

@@ -54,6 +54,7 @@ ChartWindow::handle_vector (qreal &y_max,
 
   int res_type = -1;
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
+  bool has_cpx = false;
   for (uint64_t c = 0; c < count; c++) {
     if (is_numeric (res, c)) {
       if (res_type == -1) res_type = CCT_NUMERIC;
@@ -61,17 +62,32 @@ ChartWindow::handle_vector (qreal &y_max,
 	if (res_type == CCT_NUMERIC) res_type = CCT_COMPLEX;
 	vect[c] = std::complex<double> ((double)get_real (res, c),
 					(double)get_imag (res, c));
+	has_cpx = true;
       }
       else
 	vect[c] = std::complex<double> ((double)get_real (res, c), 0.0);
     }
   }
-  
-  if (res_type == CCT_COMPLEX) {
-    // fixme
-    // complex vector vs idx, rank = 1
+
+  if (has_cpx) {
+    for (uint64_t c = 0; c < count; c++) {
+      switch (curve->getCpx ()) {
+      case CPX_REAL:
+	break;
+      case CPX_IMAG:
+	vect[c].real (vect[c].imag ());
+	break;
+      case CPX_MAG:
+	vect[c].real (abs (vect[c]));
+	break;
+      case CPX_PHASE:
+	vect[c].real (arg (vect[c]));
+	break;
+      }
+    }
   }
-  else {
+  
+  {
     // real vector vs idx, rank = 1
     QSplineSeries *sseries = nullptr;
     QLineSeries   *pseries = nullptr;

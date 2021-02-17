@@ -118,6 +118,12 @@ Curve::getPen ()
   return pen;
 }
 
+int
+Curve::getCpx ()
+{
+  return cpx;
+}
+
 QColor
 Curve::getColour ()
 {
@@ -134,6 +140,12 @@ void
 Curve::setPen (Qt::PenStyle rpen)
 {
   pen = rpen;
+}
+
+void
+Curve::setCpx (int rcpx)
+{
+  cpx = rcpx;
 }
 
 void
