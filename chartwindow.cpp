@@ -76,12 +76,15 @@ ChartWindow::handle_vector (qreal &y_max,
 	break;
       case CPX_IMAG:
 	vect[c].real (vect[c].imag ());
+	vect[c].imag (0.0);
 	break;
       case CPX_MAG:
 	vect[c].real (abs (vect[c]));
+	vect[c].imag (0.0);
 	break;
       case CPX_PHASE:
 	vect[c].real (arg (vect[c]));
+	vect[c].imag (0.0);
 	break;
       }
     }

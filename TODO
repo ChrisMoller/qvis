@@ -25,3 +25,11 @@ clear curves, clear charts
 auto-update on curve selection
 
 save on adding parms
+
+fix colour updates
+
+add auto-ws-load capability
+
+write tests
+
+read cpx mode

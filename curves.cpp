@@ -74,6 +74,7 @@ Curve::Curve (QString &rname, QString &rlabel,
 #endif
   pointsVisible = false;
   pointLabelsVisible = false;
+  cpx    = CPX_REAL;
 }
 
 void

@@ -17,7 +17,7 @@
 /***
   <qvis>
     <curves>
-      <curve idx=".">
+      <curve idx="." pv="." lv="." made=".">
         <name>.</name>
         <label>.</label>
         <function>.</function>
@@ -94,6 +94,21 @@ MainWindow::writeVis (QString &fileName)
 			    curves[i].getPointLabelsVisible ()
 			    ? xml_tags[XML_true].tag
 			    : xml_tags[XML_false].tag);
+      QString modes = xml_tags[XML_real].tag;
+      switch (curves[i].getCpx ()) {
+      case CPX_REAL:	// do nothing, already set
+	break;
+      case CPX_IMAG:
+	modes = xml_tags[XML_imag].tag;
+	break;
+      case CPX_MAG:
+	modes = xml_tags[XML_mag].tag;
+	break;
+      case CPX_PHASE:
+	modes = xml_tags[XML_phase].tag;
+	break;
+      }
+      stream.writeAttribute(xml_tags[XML_mode].tag, modes);
     
       stream.writeTextElement(xml_tags[XML_name].tag,
 			      curves[i].getName ());
@@ -276,7 +291,8 @@ MainWindow::parseIz (QXmlStreamReader &stream)
 
 
 bool
-MainWindow::parseCurve (int idx, bool pv, bool lv, QXmlStreamReader &stream)
+MainWindow::parseCurve (int idx, bool pv, bool lv, int mode,
+			QXmlStreamReader &stream)
 {
   bool rc = true;
   bool run = true;
@@ -341,6 +357,7 @@ MainWindow::parseCurve (int idx, bool pv, bool lv, QXmlStreamReader &stream)
 			 colour);
   curve.setPointsVisible (pv);
   curve.setPointLabelsVisible (lv);
+  curve.setCpx (mode);
   curves.insert (idx, curve);
   return rc;
 }
@@ -366,7 +383,25 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	  bool lv  =
 	    attrs.value (xml_tags[XML_labelsvisible].tag)
 	    == xml_tags[XML_true].tag;
-	  parseCurve (idx, pv, lv, stream);
+	  int mode = CPX_REAL;
+	  {
+	    fprintf (stderr, "modes = \"%s\"\n", toCString (modes));
+	    switch(xmlhash.value (modes)) {
+	    case XML_real:
+	      mode = CPX_REAL;
+	      break;
+	    case XML_imag:
+	      mode = CPX_IMAG;
+	      break;
+	    case XML_mag:
+	      mode = CPX_MAG;
+	      break;
+	    case XML_phase:
+	      mode = CPX_PHASE;
+	      break;
+	    }
+	  }
+	  parseCurve (idx, pv, lv, mode, stream);
 	}
 	break;
       }
