@@ -121,7 +121,6 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
   item_name->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
   parmsTable->setItem (i, PCOLUMN_NAME, item_name);
 
-#if 1
   ComplexSpinBox *item = new ComplexSpinBox ();
   item->setComplex (parms[i].getValue ());
   parmsTable->setCellWidget (i, PCOLUMN_CPX, item);
@@ -133,23 +132,6 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
 	    notifySelective (true);
 	    updateAll ();
 	  });
-#else
-  QDoubleSpinBox *item_real = new QDoubleSpinBox ();
-  item_real->setAccelerated (true);
-  item_real->setRange (-MAXDOUBLE, MAXDOUBLE);
-  item_real->setValue (parms[i].getValue ().real ());
-  parmsTable->setCellWidget (i, PCOLUMN_REAL, item_real);
-  connect (item_real, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-	  [=](double d){parms[i].setReal (d); notifySelective (true);  });
-
-  QDoubleSpinBox *item_imag = new QDoubleSpinBox ();
-  item_imag->setAccelerated (true);
-  item_imag->setRange (-MAXDOUBLE, MAXDOUBLE);
-  item_imag->setValue (parms[i].getValue ().imag ());
-  parmsTable->setCellWidget (i, PCOLUMN_IMAG, item_imag);
-  connect (item_imag, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-	  [=](double d){parms[i].setImag (d); notifySelective (true);  });
-#endif
 }
 
 void
