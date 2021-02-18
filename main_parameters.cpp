@@ -131,6 +131,7 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
 	    std::complex<double> cv = item->getComplex ();
 	    parms[i].setValue (cv);
 	    notifySelective (true);
+	    updateAll ();
 	  });
 #else
   QDoubleSpinBox *item_real = new QDoubleSpinBox ();
@@ -225,6 +226,8 @@ MainWindow::addParms()
       QString name = parm_name->text ();
       std::complex<double>  val = parm_value->getComplex ();
       if (!name.isEmpty ()) {
+	updateAll ();
+	notifySelective (true);
 	Param parm = Param (name, val);
 	parms.append (parm);
 	int nextRow = parmsTable->rowCount();

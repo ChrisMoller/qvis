@@ -124,6 +124,7 @@ ComplexSpinBox::ComplexSpinBox ()
   leftUp = new QToolButton ();
   leftUp->setAutoRepeat (true);
   leftUp->setArrowType (Qt::UpArrow);
+  leftUp->setToolTip ("Increment real component.  Hold to repeat.");
   //leftUp->setMaximumSize (22, 22);
   connect (leftUp, &QToolButton::clicked, this,
 	   [=](){
@@ -137,6 +138,7 @@ ComplexSpinBox::ComplexSpinBox ()
   leftDn = new QToolButton ();
   leftDn->setAutoRepeat (true);
   leftDn->setArrowType (Qt::DownArrow);
+  leftDn->setToolTip ("Decrement real component.  Hold to repeat.");
   //leftDn->setMaximumSize (22, 22);
   connect (leftDn, &QToolButton::clicked, this,
 	   [=](){
@@ -170,6 +172,7 @@ ComplexSpinBox::ComplexSpinBox ()
   rightUp = new QToolButton ();
   rightUp->setAutoRepeat (true);
   rightUp->setArrowType (Qt::UpArrow);
+  rightUp->setToolTip ("Increment imaginary component.  Hold to repeat.");
   //rightUp->setMaximumSize (16, 16);
   connect (rightUp, &QToolButton::clicked, this,
 	   [=](){
@@ -183,6 +186,7 @@ ComplexSpinBox::ComplexSpinBox ()
   rightDn = new QToolButton ();
   rightDn->setAutoRepeat (true);
   rightDn->setArrowType (Qt::DownArrow);
+  rightDn->setToolTip ("Decrement imaginary component.  Hold to repeat.");
   //rightDn->setMaximumSize (16, 16);
   connect (rightDn, &QToolButton::clicked, this,
 	   [=](){
