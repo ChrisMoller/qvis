@@ -88,6 +88,7 @@ private:
 				  qreal &y_min,
 				  APL_value res,
 				  QVector<double> &xvals,
+				  QVector<double> &zvals,
 				  bool spline,
 				  Curve *curve);
   QVector<double> setIndex (Index *idx, int incr, QString title);

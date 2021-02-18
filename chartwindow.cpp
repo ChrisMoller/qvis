@@ -43,6 +43,7 @@ ChartWindow::handle_vector (qreal &y_max,
 			    qreal &y_min,
 			    APL_value res,
 			    QVector<double> &xvals,
+			    QVector<double> &zvals,
 			    bool spline,
 			    Curve *curve)
 {
@@ -252,9 +253,14 @@ ChartWindow::drawChart ()
       sprintf (loc, "qvis %s:%d", __FILE__, __LINE__);
       APL_value res = get_var_value (expvar, loc);
       if (res) {
-	QAbstractSeries *frc =
-	  handle_vector (y_max, y_min, res, xvals, spline, &curve);
-	series_list.append (frc);
+	if (get_rank (res) == 2) {
+	  fprintf (stderr, "surface\n");
+	}
+	else if (get_rank (res) == 1) {
+	  QAbstractSeries *frc =
+	    handle_vector (y_max, y_min, res, xvals, zvals, spline, &curve);
+	  series_list.append (frc);
+	}
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
 	AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
