@@ -23,6 +23,8 @@
 #define toCString(v) ((v).toStdString ().c_str ())
 #endif
 
+/************ params **********/
+
 Param::Param (QString &rname, std::complex<double> rval)
 {
   name = rname;
@@ -40,6 +42,18 @@ void
 Param::setImag (double imag)
 {
   double real = val.real ();
+  val = std::complex<double> (real, imag);
+}
+
+void
+Param::setValue (std::complex<double> &rval)
+{
+  val = rval;
+}
+
+void
+Param::setValue (double real, double imag)
+{
   val = std::complex<double> (real, imag);
 }
 
@@ -76,6 +90,8 @@ Curve::Curve (QString &rname, QString &rlabel,
   pointLabelsVisible = false;
   cpx    = CPX_REAL;
 }
+
+/********* curves *********/
 
 void
 Curve::showCurve ()

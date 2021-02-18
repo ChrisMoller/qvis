@@ -102,6 +102,8 @@ ChartWindow::handle_vector (qreal &y_max,
       sseries->setName (flbl);
       sseries->setColor (fcolour);
       sseries->setPen (pen);
+      sseries->setPointsVisible (curve->getPointsVisible ());
+      sseries->setPointLabelsVisible (curve->getPointLabelsVisible ());
       series = sseries;
     }
     else {

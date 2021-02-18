@@ -269,7 +269,6 @@ MainWindow::addCurve()
   QTableWidgetItem *column_settings = new QTableWidgetItem(CH_SETTINGS);
   QTableWidgetItem *column_cpx      = new QTableWidgetItem(CH_CPX);
   QTableWidgetItem *column_x        = new QTableWidgetItem(CH_DELETE);
-  QString colour_style_style ("background-color: yellow; color: red;");
   curvesTable->setHorizontalHeaderItem (COLUMN_NAME,	 column_name);
   curvesTable->setHorizontalHeaderItem (COLUMN_LABEL,	 column_label);
   curvesTable->setHorizontalHeaderItem (COLUMN_FCN,	 column_fcn);

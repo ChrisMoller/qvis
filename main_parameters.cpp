@@ -19,14 +19,20 @@
 #include "mainwindow.h"
 #include "curves.h"
 #include "chartwindow.h"
+#include "complexspinbox.h"
 #include "aplexec.h"
 
 
 
 enum {
   PCOLUMN_NAME,
+#if 1
+  PCOLUMN_CPX,
+#else
   PCOLUMN_REAL,
-  PCOLUMN_IMAG
+  PCOLUMN_IMAG,
+#endif
+  PCOLUMN_COUNT
 };
 
 #if 0
@@ -115,6 +121,18 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
   item_name->setFlags (Qt::ItemIsEnabled | Qt::ItemIsEditable);
   parmsTable->setItem (i, PCOLUMN_NAME, item_name);
 
+#if 1
+  ComplexSpinBox *item = new ComplexSpinBox ();
+  item->setComplex (parms[i].getValue ());
+  parmsTable->setCellWidget (i, PCOLUMN_CPX, item);
+  connect (item,
+	   &ComplexSpinBox::valueChanged,
+	  [=](){
+	    std::complex<double> cv = item->getComplex ();
+	    parms[i].setValue (cv);
+	    notifySelective (true);
+	  });
+#else
   QDoubleSpinBox *item_real = new QDoubleSpinBox ();
   item_real->setAccelerated (true);
   item_real->setRange (-MAXDOUBLE, MAXDOUBLE);
@@ -130,6 +148,7 @@ MainWindow::insertParmItem (int i, QTableWidget* &parmsTable)
   parmsTable->setCellWidget (i, PCOLUMN_IMAG, item_imag);
   connect (item_imag, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
 	  [=](double d){parms[i].setImag (d); notifySelective (true);  });
+#endif
 }
 
 void
@@ -153,14 +172,12 @@ MainWindow::addParms()
 	   this, &MainWindow::parmsCellPressed);
 #endif
   
-  parmsTable->setColumnCount (3);
+  parmsTable->setColumnCount (PCOLUMN_COUNT);
   parmsTable->setRowCount (parms.size ());
   QTableWidgetItem *column_name  = new QTableWidgetItem(tr("Name"));
-  QTableWidgetItem *column_real  = new QTableWidgetItem(tr("Real"));
-  QTableWidgetItem *column_imag  = new QTableWidgetItem(tr("Imag"));
   parmsTable->setHorizontalHeaderItem (PCOLUMN_NAME,	column_name);
-  parmsTable->setHorizontalHeaderItem (PCOLUMN_REAL,	column_real);
-  parmsTable->setHorizontalHeaderItem (PCOLUMN_IMAG,	column_imag);
+  QTableWidgetItem *column_value  = new QTableWidgetItem(tr("Value"));
+  parmsTable->setHorizontalHeaderItem (PCOLUMN_CPX,	column_value);
   int i;
   for (i = 0; i < parms.size (); i++)
     insertParmItem (i, parmsTable);
@@ -174,21 +191,14 @@ MainWindow::addParms()
   dialog_layout->addWidget (formGroupBox);
   
   int row = 0;
-  int col = 0;
+  //  int col = 0;
   
   QLineEdit *parm_name = new QLineEdit ();
   parm_name->setPlaceholderText ("Parameter name");
-  layout->addWidget (parm_name, row, col++);
-  
-  QDoubleSpinBox *parm_real = new QDoubleSpinBox ();
-  parm_real->setAccelerated (true);
-  parm_real->setRange (-MAXDOUBLE, MAXDOUBLE);
-  layout->addWidget (parm_real, row, col++);
-  
-  QDoubleSpinBox *parm_imag = new QDoubleSpinBox ();
-  parm_imag->setAccelerated (true);
-  parm_imag->setRange (-MAXDOUBLE, MAXDOUBLE);
-  layout->addWidget (parm_imag, row, col++);
+  layout->addWidget (parm_name, row, PCOLUMN_NAME);
+
+  ComplexSpinBox *parm_value = new ComplexSpinBox ();
+  layout->addWidget (parm_value, row, PCOLUMN_CPX);
 
 
   row++;
@@ -213,9 +223,7 @@ MainWindow::addParms()
     int drc = dialog.exec ();
     if (drc == QDialog::Accepted) {
       QString name = parm_name->text ();
-      double  real = parm_real->value ();
-      double  imag = parm_imag->value ();
-      std::complex<double> val (real, imag);
+      std::complex<double>  val = parm_value->getComplex ();
       if (!name.isEmpty ()) {
 	Param parm = Param (name, val);
 	parms.append (parm);
