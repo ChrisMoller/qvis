@@ -346,8 +346,10 @@ MainWindow::save()
 void
 MainWindow::newChart()
 {
+  ChartData *cd = new ChartData ();
+  charts.append (cd);
   int tcnt = tabs->count ();
-  ChartControls *tab1 = new ChartControls (tcnt, nullptr, this);
+  ChartControls *tab1 = new ChartControls (tcnt, cd, this);
   tabs->addTab (tab1, "New tab");
   tabs->setCurrentIndex (tcnt);  
 }

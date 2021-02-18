@@ -132,22 +132,24 @@ ChartWindow::handle_vector (qreal &y_max,
 void
 ChartWindow::eraseIndex (Index *idx)
 {
-  QString outString;
-  QString errString;
-  QString name = idx->getName ();
-  if (!name.isEmpty ()) {
-    QString cmd =
-      QString (")erase %1").arg (name);
-    AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+  if (idx) {
+    QString outString;
+    QString errString;
+    QString name = idx->getName ();
+    if (!name.isEmpty ()) {
+      QString cmd =
+	QString (")erase %1").arg (name);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+    }
   }
 }
 
 QVector<double> 
 ChartWindow::setIndex (Index *idx, int incr, QString title)
 {
+  QString name;
   QVector<double>vals;
-  QString name = idx->getName ();
-  if (!name.isEmpty ()) {
+  if (idx && !(name = idx->getName ()).isEmpty ()) {
     int i;
     double  min  = idx->getMin ();
     double  max  = idx->getMax ();
@@ -178,6 +180,7 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
 void
 ChartWindow::drawChart ()
 {
+  ChartData *cd = chartControls->getChartData ();
   int i;
   char loc[256];
   int incr = 16;  // fixme--make settable
@@ -189,7 +192,6 @@ ChartWindow::drawChart ()
 
   chartView->setChart (polar ? polarchart : chart);
 
-  ChartData *cd = chartControls->getChartData ();
   chartView->chart ()->setTheme (cd->getTheme ());
   if (!polar) {
     QString fn = chartControls->getChartData ()->getBGFile ();

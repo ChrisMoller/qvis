@@ -59,6 +59,7 @@ class ChartData
  public:
   ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
 	     Index *rix, Index *riz, QList<int> &rselected);
+  ChartData ();
 
   void 		showChart ();
   void	  	appendSelected (int i);

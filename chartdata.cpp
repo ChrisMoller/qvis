@@ -114,6 +114,16 @@ ChartData::clearBGFile ()
   backgroundFile.clear ();
 }
 
+ChartData::ChartData ()
+{
+  QString ixs = QString ("ix");
+  QString izs = QString ("iz");
+  ix = new Index (ixs, ixs, 0.0, 0.0);
+  iz = new Index (izs, izs, 0.0, 0.0);
+  chartWindow = nullptr;
+  theme = QChart::ChartThemeQt;
+}
+
 ChartData::ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
 	   Index *rix, Index *riz, QList<int> &rselected)
 {
