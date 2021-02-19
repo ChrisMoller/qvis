@@ -202,6 +202,9 @@ ChartWindow::drawChart ()
   bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
   bool spline = (Qt::Checked == chartControls->do_spline->checkState ());
 
+  chartControls->getMainWindow ()->setParams ();
+
+#if 0
   chartView->setChart (polar ? polarchart : chart);
 
   chartView->chart ()->setTheme (cd->getTheme ());
@@ -231,6 +234,7 @@ ChartWindow::drawChart ()
   }
   
   chartView->chart ()->setTitle (chartControls->chart_title->text ());
+#endif
 
   Index *ix = chartControls->getChartData ()->getXIndex ();
   QVector<double> xvals =
@@ -295,15 +299,52 @@ ChartWindow::drawChart ()
   }
   else {
     if (series_list.size () > 0) {
+      
+      chartView  = new QChartView ();
+      polarchart = new QPolarChart ();
+      chart      = new QChart ();
+      chartView->setChart (polar ? polarchart : chart);
+      chartView->chart ()->setDropShadowEnabled(true);
+      
       chartView->chart ()->removeAllSeries();
+
       for (i = 0; i < series_list.size (); i++) {
 	if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
 	chart_created = true;
       }
 
       if (chart_created) {
+	chartView->setRenderHint (QPainter::Antialiasing);
+	chartView->chart ()->setTitle (chartControls->chart_title->text ());
+
+	chartView->chart ()->setTheme (cd->getTheme ());
+	if (!polar) {
+	  QString fn = chartControls->getChartData ()->getBGFile ();
+	  if (!fn.isEmpty ()) {
+	    QImage gep (fn);
+	    chartView->setRenderHint(QPainter::Antialiasing, true);
+	    int width = static_cast<int>(chart->plotArea().width());
+	    int height = static_cast<int>(chart->plotArea().height());
+	    int ViewW = static_cast<int>(chartView->width());
+	    int ViewH = static_cast<int>(chartView->height());
+
+	    gep = gep.scaled(QSize(width, height));
+
+	    QImage translated(ViewW, ViewH, QImage::Format_ARGB32);
+	    translated.fill(Qt::white);
+	    QPainter painter(&translated);
+	    QPointF TopLeft = chart->plotArea().topLeft();
+	    painter.drawImage(TopLeft, gep);
+
+	    chart->setPlotAreaBackgroundBrush(translated);
+	    chart->setPlotAreaBackgroundVisible(true);
+	  }
+	  else 
+	    chart->setPlotAreaBackgroundVisible(false);
+	}
+
 	chartView->chart ()->createDefaultAxes ();
-    
+
 	qreal dy = 0.075 * (y_max - y_min);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setRange(y_min-dy, y_max+dy);  
@@ -313,10 +354,14 @@ ChartWindow::drawChart ()
 	  ->setTitleText (ix_label);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText (curve_label);
+
+	this->setCentralWidget (chartView);
+	this->show ();
       }
     }
   }
 
+  chartControls->getMainWindow ()->eraseParams ();
   eraseIndex (ix);
   eraseIndex (iz);
 }
@@ -378,48 +423,10 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   if (ww.isValid () && hh.isValid ()) 
     this->resize (ww.toInt (), hh.toInt ());
 
-  chart      = new QChart ();
-  polarchart = new QPolarChart ();
-  chartView  = new QChartView ();
-  chartView->setRenderHint (QPainter::Antialiasing);
-
-  chartControls->getMainWindow ()->setParams ();
   drawChart ();
-  chartControls->getMainWindow ()->eraseParams ();
-
-#if 0
-  chartView->chart ()->axes (Qt::Vertical).first()
-    ->setGridLineVisible (true);
-
-  chartView->chart ()->axes (Qt::Horizontal).first()
-    ->setGridLineVisible (true);
-
-  chartView->chart ()->axes (Qt::Vertical).first()
-    ->setGridLineVisible (true);
-
-  chartView->chart ()->axes (Qt::Horizontal).first()
-    ->setLineVisible (true);
-
-  chartView->chart ()->axes (Qt::Vertical).first()
-    ->setLineVisible (true);
-
-  chartView->chart ()->axes (Qt::Horizontal).first()
-    ->setGridLineColor (QColor ("black"));
-
-  chartView->chart ()->axes (Qt::Vertical).first()
-    ->setGridLineColor (QColor ("black"));
-#endif
-
-  chartView->chart ()->setDropShadowEnabled(true);
-
   
-  /******* end fake ***********/
   //  create_menuBar ();
-  
-  this->setCentralWidget (chartView);
-  this->show ();
 
-  //curves.push_back (curve);
 }
 
 ChartWindow::~ChartWindow()
