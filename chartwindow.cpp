@@ -21,6 +21,10 @@
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
+#include <QtDataVisualization/Q3DSurface>
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
 #include <QPolarChart>
 #include <QMenuBar>
 #include <complex>
@@ -31,6 +35,11 @@
 #include <apl/libapl.h>
 
 QT_CHARTS_USE_NAMESPACE
+using namespace QtDataVisualization;
+
+
+//class QSurfaceDataArray;
+//class QSurfaceDataProxy;
 
 class ChartWindow;
 #include "mainwindow.h"
@@ -46,6 +55,79 @@ ChartWindow::handle_surface (qreal &y_max,
 			     QVector<double> &zvals,
 			     Curve *curve)
 {
+  if (get_rank (res) != 2) {
+    // fixme msg popup
+    return nullptr;
+  }
+
+  int r,c,p;
+  int rows = get_axis (res, 0);
+  int cols = get_axis (res, 1);
+
+  QSurfaceDataArray *dataArray = new QSurfaceDataArray;
+  dataArray->reserve (rows);
+
+  for (p = 0, r = 0; r < rows; r++) {
+    QSurfaceDataRow *newRow = new QSurfaceDataRow (cols);
+    for (c = 0; c < cols; c++, p++) {
+      double yval = 0.0;
+      if (is_complex (res, p)) {
+	double rv = (double)get_real (res, p);
+	double iv = (double)get_imag (res, p);
+	switch (curve->getCpx ()) {
+	case CPX_REAL:
+	  yval = rv;
+	  break;
+	case CPX_IMAG:
+	  yval = iv;
+	  break;
+	case CPX_MAG:
+	  yval = abs (std::complex<double>(rv, iv));
+	  break;
+	case CPX_PHASE:
+	  yval = arg (std::complex<double>(rv, iv));
+	  break;
+	}
+      }
+      else yval = (double)get_real (res, p);
+      if (y_max < yval) y_max = yval;
+      if (y_min > yval) y_min = yval;
+      
+      (*newRow)[p].setPosition(QVector3D (xvals[c], zvals[r], yval));
+    }
+    *dataArray << newRow;
+  }
+
+  double xmin = 0.0, xmax = 0.0;
+  if (xvals[0] < xvals[xvals.size () - 1]) {
+    xmin = xvals[0];
+    xmax = xvals[xvals.size () - 1];
+  }
+  double zmin = 0.0, zmax = 0.0;
+  if (zvals[0] < zvals[zvals.size () - 1]) {
+    zmin = zvals[0];
+    zmax = zvals[zvals.size () - 1];
+  }
+    
+  QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
+  QSurface3DSeries  *series = new QSurface3DSeries(proxy);
+
+  series->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);
+  series->setFlatShadingEnabled(true);
+
+  Q3DSurface *graph = new Q3DSurface();
+  QWidget *container = QWidget::createWindowContainer(graph);
+  
+  graph->axisX()->setLabelFormat ("%.2f");
+  graph->axisZ()->setLabelFormat ("%.2f");
+  graph->axisX()->setRange (xmin, xmax);
+  graph->axisY()->setRange (0.0f, 2.0f);
+  graph->axisZ()->setRange (zmin, zmax);
+  graph->axisX()->setLabelAutoRotation (30);
+  graph->axisY()->setLabelAutoRotation (90);
+  graph->axisZ()->setLabelAutoRotation (30);
+  graph->addSeries (series);
+  
   return nullptr;
 }
 
@@ -54,7 +136,7 @@ ChartWindow::handle_vector (qreal &y_max,
 			    qreal &y_min,
 			    APL_value res,
 			    QVector<double> &xvals,
-			    QVector<double> &zvals,
+			    QVector<double> &zvals __attribute__((unused)),
 			    bool spline,
 			    Curve *curve)
 {

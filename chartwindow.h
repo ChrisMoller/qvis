@@ -23,15 +23,13 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
-#include <QtDataVisualization/qabstract3dseries.h>
-#include <QtDataVisualization/qabstractdataproxy.h>
-#include <QtDataVisualization/qsurfacedataproxy.h>
-#include <QtDataVisualization/qsurfacedataitem.h>
-
+#include <QtDataVisualization/Q3DSurface>
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
 
 QT_CHARTS_USE_NAMESPACE
-
-class QSurfaceDataArray;
+using namespace QtDataVisualization;
 
 #include "chartdata.h"
 #include "mainwindow.h"
