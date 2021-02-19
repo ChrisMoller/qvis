@@ -23,8 +23,15 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
 #include <QPolarChart>
+#include <QtDataVisualization/qabstract3dseries.h>
+#include <QtDataVisualization/qabstractdataproxy.h>
+#include <QtDataVisualization/qsurfacedataproxy.h>
+#include <QtDataVisualization/qsurfacedataitem.h>
+
 
 QT_CHARTS_USE_NAMESPACE
+
+class QSurfaceDataArray;
 
 #include "chartdata.h"
 #include "mainwindow.h"
@@ -91,6 +98,12 @@ private:
 				  QVector<double> &zvals,
 				  bool spline,
 				  Curve *curve);
+  QSurfaceDataArray *handle_surface (qreal &y_max,
+				     qreal &y_min,
+				     APL_value res,
+				     QVector<double> &xvals,
+				     QVector<double> &zvals,
+				     Curve *curve);
   QVector<double> setIndex (Index *idx, int incr, QString title);
   void	eraseIndex (Index *idx);
 #if 0

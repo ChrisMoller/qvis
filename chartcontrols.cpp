@@ -289,7 +289,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 
   col +=2; 
 
-  QPushButton *curvesButton = new QPushButton (QObject::tr ("Curves"));
+  QPushButton *curvesButton =
+    new QPushButton (QObject::tr ("Select curves"));
   layout->addWidget (curvesButton, row, col);
   QObject::connect (curvesButton, SIGNAL (clicked ()),
 		    this, SLOT (selectCurves ()));

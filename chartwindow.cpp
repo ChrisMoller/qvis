@@ -38,6 +38,17 @@ class ChartWindow;
 #include "chartwindow.h"
 #include "aplexec.h"
 
+QSurfaceDataArray *
+ChartWindow::handle_surface (qreal &y_max,
+			     qreal &y_min,
+			     APL_value res,
+			     QVector<double> &xvals,
+			     QVector<double> &zvals,
+			     Curve *curve)
+{
+  return nullptr;
+}
+
 QAbstractSeries *
 ChartWindow::handle_vector (qreal &y_max,
 			    qreal &y_min,
@@ -234,6 +245,7 @@ ChartWindow::drawChart ()
 
   QString curve_label;
   QList<QAbstractSeries *>series_list;
+  QList<QSurfaceDataArray *>surface_list;
   qreal y_max = -MAXDOUBLE;
   qreal y_min =  MAXDOUBLE;
   
@@ -246,7 +258,7 @@ ChartWindow::drawChart ()
       
     outString.clear ();
     errString.clear ();
-    AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);
+    AplExec::aplExec (APL_OP_EXEC, stmt, outString, errString);  // evaluate
     mw->update_screen (errString, outString);
 
     if (errString.isEmpty ()) {
@@ -255,11 +267,14 @@ ChartWindow::drawChart ()
       if (res) {
 	if (get_rank (res) == 2) {
 	  fprintf (stderr, "surface\n");
+	  QSurfaceDataArray *surface =
+	    handle_surface (y_max, y_min, res, xvals, zvals,  &curve);
+	  surface_list.append (surface);
 	}
 	else if (get_rank (res) == 1) {
-	  QAbstractSeries *frc =
+	  QAbstractSeries *series =
 	    handle_vector (y_max, y_min, res, xvals, zvals, spline, &curve);
-	  series_list.append (frc);
+	  series_list.append (series);
 	}
 	QString cmd =
 	  QString (")erase %1").arg (expvar);
@@ -269,25 +284,37 @@ ChartWindow::drawChart ()
       }
     }
   }
-  
-  chartView->chart ()->removeAllSeries();
-  for (i = 0; i < series_list.size (); i++) {
-    if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
-    chart_created = true;
-  }
 
-  if (chart_created) {
-    chartView->chart ()->createDefaultAxes ();
+  if (series_list.size () > 0 && surface_list.size () > 0) {
+    QMessageBox msgBox;
+    QString msg =
+      QString ("Sorry, can't mix 2D and 3d plots.");
+    msgBox.setText (msg);
+    msgBox.setIcon (QMessageBox::Warning);
+    msgBox.exec();
+  }
+  else {
+    if (series_list.size () > 0) {
+      chartView->chart ()->removeAllSeries();
+      for (i = 0; i < series_list.size (); i++) {
+	if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
+	chart_created = true;
+      }
+
+      if (chart_created) {
+	chartView->chart ()->createDefaultAxes ();
     
-    qreal dy = 0.075 * (y_max - y_min);
-    chartView->chart ()->axes (Qt::Vertical).first()
-      ->setRange(y_min-dy, y_max+dy);  
+	qreal dy = 0.075 * (y_max - y_min);
+	chartView->chart ()->axes (Qt::Vertical).first()
+	  ->setRange(y_min-dy, y_max+dy);  
   
-    QString ix_label = ix->getLabel ();
-    chartView->chart ()->axes (Qt::Horizontal).first()
-      ->setTitleText (ix_label);
-    chartView->chart ()->axes (Qt::Vertical).first()
-      ->setTitleText (curve_label);
+	QString ix_label = ix->getLabel ();
+	chartView->chart ()->axes (Qt::Horizontal).first()
+	  ->setTitleText (ix_label);
+	chartView->chart ()->axes (Qt::Vertical).first()
+	  ->setTitleText (curve_label);
+      }
+    }
   }
 
   eraseIndex (ix);

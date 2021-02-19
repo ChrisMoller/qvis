@@ -127,7 +127,7 @@ MainWindow::setCurves (int which)
   
   row++;
   
-  QLabel lblp ("Points");
+  QLabel lblp ("Show points");
   layout->addWidget (&lblp, row, 0);
 
   bool active = curves[which].getPointsVisible ();
@@ -141,7 +141,7 @@ MainWindow::setCurves (int which)
   
   row++;
   
-  QLabel lblpl ("Point Labels");
+  QLabel lblpl ("Show point Labels");
   layout->addWidget (&lblpl, row, 0);
 
   bool activel = curves[which].getPointLabelsVisible ();
