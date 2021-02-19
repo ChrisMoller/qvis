@@ -204,38 +204,6 @@ ChartWindow::drawChart ()
 
   chartControls->getMainWindow ()->setParams ();
 
-#if 0
-  chartView->setChart (polar ? polarchart : chart);
-
-  chartView->chart ()->setTheme (cd->getTheme ());
-  if (!polar) {
-    QString fn = chartControls->getChartData ()->getBGFile ();
-    if (!fn.isEmpty ()) {
-      QImage gep (fn);
-      chartView->setRenderHint(QPainter::Antialiasing, true);
-      int width = static_cast<int>(chart->plotArea().width());
-      int height = static_cast<int>(chart->plotArea().height());
-      int ViewW = static_cast<int>(chartView->width());
-      int ViewH = static_cast<int>(chartView->height());
-
-      gep = gep.scaled(QSize(width, height));
-
-      QImage translated(ViewW, ViewH, QImage::Format_ARGB32);
-      translated.fill(Qt::white);
-      QPainter painter(&translated);
-      QPointF TopLeft = chart->plotArea().topLeft();
-      painter.drawImage(TopLeft, gep);
-
-      chart->setPlotAreaBackgroundBrush(translated);
-      chart->setPlotAreaBackgroundVisible(true);
-    }
-    else 
-      chart->setPlotAreaBackgroundVisible(false);
-  }
-  
-  chartView->chart ()->setTitle (chartControls->chart_title->text ());
-#endif
-
   Index *ix = chartControls->getChartData ()->getXIndex ();
   QVector<double> xvals =
     setIndex (ix, incr, chartControls->chart_title->text ());
@@ -305,6 +273,7 @@ ChartWindow::drawChart ()
       chart      = new QChart ();
       chartView->setChart (polar ? polarchart : chart);
       chartView->chart ()->setDropShadowEnabled(true);
+      chartView->chart ()->setTheme (cd->getTheme ());
       
       chartView->chart ()->removeAllSeries();
 
@@ -317,7 +286,6 @@ ChartWindow::drawChart ()
 	chartView->setRenderHint (QPainter::Antialiasing);
 	chartView->chart ()->setTitle (chartControls->chart_title->text ());
 
-	chartView->chart ()->setTheme (cd->getTheme ());
 	if (!polar) {
 	  QString fn = chartControls->getChartData ()->getBGFile ();
 	  if (!fn.isEmpty ()) {
