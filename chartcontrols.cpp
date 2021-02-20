@@ -461,6 +461,20 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	  {chartData->setUpdate (true);
 	   mainWindow->notifySelective (false); });
 
+  QSpinBox *incrBox = new QSpinBox ();
+  incrBox->setRange (16, 128);
+  incrBox->setValue ( mainWindow->getIncr ());
+  layout->addWidget (incrBox, row, col++);
+  connect(incrBox,
+	  QOverload<int>::of(&QSpinBox::valueChanged),
+	  this,
+	  [=](int val)
+	  {
+	    mainWindow->setIncr (val);
+	    chartData->setUpdate (true);
+	    mainWindow->notifySelective (false);
+	  });
+
   setLayout (layout);
 
   chartWindow = new ChartWindow (this);

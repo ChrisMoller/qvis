@@ -254,7 +254,6 @@ ChartWindow::drawChart ()
   ChartData *cd = chartControls->getChartData ();
   int i;
   char loc[256];
-  int incr = 16;  // fixme--make settable
   MainWindow *mw = chartControls->getMainWindow ();
   QString outString;
   QString errString;
@@ -265,11 +264,11 @@ ChartWindow::drawChart ()
 
   Index *ix = chartControls->getChartData ()->getXIndex ();
   QVector<double> xvals =
-    setIndex (ix, incr, chartControls->chart_title->text ());
+    setIndex (ix, mw->getIncr (), chartControls->chart_title->text ());
   
   Index *iz = chartControls->getChartData ()->getZIndex ();
   QVector<double> zvals =
-    setIndex (iz, incr, chartControls->chart_title->text ());
+    setIndex (iz, mw->getIncr (), chartControls->chart_title->text ());
   
   QList<int> sels =  chartControls->getChartData ()->getSelected ();
   bool chart_created = false;

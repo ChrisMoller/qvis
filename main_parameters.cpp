@@ -49,6 +49,12 @@ MainWindow::getIncr ()
 }
 
 void
+MainWindow::setIncr (int val)
+{
+  incr = val;
+}
+
+void
 MainWindow::eraseParams ()
 {
   int i;

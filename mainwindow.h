@@ -134,6 +134,7 @@ public:
   void 		 notifySelective (bool all);
   void           update_screen (QString &errString, QString &outString);
   int 		 getIncr ();
+  void 		 setIncr (int val);
   void		 setParams ();
   void		 eraseParams ();
   void		 updateAll ();
