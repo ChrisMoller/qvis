@@ -396,7 +396,8 @@ ChartWindow::drawChart ()
       QSurface3DSeries  *series = new QSurface3DSeries(proxy);
       proxy->resetArray (surface_list[0]);
 
-      series->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);
+      //DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
+      series->setDrawMode(QSurface3DSeries::DrawSurface);
       series->setFlatShadingEnabled(true);
 
       Q3DSurface *graph = new Q3DSurface();

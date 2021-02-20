@@ -26,7 +26,7 @@
       </curve>
     </curves>
     <charts>
-      <chart spline="." polar="." theme=".'>
+      <chart spline="." polar="." incr='.' theme=".'>
         <title>.</title>
         <ix>
           <name>.</name>
@@ -161,6 +161,8 @@ MainWindow::writeVis (QString &fileName)
 				     : xml_tags[XML_false].tag));
       stream.writeAttribute(xml_tags[XML_theme].tag,
 			    QString::number (cd->getTheme ()));
+      stream.writeAttribute(xml_tags[XML_incr].tag,
+			    QString::number (incr));
 
       stream.writeTextElement(xml_tags[XML_title].tag,
 			      cc->chart_title->text ());
@@ -503,6 +505,7 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	    QStringRef themeref = attrs.value (xml_tags[XML_theme].tag);
 	    int theme = themeref.isEmpty ()
 	      ? QChart::ChartThemeLight : themeref.toInt ();
+	    incr  = ((attrs.value (xml_tags[XML_incr].tag))).toInt ();
 	    parseChart ((0 == spline.compare (xml_tags[XML_true].tag)),
 			(0 == polar.compare (xml_tags[XML_true].tag)),
 			theme, stream);
