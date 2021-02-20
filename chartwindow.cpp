@@ -38,9 +38,6 @@ QT_CHARTS_USE_NAMESPACE
 using namespace QtDataVisualization;
 
 
-//class QSurfaceDataArray;
-//class QSurfaceDataProxy;
-
 class ChartWindow;
 #include "mainwindow.h"
 #include "chartcontrols.h"
@@ -48,8 +45,9 @@ class ChartWindow;
 #include "aplexec.h"
 
 QSurfaceDataArray *
-ChartWindow::handle_surface (qreal &y_max,
-			     qreal &y_min,
+ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
+			     qreal &y_max, qreal &y_min,
+			     qreal &z_max, qreal &z_min,
 			     APL_value res,
 			     QVector<double> &xvals,
 			     QVector<double> &zvals,
@@ -60,7 +58,7 @@ ChartWindow::handle_surface (qreal &y_max,
     return nullptr;
   }
 
-  int r,c,p;
+  int r, c, p;
   int rows = get_axis (res, 0);
   int cols = get_axis (res, 1);
 
@@ -93,42 +91,21 @@ ChartWindow::handle_surface (qreal &y_max,
       if (y_max < yval) y_max = yval;
       if (y_min > yval) y_min = yval;
       
-      (*newRow)[p].setPosition(QVector3D (xvals[c], zvals[r], yval));
+      (*newRow)[c].setPosition(QVector3D (xvals[c], yval, zvals[r]));
     }
     *dataArray << newRow;
   }
 
-  double xmin = 0.0, xmax = 0.0;
   if (xvals[0] < xvals[xvals.size () - 1]) {
-    xmin = xvals[0];
-    xmax = xvals[xvals.size () - 1];
+    x_min = xvals[0];
+    x_max = xvals[xvals.size () - 1];
   }
-  double zmin = 0.0, zmax = 0.0;
   if (zvals[0] < zvals[zvals.size () - 1]) {
-    zmin = zvals[0];
-    zmax = zvals[zvals.size () - 1];
+    z_min = zvals[0];
+    z_max = zvals[zvals.size () - 1];
   }
-    
-  QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
-  QSurface3DSeries  *series = new QSurface3DSeries(proxy);
-
-  series->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);
-  series->setFlatShadingEnabled(true);
-
-  Q3DSurface *graph = new Q3DSurface();
-  QWidget *container = QWidget::createWindowContainer(graph);
   
-  graph->axisX()->setLabelFormat ("%.2f");
-  graph->axisZ()->setLabelFormat ("%.2f");
-  graph->axisX()->setRange (xmin, xmax);
-  graph->axisY()->setRange (0.0f, 2.0f);
-  graph->axisZ()->setRange (zmin, zmax);
-  graph->axisX()->setLabelAutoRotation (30);
-  graph->axisY()->setLabelAutoRotation (90);
-  graph->axisZ()->setLabelAutoRotation (30);
-  graph->addSeries (series);
-  
-  return nullptr;
+  return dataArray;
 }
 
 QAbstractSeries *
@@ -300,8 +277,12 @@ ChartWindow::drawChart ()
   QString curve_label;
   QList<QAbstractSeries *>series_list;
   QList<QSurfaceDataArray *>surface_list;
+  qreal x_max = -MAXDOUBLE;
+  qreal x_min =  MAXDOUBLE;
   qreal y_max = -MAXDOUBLE;
   qreal y_min =  MAXDOUBLE;
+  qreal z_max = -MAXDOUBLE;
+  qreal z_min =  MAXDOUBLE;
   
 	
   for (i =  0; i < sels.size (); i++) {
@@ -320,9 +301,11 @@ ChartWindow::drawChart ()
       APL_value res = get_var_value (expvar, loc);
       if (res) {
 	if (get_rank (res) == 2) {
-	  fprintf (stderr, "surface\n");
 	  QSurfaceDataArray *surface =
-	    handle_surface (y_max, y_min, res, xvals, zvals,  &curve);
+	    handle_surface (x_max, x_min,
+			    y_max, y_min,
+			    z_max, z_min,
+			    res, xvals, zvals,  &curve);
 	  surface_list.append (surface);
 	}
 	else if (get_rank (res) == 1) {
@@ -408,6 +391,31 @@ ChartWindow::drawChart ()
 	this->setCentralWidget (chartView);
 	this->show ();
       }
+    }
+    if (surface_list.size () > 0) {
+      QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
+      QSurface3DSeries  *series = new QSurface3DSeries(proxy);
+      proxy->resetArray (surface_list[0]);
+
+      series->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);
+      series->setFlatShadingEnabled(true);
+
+      Q3DSurface *graph = new Q3DSurface();
+  
+      graph->axisX()->setLabelFormat ("%.2f");
+      graph->axisZ()->setLabelFormat ("%.2f");
+      graph->axisX()->setRange (x_min, x_max);
+      graph->axisY()->setRange (0.0f, 2.0f);
+      graph->axisZ()->setRange (z_min, z_max);
+      graph->axisX()->setLabelAutoRotation (30);
+      graph->axisY()->setLabelAutoRotation (90);
+      graph->axisZ()->setLabelAutoRotation (30);
+      
+      graph->addSeries (series);
+
+      QWidget *container = QWidget::createWindowContainer(graph);
+      this->setCentralWidget (container);
+      this->show ();
     }
   }
 
