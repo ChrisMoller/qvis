@@ -461,11 +461,32 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	  {chartData->setUpdate (true);
 	   mainWindow->notifySelective (false); });
 
+#if 1
+  QDoubleSpinBox *incrBox = new QDoubleSpinBox ();
+  incrBox->setDecimals (0);
+  incrBox->setRange (16.0, 128.0);
+  incrBox->setValue ( (double)mainWindow->getIncr ());
+  layout->addWidget (incrBox, row, col++);
+  connect (incrBox,
+	  QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+	  this,
+	  [=](double val)
+	  {
+	    mainWindow->setIncr ((int)val);
+	    chartData->setUpdate (true);
+	    mainWindow->notifySelective (false);
+	  });
+#else					// buttons dont show up
   QSpinBox *incrBox = new QSpinBox ();
+#if 0
+  incrBox->setStyleSheet("QSpinBox::up-arrow {  width: 7px;  height: 7px; }"
+                     "QSpinBox::down-arrow {  width: 10px;  height: 7px; }");
+  incrBox->setButtonSymbols (QAbstractSpinBox::UpDownArrows);
+#endif
   incrBox->setRange (16, 128);
   incrBox->setValue ( mainWindow->getIncr ());
   layout->addWidget (incrBox, row, col++);
-  connect(incrBox,
+  connect (incrBox,
 	  QOverload<int>::of(&QSpinBox::valueChanged),
 	  this,
 	  [=](int val)
@@ -474,6 +495,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	    chartData->setUpdate (true);
 	    mainWindow->notifySelective (false);
 	  });
+#endif
 
   setLayout (layout);
 
