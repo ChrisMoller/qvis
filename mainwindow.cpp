@@ -66,6 +66,7 @@ static const QColor black = QColor (0, 0, 0);
 // #define DEFAULT_EDITOR "gvim \"+set number\""
 #define DEFAULT_EDITOR "gvim -c \"set nu\""
 
+#define APL_VARIABLE "([⍙∆a-z][⍙∆_a-z0-9]*)"
 
 void
 MainWindow::notifySelective (bool all)
@@ -722,9 +723,25 @@ MainWindow::process_line(QString text)
     }
     return;
   }
+  else if (text.startsWith (QString ("∇")) &&
+	   text.endsWith (QString ("∇"))) {
+    aplwin->append ("      " + text);
+    QRegularExpression aplsep (APL_VARIABLE);
+    aplsep.setPatternOptions (QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatchIterator toks = aplsep.globalMatch (text);
+    if (toks.hasNext ()) {
+      QRegularExpressionMatch match = toks.next();
+      QString tok = match.captured(1);
+      QString cmd = QString ("⎕cr '%1'").arg(tok);
+      AplExec::aplExec (APL_OP_EXEC, cmd, outString, errString);
+      update_screen (errString, outString);
+    }
+    return;
+  }
   
   aplwin->append ("      " + text);
-
+    
+#if 1
   LIBAPL_error rc = AplExec::aplExec (APL_OP_EXEC, text,outString, errString);
 
   if (rc != LAE_NO_ERROR) {
@@ -736,6 +753,7 @@ MainWindow::process_line(QString text)
       aplwin->append (errString);
     aplwin->setTextColor (black);
   }
+#endif
   
   if (outString.size () > 0)
     aplwin->append (outString);
@@ -802,7 +820,6 @@ AplWinFilter::eventFilter(QObject *obj, QEvent *event)
   return QObject::eventFilter(obj, event);
 }
 
-#define APL_VARIABLE "([∆a-z][∆_a-z0-9]*)"
 
 static void
 lineKey (MainWindow  *mainwin, int dir)
@@ -1036,7 +1053,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
 			QString &lp, QWidget *parent)
   : QMainWindow(parent)
 {
-  incr = 16;		// fixme, make settable
+  incr = 16;
   QSettings settings;
   editor = settings.value (SETTINGS_EDITOR).toString ();
   if (editor.isEmpty ()) 
@@ -1074,6 +1091,7 @@ MainWindow::MainWindow (QString &msgs, QStringList &args,
   buildMenu (msgs);
 
   if (args.empty ()) {
+    this->resize (640, 480);
 #if 0
     ChartControls *tab1 = new ChartControls (0, this);
     tab1->setUseState (false);

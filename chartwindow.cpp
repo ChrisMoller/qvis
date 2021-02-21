@@ -31,6 +31,7 @@
 #include <values.h>
 #include <iconv.h>
 
+#include <GL/gl.h>
 
 #include <apl/libapl.h>
 
@@ -398,23 +399,56 @@ ChartWindow::drawChart ()
 
       //DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
       series->setDrawMode(QSurface3DSeries::DrawSurface);
-      series->setFlatShadingEnabled(true);
+      //      series->setFlatShadingEnabled(true);
 
+      if (graph) {
+	graph->close ();
+	delete graph;
+      }
       Q3DSurface *graph = new Q3DSurface();
+#if 0
+      graph->setFlags (graph->flags() ^ Qt::FramelessWindowHint);
+      graph->setMinimumSize (QSize (1024, 1024));
+      graph->setMaximumSize (QSize (1024, 1024));
+      graph->setGeometry (0,0, 1024, 1024);
+      glViewport ((GLint) 0, (GLint) 0,
+		  (GLsizei)1024, (GLsizei)1024);
+#endif
   
       graph->axisX()->setLabelFormat ("%.2f");
       graph->axisZ()->setLabelFormat ("%.2f");
-      graph->axisX()->setRange (x_min, x_max);
-      graph->axisY()->setRange (0.0f, 2.0f);
-      graph->axisZ()->setRange (z_min, z_max);
-      graph->axisX()->setLabelAutoRotation (30);
-      graph->axisY()->setLabelAutoRotation (90);
-      graph->axisZ()->setLabelAutoRotation (30);
+#if 0
+      graph->axisX()->setRange ((float)x_min, (float)x_max);
+      graph->axisY()->setRange ((float)y_min, (float)y_max);
+      graph->axisZ()->setRange ((float)z_min, (float)z_max);
+#endif
+      graph->axisX()->setLabelAutoRotation (60);
+      graph->axisY()->setLabelAutoRotation (45);
+      graph->axisZ()->setLabelAutoRotation (60);
+      
+      glScalef (40.0f, 40.0f, 40.0f);
       
       graph->addSeries (series);
 
       QWidget *container = QWidget::createWindowContainer(graph);
       this->setCentralWidget (container);
+#if 0
+      graph->resize (1024, 1024);
+      QSize sz = container->size ();
+      graph->setMargin ((qreal)0.0);
+      fprintf (stderr, "size %d %d %g\n",
+	       sz.width (), sz.height (),
+	       (double)graph->margin ()
+	       );
+      QRect    rect = graph->frameGeometry ();
+      QMargins marg = graph->frameMargins ();
+      QPoint   posn = graph->framePosition ();
+      fprintf (stderr, "rect b: %d t: %d l: %d r: %d\n",
+	       rect.bottom (), rect.top (), rect.left (), rect.right ());
+      fprintf (stderr, "marg b: %d t: %d l: %d r: %d\n",
+	       marg.bottom (), marg.top (), marg.left (), marg.right ());
+      fprintf (stderr, "posn x: %d y: %d\n", posn.x (), posn.y ());
+#endif
       this->show ();
     }
   }
@@ -475,6 +509,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   : QMainWindow(parent)
 {
   chartControls = parent;
+  graph = nullptr;
 
   QVariant ww = settings.value (SETTINGS_WIDTH);
   QVariant hh = settings.value (SETTINGS_HEIGHT);
