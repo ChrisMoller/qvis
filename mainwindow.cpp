@@ -664,6 +664,10 @@ MainWindow::process_line(QString text)
 	fn = QString ("%1/%2%3.apl").
 	  arg (tempdir.path ()).arg (LAMBDA_HEADER).arg (text);
       else if ((list.size () != 0) && (list.size () != 2)){
+	QMessageBox msgBox (QMessageBox::Warning,
+			    QString ("Invalid lambda"),
+    QString ("A lambda must consist of exactly one expession on one line."));
+	msgBox.exec();
 	// fixme invalid lambda
 	return;
       }
@@ -678,8 +682,12 @@ MainWindow::process_line(QString text)
 	  out << text;			// boilerplate fcn header
       }
       else {
-	if (isLambda && !list.isEmpty ())
-	  out << list[1];
+	if (isLambda && !list.isEmpty ()) {
+	  QString fn = list[1];
+	  fn = fn.trimmed ();
+	  fn.remove (0, 2);
+	  out << fn;
+	}
 	else if (!outString.isEmpty ())
 	  out << outString;
       }	
