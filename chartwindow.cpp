@@ -407,7 +407,22 @@ ChartWindow::drawChart ()
 	delete graph;
       }
       Q3DSurface *graph = new Q3DSurface();
-  
+
+      fprintf (stderr, "ax = %p\n", graph->axisX ());
+      fprintf (stderr, "ay = %p\n", graph->axisY ());
+      fprintf (stderr, "az = %p\n", graph->axisZ ());
+#if 0
+      QList<QValue3DAxis *>axes = graph->axes ();
+      int aa;
+      if (axes.size () > 0) {
+	for (aa = 0; aa < axes.size (); aa++) {
+	  QValue3DAxis *axis = axes[aa];
+	  fprintf (stderr, "ax ti = \"%s\"\n", toCString (axis->title ()));
+	}
+      }
+      else fprintf (stderr, "no axes\n");
+#endif
+
       graph->axisX()->setLabelFormat ("%.2f");
       graph->axisZ()->setLabelFormat ("%.2f");
       graph->axisX()->setRange ((float)x_min, (float)x_max);
@@ -422,10 +437,13 @@ ChartWindow::drawChart ()
       QWidget *container = QWidget::createWindowContainer(graph);
 
       Q3DScene *scene = graph->scene ();
+      // https://doc.qt.io/qt-5/q3dcamera-members.html
       // see also activeLight, etc
       Q3DCamera *camera = scene->activeCamera ();
       camera->setZoomLevel (125.0f);
 
+      camera->setWrapXRotation (true);
+      camera->setWrapYRotation (true);
       camera->setXRotation (30);
       camera->setYRotation (30);
 
