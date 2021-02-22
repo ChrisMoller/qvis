@@ -23,6 +23,9 @@
 #include <QtCharts/QLineSeries>
 #include <QtMath>
 #include <QFile>
+//#include <QOpenGLFunctions>
+//#include <QOpenGLContext>
+
 
 #include <apl/libapl.h>
 
@@ -60,8 +63,10 @@ main (int argc, char *argv[])
     pfile.close ();
   }
   
-
+  // ./Qt-5.15.1/activeqt/opengl/glbox.cpp
+  
   init_libapl ("apl", 0);
+  //  QOpenGLFunctions::initializeOpenGLFunctions();
 
   QApplication app (argc, argv);
   QCoreApplication::setOrganizationName("MSDS");

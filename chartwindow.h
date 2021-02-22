@@ -27,6 +27,9 @@
 #include <QtDataVisualization/QSurfaceDataProxy>
 #include <QtDataVisualization/QHeightMapSurfaceDataProxy>
 #include <QtDataVisualization/QSurface3DSeries>
+#include <QOpenGLFunctions>
+
+// https://doc.qt.io/qt-5/qopenglfunctions.html#details
 
 QT_CHARTS_USE_NAMESPACE
 using namespace QtDataVisualization;
@@ -58,7 +61,7 @@ private:
   QChartView  *watched;
 };
 
-class ChartWindow : public QMainWindow
+class ChartWindow : public QMainWindow  //, protected QOpenGLFunctions
 {
   Q_OBJECT
   
