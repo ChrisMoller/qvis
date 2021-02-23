@@ -287,9 +287,11 @@ ChartWindow::drawChart ()
   qreal z_max = -MAXDOUBLE;
   qreal z_min =  MAXDOUBLE;
   
-	
+
+  QList<Curve> curve_list;
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
+    curve_list.append (curve);
     curve_label = curve.getLabel ();		// set to last curve
     QString fcn = curve.getFunction ();
     QString stmt = QString ("%1 ← %2").arg (expvar).arg (fcn);
@@ -395,19 +397,28 @@ ChartWindow::drawChart ()
       }
     }
     if (surface_list.size () > 0) {
-      QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
-      QSurface3DSeries  *series = new QSurface3DSeries(proxy);
-      proxy->resetArray (surface_list[0]);
 
-      //DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
-      series->setDrawMode(QSurface3DSeries::DrawSurface);
-      //      series->setFlatShadingEnabled(true);
-
+      fprintf (stderr, "nr surfaces = %d\n", surface_list.size ());
       if (graph) {
 	graph->close ();
-	delete graph;
+	//delete graph;
       }
       Q3DSurface *graph = new Q3DSurface();
+
+      for (i = 0; i < surface_list.size (); i++) {
+	fprintf (stderr, "doing sirface %d\n", i);
+	QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
+	QSurface3DSeries  *series = new QSurface3DSeries(proxy);
+	Curve curve = curve_list[i];
+	series->setBaseColor (curve.getColour ());
+	proxy->resetArray (surface_list[i]);
+
+	//DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
+	series->setDrawMode(QSurface3DSeries::DrawSurface);
+	//      series->setFlatShadingEnabled(true);
+
+	graph->addSeries (series);
+      }
 
       fprintf (stderr, "ax = %p\n", graph->axisX ());
       fprintf (stderr, "ay = %p\n", graph->axisY ());
@@ -433,7 +444,6 @@ ChartWindow::drawChart ()
       graph->axisY()->setLabelAutoRotation (45);
       graph->axisZ()->setLabelAutoRotation (60);
 
-      graph->addSeries (series);
 
       QWidget *container = QWidget::createWindowContainer(graph);
 
