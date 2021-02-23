@@ -110,7 +110,6 @@ private:
   void	eraseIndex (Index *idx);
   Q3DSurface *graph;
   Q3DCamera *camera;
-  Qt::KeyboardModifiers keymod;
 #if 0
   void create_menuBar ();
   QComboBox 	*themebox;

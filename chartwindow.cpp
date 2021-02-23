@@ -390,12 +390,8 @@ ChartWindow::drawChart ()
 	  ->setTitleText (ix_label);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText (curve_label);
-#if 1
+	
 	widg = chartView;
-#else
-	this->setCentralWidget (chartView);
-	this->show ();
-#endif
       }
     }
     if (surface_list.size () > 0) {
@@ -447,28 +443,15 @@ ChartWindow::drawChart ()
       camera = scene->activeCamera ();
       camera->setZoomLevel (125.0f);
 
-      //      camera->setWrapXRotation (true);
-      //      camera->setWrapYRotation (true);
       camera->setXRotation (0.0f);
       camera->setYRotation (0.0f);
 
-#if 1
       container->setMinimumSize(640, 512);
-#else
-      QSize screenSize = graph->screen()->size();
-      container->setMinimumSize(QSize(screenSize.width() / 2,
-				      screenSize.height() / 1.5));
-      container->setMaximumSize(screenSize);
-#endif
       container->setSizePolicy(QSizePolicy::Expanding,
 			       QSizePolicy::Expanding);
       container->setFocusPolicy(Qt::StrongFocus);
-#if 1
+
       widg = container;
-#else
-      this->setCentralWidget (container);
-      this->show ();
-#endif
     }
   }
 
@@ -547,6 +530,8 @@ Qt::GroupSwitchModifier	0x40000000	X11 only (unless activated on
                                         is pressed.
 #endif
 
+static Qt::KeyboardModifiers keymod = Qt::NoModifier;
+
 void
 QWidget::keyPressEvent(QKeyEvent *event)
 {
@@ -557,6 +542,7 @@ void
 QWidget::keyReleaseEvent(QKeyEvent *event)
 {
   keymod =  event->modifiers();
+  fprintf (stderr, "km = %d\n", (int)keymod);
 }
 
 ChartWindow::ChartWindow  (ChartControls *parent)
@@ -571,28 +557,31 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   if (ww.isValid () && hh.isValid ()) 
     this->resize (ww.toInt (), hh.toInt ());
 #endif
-  keymod = Qt::NoModifier;
   
   QGroupBox   *outerGroupBox = new QGroupBox ();
   QGridLayout *outerLayout = new QGridLayout ();
   outerGroupBox->setLayout (outerLayout);
 
   QSlider *hslider = new QSlider (Qt::Horizontal);
-  hslider->setMinimum (-180);
-  hslider->setMaximum (180);
+  hslider->setMinimum (-1000);
+  hslider->setMaximum (1000);
   hslider->setValue(0);
   connect (hslider, &QAbstractSlider::valueChanged, this,
 	   [=](int value) {
-	     camera->setXRotation ((float)value);
+	     double scale = ((double)value) / 1000;
+	     if (keymod == Qt::NoModifier) 
+	       camera->setXRotation ((float)(180 * scale));
 	   });
 
   QSlider *vslider = new QSlider (Qt::Vertical);
-  vslider->setMinimum (-180);
-  vslider->setMaximum (180);
+  vslider->setMinimum (-1000);
+  vslider->setMaximum (1000);
   vslider->setValue(0);
   connect (vslider, &QAbstractSlider::valueChanged, this,
 	   [=](int value) {
-	     camera->setYRotation ((float)value);
+	     double scale = ((double)value) / 1000;
+	     if (keymod == Qt::NoModifier) 
+	       camera->setYRotation ((float)(180 * scale));
 	   });
 
   outerLayout->addWidget (hslider, 0, 0);
