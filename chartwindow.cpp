@@ -526,6 +526,39 @@ ChartWindow::create_menuBar ()
 }
 #endif
 
+#if 0
+          https://doc.qt.io/qt-5/qkeyevent.html
+
+Qt::NoModifier		0x00000000	No modifier key is pressed.
+
+Qt::ShiftModifier	0x02000000	A Shift key on the keyboard is pressed.
+
+Qt::ControlModifier	0x04000000	A Ctrl key on the keyboard is pressed.
+
+Qt::AltModifier		0x08000000	An Alt key on the keyboard is pressed.
+
+Qt::MetaModifier	0x10000000	A Meta key on the keyboard is pressed.
+
+Qt::KeypadModifier	0x20000000	A keypad button is pressed.
+
+Qt::GroupSwitchModifier	0x40000000	X11 only (unless activated on
+					Windows by a command line argument).
+                                        A Mode_switch key on the keyboard
+                                        is pressed.
+#endif
+
+void
+QWidget::keyPressEvent(QKeyEvent *event)
+{
+  keymod =  event->modifiers();
+}
+
+void
+QWidget::keyReleaseEvent(QKeyEvent *event)
+{
+  keymod =  event->modifiers();
+}
+
 ChartWindow::ChartWindow  (ChartControls *parent)
   : QMainWindow(parent)
 {
@@ -538,7 +571,8 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   if (ww.isValid () && hh.isValid ()) 
     this->resize (ww.toInt (), hh.toInt ());
 #endif
-
+  keymod = Qt::NoModifier;
+  
   QGroupBox   *outerGroupBox = new QGroupBox ();
   QGridLayout *outerLayout = new QGridLayout ();
   outerGroupBox->setLayout (outerLayout);
