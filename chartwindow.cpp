@@ -249,10 +249,12 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
   }
   return vals;
 }
+  
 
-void
+QWidget *
 ChartWindow::drawChart ()
 {
+  QWidget *widg = nullptr;
   ChartData *cd = chartControls->getChartData ();
   int i;
   char loc[256];
@@ -388,9 +390,12 @@ ChartWindow::drawChart ()
 	  ->setTitleText (ix_label);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText (curve_label);
-
+#if 1
+	widg = chartView;
+#else
 	this->setCentralWidget (chartView);
 	this->show ();
+#endif
       }
     }
     if (surface_list.size () > 0) {
@@ -439,13 +444,13 @@ ChartWindow::drawChart ()
       Q3DScene *scene = graph->scene ();
       // https://doc.qt.io/qt-5/q3dcamera-members.html
       // see also activeLight, etc
-      Q3DCamera *camera = scene->activeCamera ();
+      camera = scene->activeCamera ();
       camera->setZoomLevel (125.0f);
 
-      camera->setWrapXRotation (true);
-      camera->setWrapYRotation (true);
-      camera->setXRotation (30);
-      camera->setYRotation (30);
+      //      camera->setWrapXRotation (true);
+      //      camera->setWrapYRotation (true);
+      camera->setXRotation (0.0f);
+      camera->setYRotation (0.0f);
 
 #if 1
       container->setMinimumSize(640, 512);
@@ -458,15 +463,20 @@ ChartWindow::drawChart ()
       container->setSizePolicy(QSizePolicy::Expanding,
 			       QSizePolicy::Expanding);
       container->setFocusPolicy(Qt::StrongFocus);
-
+#if 1
+      widg = container;
+#else
       this->setCentralWidget (container);
       this->show ();
+#endif
     }
   }
 
   chartControls->getMainWindow ()->eraseParams ();
   eraseIndex (ix);
   eraseIndex (iz);
+
+  return widg;
 }
 
 void
@@ -522,12 +532,45 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   chartControls = parent;
   graph = nullptr;
 
+#if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);
   QVariant hh = settings.value (SETTINGS_HEIGHT);
   if (ww.isValid () && hh.isValid ()) 
     this->resize (ww.toInt (), hh.toInt ());
+#endif
 
-  drawChart ();
+  QGroupBox   *outerGroupBox = new QGroupBox ();
+  QGridLayout *outerLayout = new QGridLayout ();
+  outerGroupBox->setLayout (outerLayout);
+
+  QSlider *hslider = new QSlider (Qt::Horizontal);
+  hslider->setMinimum (-180);
+  hslider->setMaximum (180);
+  hslider->setValue(0);
+  connect (hslider, &QAbstractSlider::valueChanged, this,
+	   [=](int value) {
+	     camera->setXRotation ((float)value);
+	   });
+
+  QSlider *vslider = new QSlider (Qt::Vertical);
+  vslider->setMinimum (-180);
+  vslider->setMaximum (180);
+  vslider->setValue(0);
+  connect (vslider, &QAbstractSlider::valueChanged, this,
+	   [=](int value) {
+	     camera->setYRotation ((float)value);
+	   });
+
+  outerLayout->addWidget (hslider, 0, 0);
+  outerLayout->addWidget (vslider, 1, 1);
+  
+  QWidget *chart = drawChart ();
+  if (chart) outerLayout->addWidget (chart, 1, 0);
+
+  this->setCentralWidget (outerGroupBox);
+  this->show ();
+
+
   
   //  create_menuBar ();
 

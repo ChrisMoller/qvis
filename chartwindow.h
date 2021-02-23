@@ -74,7 +74,7 @@ public:
   //  OldCurve		 curve;
   bool		 changed;
   QSettings 	 settings;
-  void		 drawChart ();
+  QWidget	*drawChart ();
   //  std::vector<OldCurve> curves;
 
 private slots:
@@ -109,6 +109,7 @@ private:
   QVector<double> setIndex (Index *idx, int incr, QString title);
   void	eraseIndex (Index *idx);
   Q3DSurface *graph;
+  Q3DCamera *camera;
 #if 0
   void create_menuBar ();
   QComboBox 	*themebox;
