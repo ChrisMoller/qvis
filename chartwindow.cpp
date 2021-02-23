@@ -249,50 +249,40 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
   }
   return vals;
 }
-  
 
-QWidget *
-ChartWindow::drawChart ()
+void
+ChartWindow::setContent (qreal &x_max, qreal &x_min,
+			 qreal &y_max, qreal &y_min,
+			 qreal &z_max, qreal &z_min,
+			 Index *&ix, Index *&iz,
+			 QString &curve_label,
+			 QList<Curve> *curve_list)
 {
-  QWidget *widg = nullptr;
-  ChartData *cd = chartControls->getChartData ();
-  int i;
-  char loc[256];
   MainWindow *mw = chartControls->getMainWindow ();
   QString outString;
   QString errString;
-  bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+  char loc[256];
+  
   bool spline = (Qt::Checked == chartControls->do_spline->checkState ());
 
   chartControls->getMainWindow ()->setParams ();
 
-  Index *ix = chartControls->getChartData ()->getXIndex ();
+  ix = chartControls->getChartData ()->getXIndex ();
   QVector<double> xvals =
     setIndex (ix, mw->getIncr (), chartControls->chart_title->text ());
   
-  Index *iz = chartControls->getChartData ()->getZIndex ();
+  iz = chartControls->getChartData ()->getZIndex ();
   QVector<double> zvals =
     setIndex (iz, mw->getIncr (), chartControls->chart_title->text ());
   
   QList<int> sels =  chartControls->getChartData ()->getSelected ();
-  bool chart_created = false;
 
-  QString curve_label;
-  QList<QAbstractSeries *>series_list;
-  QList<QSurfaceDataArray *>surface_list;
-  qreal x_max = -MAXDOUBLE;
-  qreal x_min =  MAXDOUBLE;
-  qreal y_max = -MAXDOUBLE;
-  qreal y_min =  MAXDOUBLE;
-  qreal z_max = -MAXDOUBLE;
-  qreal z_min =  MAXDOUBLE;
-  
-
-  QList<Curve> curve_list;
+  int i;
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
-    curve_list.append (curve);
+    curve_list->append (curve);
     curve_label = curve.getLabel ();		// set to last curve
+
     QString fcn = curve.getFunction ();
     QString stmt = QString ("%1 ← %2").arg (expvar).arg (fcn);
       
@@ -326,7 +316,71 @@ ChartWindow::drawChart ()
       }
     }
   }
+}
 
+bool
+ChartWindow::createCurveList ()
+{
+  int i;
+  bool chart_created = false;
+  for (i = 0; i < series_list.size (); i++) {
+    if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
+    chart_created = true;
+  }
+  return chart_created;
+}
+
+bool
+ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
+{
+  int i;
+  bool surfaces_created = false;
+  for (i = 0; i < surface_list.size (); i++) {
+    QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
+    QSurface3DSeries  *series = new QSurface3DSeries(proxy);
+    Curve curve = curve_list[i];
+    series->setBaseColor (curve.getColour ());
+    proxy->resetArray (surface_list[i]);
+      
+    //DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
+    series->setDrawMode(QSurface3DSeries::DrawSurface);
+    //      series->setFlatShadingEnabled(true);
+      
+    graph->addSeries (series);
+    surfaces_created = true;
+  }
+  return surfaces_created;
+}
+
+QWidget *
+ChartWindow::drawChart ()
+{
+  QWidget *widg = nullptr;
+  ChartData *cd = chartControls->getChartData ();
+  QString outString;
+  QString errString;
+  qreal x_max = -MAXDOUBLE;
+  qreal x_min =  MAXDOUBLE;
+  qreal y_max = -MAXDOUBLE;
+  qreal y_min =  MAXDOUBLE;
+  qreal z_max = -MAXDOUBLE;
+  qreal z_min =  MAXDOUBLE;
+  Index *ix = nullptr;
+  Index *iz = nullptr;
+  QString curve_label;
+  QList<Curve> curve_list;
+
+
+
+  /****  content  ****/
+
+  setContent (x_max, x_min,
+	      y_max, y_min,
+	      z_max, z_min,
+	      ix, iz, curve_label, &curve_list);
+
+  bool chart_created = false;
+  
   if (series_list.size () > 0 && surface_list.size () > 0) {
     QMessageBox msgBox;
     QString msg =
@@ -337,7 +391,7 @@ ChartWindow::drawChart ()
   }
   else {
     if (series_list.size () > 0) {
-      
+      bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
       chartView  = new QChartView ();
       polarchart = new QPolarChart ();
       chart      = new QChart ();
@@ -347,10 +401,7 @@ ChartWindow::drawChart ()
       
       chartView->chart ()->removeAllSeries();
 
-      for (i = 0; i < series_list.size (); i++) {
-	if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
-	chart_created = true;
-      }
+      chart_created = createCurveList ();
 
       if (chart_created) {
 	chartView->setRenderHint (QPainter::Antialiasing);
@@ -403,19 +454,7 @@ ChartWindow::drawChart ()
       }
       Q3DSurface *graph = new Q3DSurface();
 
-      for (i = 0; i < surface_list.size (); i++) {
-	QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
-	QSurface3DSeries  *series = new QSurface3DSeries(proxy);
-	Curve curve = curve_list[i];
-	series->setBaseColor (curve.getColour ());
-	proxy->resetArray (surface_list[i]);
-
-	//DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
-	series->setDrawMode(QSurface3DSeries::DrawSurface);
-	//      series->setFlatShadingEnabled(true);
-
-	graph->addSeries (series);
-      }
+      /*bool surfacesCreated = */createSurfaceList (graph, curve_list);
 
       fprintf (stderr, "ax = %p\n", graph->axisX ());
       fprintf (stderr, "ay = %p\n", graph->axisY ());
@@ -432,17 +471,17 @@ ChartWindow::drawChart ()
       else fprintf (stderr, "no axes\n");
 #endif
 
-      graph->axisX()->setLabelFormat ("%.2f");
-      graph->axisZ()->setLabelFormat ("%.2f");
       graph->axisX()->setRange ((float)x_min, (float)x_max);
       graph->axisY()->setRange ((float)y_min, (float)y_max);
       graph->axisZ()->setRange ((float)z_min, (float)z_max);
+
+      /****** end of content *****/
+      
+      graph->axisX()->setLabelFormat ("%.2f");
+      graph->axisZ()->setLabelFormat ("%.2f");
       graph->axisX()->setLabelAutoRotation (60);
       graph->axisY()->setLabelAutoRotation (45);
       graph->axisZ()->setLabelAutoRotation (60);
-
-
-      QWidget *container = QWidget::createWindowContainer(graph);
 
       Q3DScene *scene = graph->scene ();
       // https://doc.qt.io/qt-5/q3dcamera-members.html
@@ -453,6 +492,7 @@ ChartWindow::drawChart ()
       camera->setXRotation (0.0f);
       camera->setYRotation (0.0f);
 
+      QWidget *container = QWidget::createWindowContainer(graph);
       container->setMinimumSize(640, 512);
       container->setSizePolicy(QSizePolicy::Expanding,
 			       QSizePolicy::Expanding);

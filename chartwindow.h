@@ -74,7 +74,15 @@ public:
   //  OldCurve		 curve;
   bool		 changed;
   QSettings 	 settings;
-  QWidget	*drawChart ();
+  QWidget 	*drawChart ();
+  void 		setContent (qreal &x_max, qreal &x_min,
+			    qreal &y_max, qreal &y_min,
+			    qreal &z_max, qreal &z_min,
+			    Index *&ix, Index *&iz, QString &curve_label,
+			    QList<Curve> *curve_list);
+  bool		createCurveList ();
+  bool		createSurfaceList (Q3DSurface *graph,
+				   QList<Curve> &curve_list);
   //  std::vector<OldCurve> curves;
 
 private slots:
@@ -89,6 +97,8 @@ public slots:
   //  void handleExpression ();
   
 private:
+  QList<QAbstractSeries *>series_list;
+  QList<QSurfaceDataArray *>surface_list;
   QFont titlefont;
   QChart::ChartTheme theme;
   ChartControls	*chartControls;
