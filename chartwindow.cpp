@@ -397,8 +397,6 @@ ChartWindow::drawChart ()
       }
     }
     if (surface_list.size () > 0) {
-
-      fprintf (stderr, "nr surfaces = %d\n", surface_list.size ());
       if (graph) {
 	graph->close ();
 	//delete graph;
@@ -406,7 +404,6 @@ ChartWindow::drawChart ()
       Q3DSurface *graph = new Q3DSurface();
 
       for (i = 0; i < surface_list.size (); i++) {
-	fprintf (stderr, "doing sirface %d\n", i);
 	QSurfaceDataProxy *proxy  = new QSurfaceDataProxy();
 	QSurface3DSeries  *series = new QSurface3DSeries(proxy);
 	Curve curve = curve_list[i];
@@ -581,6 +578,11 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	     double scale = ((double)value) / 1000;
 	     if (keymod == Qt::NoModifier) 
 	       camera->setXRotation ((float)(180 * scale));
+	     else if (keymod == Qt::ShiftModifier) {
+	       QVector3D target = camera->target ();
+	       target.setX ((float)scale);
+	       camera->setTarget (target);
+	     }
 	   });
 
   QSlider *vslider = new QSlider (Qt::Vertical);
@@ -592,6 +594,11 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	     double scale = ((double)value) / 1000;
 	     if (keymod == Qt::NoModifier) 
 	       camera->setYRotation ((float)(180 * scale));
+	     else if (keymod == Qt::ShiftModifier) {
+	       QVector3D target = camera->target ();
+	       target.setY ((float)scale);
+	       camera->setTarget (target);
+	     }
 	   });
 
   outerLayout->addWidget (hslider, 0, 0);
