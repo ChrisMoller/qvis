@@ -75,6 +75,7 @@ public:
   bool		 changed;
   QSettings 	 settings;
   QWidget 	*drawChart ();
+  void 		 reDraw ();
   void 		setContent (qreal &x_max, qreal &x_min,
 			    qreal &y_max, qreal &y_min,
 			    qreal &z_max, qreal &z_min,

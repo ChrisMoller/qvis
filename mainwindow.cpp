@@ -78,7 +78,7 @@ MainWindow::notifySelective (bool all)
       ChartData *cd = charts[i];
       if (all || cd->needsUpdate ()) {
 	ChartWindow *win = cd->getWindow ();
-	win->drawChart ();
+	win->reDraw ();
 	cd->setUpdate (false);
       }
     }

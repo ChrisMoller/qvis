@@ -454,7 +454,8 @@ ChartWindow::drawChart ()
       }
       Q3DSurface *graph = new Q3DSurface();
 
-      /*bool surfacesCreated = */createSurfaceList (graph, curve_list);
+      /*bool surfacesCreated = */
+      createSurfaceList (graph, curve_list);
 
       fprintf (stderr, "ax = %p\n", graph->axisX ());
       fprintf (stderr, "ay = %p\n", graph->axisY ());
@@ -590,6 +591,60 @@ QWidget::keyReleaseEvent(QKeyEvent *event)
 {
   keymod =  event->modifiers();
   fprintf (stderr, "km = %d\n", (int)keymod);
+}
+
+void
+ChartWindow::reDraw  ()
+{
+  fprintf (stderr, "redrawing\n");
+  
+  qreal x_max = -MAXDOUBLE;
+  qreal x_min =  MAXDOUBLE;
+  qreal y_max = -MAXDOUBLE;
+  qreal y_min =  MAXDOUBLE;
+  qreal z_max = -MAXDOUBLE;
+  qreal z_min =  MAXDOUBLE;
+  Index *ix = nullptr;
+  Index *iz = nullptr;
+  QString curve_label;
+  QList<Curve> curve_list;
+
+  series_list.clear ();
+  surface_list.clear ();
+  setContent (x_max, x_min,
+	      y_max, y_min,
+	      z_max, z_min,
+	      ix, iz, curve_label, &curve_list);
+
+   if (series_list.size () > 0 && surface_list.size () > 0) {
+    QMessageBox msgBox;
+    QString msg =
+      QString ("Sorry, can't mix 2D and 3d plots.");
+    msgBox.setText (msg);
+    msgBox.setIcon (QMessageBox::Warning);
+    msgBox.exec();
+  }
+  else {
+    if (series_list.size () > 0) {
+      bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+      bool chart_created = createCurveList ();
+      if (chart_created) {
+	chartView->chart ()->createDefaultAxes ();
+
+	qreal dy = 0.075 * (y_max - y_min);
+	chartView->chart ()->axes (Qt::Vertical).first()
+	  ->setRange(y_min-dy, y_max+dy);  
+  
+	QString ix_label = ix->getLabel ();
+	chartView->chart ()->axes (Qt::Horizontal).first()
+	  ->setTitleText (ix_label);
+	chartView->chart ()->axes (Qt::Vertical).first()
+	  ->setTitleText (curve_label);
+      }
+    }
+    if (surface_list.size () > 0) {
+    }
+  }
 }
 
 ChartWindow::ChartWindow  (ChartControls *parent)
