@@ -46,6 +46,26 @@ ChartControls::curveSettings ()
   chartData = this->getChartData ();
 
   int row = 0;
+
+  /********* surface mode ********/
+  
+  QLabel lblm ("Surface mode");
+  layout->addWidget (&lblm, row, 0);
+  
+  QComboBox *smodebox = new QComboBox ();
+  themebox->addItem ("Surface",    QSurface3DSeries::DrawSurface);
+  themebox->addItem ("Wire Frame", QSurface3DSeries::DrawWireframe);
+  themebox->addItem ("Suface + Wire Frame",
+		     QSurface3DSeries::DrawSurfaceAndWireframe);
+  QSurface3DSeries::DrawFlags sel = chartData->getDrawMode ();
+  int loc = smodebox.>findData (QVariant (sel));
+  smodeox->setCurrentIndex (loc);
+
+  layout->addWidget (smodebox, row, 1);
+
+  row++;
+
+  /******* theme ******/
   
   QLabel lbl ("Theme");
   layout->addWidget (&lbl, row, 0);
@@ -70,6 +90,10 @@ ChartControls::curveSettings ()
   layout->addWidget(themebox, row, 1);
 
   row++;
+
+
+  /****** background image  ******/
+
   
   QLabel lblb ("Background");
   layout->addWidget (&lblb, row, 0);

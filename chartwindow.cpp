@@ -346,7 +346,7 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
       
     //DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
     //    series->setDrawMode(QSurface3DSeries::DrawSurface);
-    series->setDrawMode(QSurface3DSeries::DrawSurfaceAndWireframe);
+    series->setDrawMode (QSurface3DSeries::DrawSurfaceAndWireframe);
     //series->setDrawMode(QSurface3DSeries::DrawWireframe);
     //      series->setFlatShadingEnabled(true);
       

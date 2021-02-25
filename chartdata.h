@@ -82,8 +82,11 @@ class ChartData
   QString 	getBGFile ();
   void          setBGFile (QString &fn);
   void 	 	clearBGFile ();
+  QSurface3DSeries::DrawFlags getDrawMode ();
+  void		setDrawMode (QSurface3DSeries::DrawFlags rmode);
 
  private:
+  QSurface3DSeries::DrawFlags mode;
   QString title;
   bool spline;
   bool polar;

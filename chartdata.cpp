@@ -212,7 +212,7 @@ ChartData::getZIndex ()
 }
 
 void
-ChartData::setTheme ( int rtheme)
+ChartData::setTheme (int rtheme)
 {
   theme = (QChart::ChartTheme)rtheme;
 }
@@ -221,6 +221,18 @@ QChart::ChartTheme
 ChartData::getTheme ()
 {
   return theme;
+}
+
+void
+ChartData::setDrawMode (QSurface3DSeries::DrawFlags rmode)
+{
+  mode = rmode;
+}
+
+QSurface3DSeries::DrawFlags
+ChartData::getDrawMode ()
+{
+  return mode;
 }
 
 void
