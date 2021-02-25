@@ -459,21 +459,6 @@ ChartWindow::drawChart ()
       /*bool surfacesCreated = */
       createSurfaceList (graph, curve_list);
 
-      fprintf (stderr, "ax = %p\n", graph->axisX ());
-      fprintf (stderr, "ay = %p\n", graph->axisY ());
-      fprintf (stderr, "az = %p\n", graph->axisZ ());
-#if 0
-      QList<QValue3DAxis *>axes = graph->axes ();
-      int aa;
-      if (axes.size () > 0) {
-	for (aa = 0; aa < axes.size (); aa++) {
-	  QValue3DAxis *axis = axes[aa];
-	  fprintf (stderr, "ax ti = \"%s\"\n", toCString (axis->title ()));
-	}
-      }
-      else fprintf (stderr, "no axes\n");
-#endif
-
       graph->axisX()->setRange ((float)x_min, (float)x_max);
       graph->axisY()->setRange ((float)y_min, (float)y_max);
       graph->axisZ()->setRange ((float)z_min, (float)z_max);
