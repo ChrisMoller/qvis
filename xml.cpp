@@ -134,7 +134,7 @@ MainWindow::writeVis (QString &fileName)
 			    QString::number (curves[i].getColour ().blue ()));
       stream.writeAttribute(xml_tags[XML_alpha].tag,
 			    QString::number (curves[i].getColour ().alpha ()));
-      stream.writeCharacters(curves[i].getColour ().name ());
+      stream.writeCharacters(curves[i].getColour ().name (QColor::HexArgb));
       stream.writeEndElement(); // colour
     
       stream.writeEndElement(); // curve
@@ -339,7 +339,9 @@ MainWindow::parseCurve (int idx, bool pv, bool lv, int mode,
 	    red   = (attrs.value (xml_tags[XML_red].tag)).toInt ();
 	    green = (attrs.value (xml_tags[XML_green].tag)).toInt ();
 	    blue  = (attrs.value (xml_tags[XML_blue].tag)).toInt ();
-	    alpha = (attrs.value (xml_tags[XML_alpha].tag)).toInt ();
+	    QStringRef alphaString = attrs.value (xml_tags[XML_alpha].tag);
+	    if (!alphaString.isEmpty ())
+	      alpha = alphaString.toInt ();
 	  }
 	  stream.readElementText ();
 	  //	  stream.readNext ();		// throw away the </colour>

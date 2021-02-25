@@ -324,8 +324,10 @@ ChartWindow::createCurveList ()
   int i;
   bool chart_created = false;
   for (i = 0; i < series_list.size (); i++) {
-    if (series_list[i]) chartView->chart ()->addSeries (series_list[i]);
-    chart_created = true;
+    if (series_list[i]) {
+      chartView->chart ()->addSeries (series_list[i]);
+      chart_created = true;
+    }
   }
   return chart_created;
 }
@@ -399,7 +401,7 @@ ChartWindow::drawChart ()
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
       
-      chartView->chart ()->removeAllSeries();
+              chartView->chart ()->removeAllSeries();
 
       chart_created = createCurveList ();
 
@@ -590,14 +592,11 @@ void
 QWidget::keyReleaseEvent(QKeyEvent *event)
 {
   keymod =  event->modifiers();
-  fprintf (stderr, "km = %d\n", (int)keymod);
 }
 
 void
 ChartWindow::reDraw  ()
 {
-  fprintf (stderr, "redrawing\n");
-  
   qreal x_max = -MAXDOUBLE;
   qreal x_min =  MAXDOUBLE;
   qreal y_max = -MAXDOUBLE;
@@ -626,7 +625,8 @@ ChartWindow::reDraw  ()
   }
   else {
     if (series_list.size () > 0) {
-      bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+      //bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+      chartView->chart ()->removeAllSeries();
       bool chart_created = createCurveList ();
       if (chart_created) {
 	chartView->chart ()->createDefaultAxes ();
