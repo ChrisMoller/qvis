@@ -401,7 +401,7 @@ ChartWindow::drawChart ()
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
       
-              chartView->chart ()->removeAllSeries();
+      chartView->chart ()->removeAllSeries();
 
       chart_created = createCurveList ();
 
@@ -454,7 +454,7 @@ ChartWindow::drawChart ()
 	graph->close ();
 	//delete graph;
       }
-      Q3DSurface *graph = new Q3DSurface();
+      graph = new Q3DSurface();
 
       /*bool surfacesCreated = */
       createSurfaceList (graph, curve_list);
@@ -625,7 +625,6 @@ ChartWindow::reDraw  ()
   }
   else {
     if (series_list.size () > 0) {
-      //bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
       chartView->chart ()->removeAllSeries();
       bool chart_created = createCurveList ();
       if (chart_created) {
@@ -643,6 +642,14 @@ ChartWindow::reDraw  ()
       }
     }
     if (surface_list.size () > 0) {
+      int i;
+      QList<QSurface3DSeries *>slist = graph->seriesList();
+      for (i = 0; i < slist.size (); i++)
+	graph->removeSeries (slist[i]);
+      createSurfaceList (graph, curve_list);
+      graph->axisX()->setRange ((float)x_min, (float)x_max);
+      graph->axisY()->setRange ((float)y_min, (float)y_max);
+      graph->axisZ()->setRange ((float)z_min, (float)z_max);
     }
   }
 }
