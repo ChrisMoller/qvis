@@ -31,9 +31,8 @@ clear curves, clear charts
 
 auto-update on curve selection
 
-save on adding parms
-
 add auto-ws-load capability
 
 write tests
 
+auto-update on theme-change

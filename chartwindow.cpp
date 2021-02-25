@@ -345,7 +345,9 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
     proxy->resetArray (surface_list[i]);
       
     //DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
-    series->setDrawMode(QSurface3DSeries::DrawSurface);
+    //    series->setDrawMode(QSurface3DSeries::DrawSurface);
+    //series->setDrawMode(QSurface3DSeries::DrawSurface);
+    series->setDrawMode(QSurface3DSeries::DrawWireframe);
     //      series->setFlatShadingEnabled(true);
       
     graph->addSeries (series);
@@ -592,6 +594,12 @@ ChartWindow::reDraw  ()
   Index *iz = nullptr;
   QString curve_label;
   QList<Curve> curve_list;
+  
+  ChartData *cd = chartControls->getChartData ();
+  bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+  chartView->setChart (polar ? polarchart : chart);
+  chartView->chart ()->setDropShadowEnabled(true);
+  chartView->chart ()->setTheme (cd->getTheme ());
 
   series_list.clear ();
   surface_list.clear ();
