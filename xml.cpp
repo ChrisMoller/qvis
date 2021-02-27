@@ -117,7 +117,9 @@ MainWindow::writeVis (QString &fileName)
       stream.writeAttribute(xml_tags[XML_cpxmode].tag, modes);
       
       modes = xml_tags[XML_surface].tag;
-      switch (curves[i].getDrawMode ()) {
+      QSurface3DSeries::DrawFlags dm = curves[i].getDrawMode ();
+      if ((int) dm == 0) dm = QSurface3DSeries::DrawSurface;
+      switch (dm) {
       case QSurface3DSeries::DrawSurface:	// do nothing, already set
 	break;
       case QSurface3DSeries::DrawWireframe:
