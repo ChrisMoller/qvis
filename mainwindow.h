@@ -190,8 +190,8 @@ private:
   Index 	 *parseIx (QXmlStreamReader &stream);
   Index		 *parseIz (QXmlStreamReader &stream);
   bool 		  parseCurves (QXmlStreamReader &stream);
-  bool 		  parseCurve (int idx, bool pv, bool lv, int mode,
-			      QXmlStreamReader &stream);
+  bool 		  parseCurve (int idx, bool pv, bool lv, int cpxmode,
+			      int drawmode, QXmlStreamReader &stream);
   bool 		  parseCharts (QXmlStreamReader &stream);
   bool 		  parseChart (bool spline, bool polar, int theme,
 			      QXmlStreamReader &stream);

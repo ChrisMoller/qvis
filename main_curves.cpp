@@ -80,6 +80,9 @@ MainWindow::setCurves (int which)
   dialog.setLayout (layout);
 
   int row = 0;
+
+
+  /******* colour *******/
   
   QLabel lbl ("Colour");
   layout->addWidget (&lbl, row, 0);
@@ -96,6 +99,8 @@ MainWindow::setCurves (int which)
   layout->addWidget (curve_colour, row, 1);
 
   row++;
+
+  /*********** linestyle ********/
   
   QLabel lbll ("Linestyle");
   layout->addWidget (&lbll, row, 0);
@@ -108,7 +113,35 @@ MainWindow::setCurves (int which)
 	    updateAll (); notifySelective (false); });
   layout->addWidget (curve_pen, row, 1);
 
+  /************* draw mode *********/
+
+  row++;
+
+  QLabel lblm ("Surface mode");
+  layout->addWidget (&lblm, row, 0);
+  
+  QComboBox *smodebox = new QComboBox ();
+  smodebox->addItem ("Surface",    QSurface3DSeries::DrawSurface);
+  smodebox->addItem ("Wire Frame", QSurface3DSeries::DrawWireframe);
+  smodebox->addItem ("Suface + Wire Frame",
+		     QSurface3DSeries::DrawSurfaceAndWireframe);
+  QSurface3DSeries::DrawFlags selm = curves[which].getDrawMode ();
+  // no idea how this is getting set to zero, but to hell
+  // with figuring it out
+  if ((int) selm == 0) selm = QSurface3DSeries::DrawSurface;
+  int loc = smodebox->findData (QVariant (selm));
+  smodebox->setCurrentIndex (loc);
+  connect (smodebox, QOverload<int>::of(&QComboBox::activated),
+	  [=](int index)
+	  {QVariant sel = smodebox->itemData (index);
+    curves[which].setDrawMode (( QSurface3DSeries::DrawFlags)sel.toInt ());
+	    updateAll (); notifySelective (false); });
+
+  layout->addWidget (smodebox, row, 1);
+
 #if 0
+
+  /************ font *********/
   row++;
   
   QLabel lblf ("Font");
@@ -124,6 +157,8 @@ MainWindow::setCurves (int which)
 	     fontButton->setText (newfont.family ());
 	     updateAll (); notifySelective (false); });
 #endif
+
+  /************* show points *********/
   
   row++;
   
@@ -138,6 +173,9 @@ MainWindow::setCurves (int which)
 	   { curves[which].setPointsVisible (state);
 	     updateAll (); notifySelective (false); });
   layout->addWidget (points_check, row, 1);
+
+
+  /********** show point labels ********/
   
   row++;
   

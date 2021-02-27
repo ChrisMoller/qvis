@@ -20,6 +20,12 @@
 
 #include <QtWidgets>
 #include <complex>
+#include <QtDataVisualization/Q3DSurface>
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
+
+using namespace QtDataVisualization;
 
 #ifndef toCString
 #define toCString(v) ((v).toStdString ().c_str ())
@@ -72,8 +78,11 @@ class Curve
   void    	setPointLabelsVisible (bool state);
   int  		getCpx ();
   void    	setCpx (int rcpx);
+  QSurface3DSeries::DrawFlags getDrawMode ();
+  void		setDrawMode (QSurface3DSeries::DrawFlags rdrawmode);
 
  private:
+  QSurface3DSeries::DrawFlags drawMode;
   QString name;			// key 
   QString label;		// y-axis key
   QString fcn;

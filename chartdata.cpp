@@ -224,18 +224,6 @@ ChartData::getTheme ()
 }
 
 void
-ChartData::setDrawMode (QSurface3DSeries::DrawFlags rmode)
-{
-  mode = rmode;
-}
-
-QSurface3DSeries::DrawFlags
-ChartData::getDrawMode ()
-{
-  return mode;
-}
-
-void
 ChartData::setChanged (bool state)
 {
   changed = state;

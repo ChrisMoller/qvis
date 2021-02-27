@@ -343,12 +343,12 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
     Curve curve = curve_list[i];
     series->setBaseColor (curve.getColour ());
     proxy->resetArray (surface_list[i]);
-      
-    //DrawWireframe, DrawSurface, DrawSurfaceAndWireframe 
-    //    series->setDrawMode(QSurface3DSeries::DrawSurface);
-    series->setDrawMode (QSurface3DSeries::DrawSurfaceAndWireframe);
-    //series->setDrawMode(QSurface3DSeries::DrawWireframe);
-    //      series->setFlatShadingEnabled(true);
+
+    QSurface3DSeries::DrawFlags dm = curve.getDrawMode ();
+    // no idea how this is getting set to zero, but to hell
+    // with figuring it out
+    if ((int) dm == 0) dm = QSurface3DSeries::DrawSurface;
+    series->setDrawMode (dm);
       
     graph->addSeries (series);
     surfaces_created = true;

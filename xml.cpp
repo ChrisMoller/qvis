@@ -17,7 +17,7 @@
 /***
   <qvis>
     <curves>
-      <curve idx="." pv="." lv="." made=".">
+      <curve idx="." pv="." lv="." cpxmode="." drawmode='.'>
         <name>.</name>
         <label>.</label>
         <function>.</function>
@@ -54,6 +54,12 @@
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 #include <QHash>
+#include <QtDataVisualization/Q3DSurface>
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
+
+using namespace QtDataVisualization;
 
 #include "mainwindow.h"
 #include "chartwindow.h"
@@ -108,7 +114,20 @@ MainWindow::writeVis (QString &fileName)
 	modes = xml_tags[XML_phase].tag;
 	break;
       }
-      stream.writeAttribute(xml_tags[XML_mode].tag, modes);
+      stream.writeAttribute(xml_tags[XML_cpxmode].tag, modes);
+      
+      modes = xml_tags[XML_surface].tag;
+      switch (curves[i].getDrawMode ()) {
+      case QSurface3DSeries::DrawSurface:	// do nothing, already set
+	break;
+      case QSurface3DSeries::DrawWireframe:
+	modes = xml_tags[XML_wireframe].tag;
+	break;
+      case QSurface3DSeries::DrawSurfaceAndWireframe:
+	modes = xml_tags[XML_wiresurface].tag;
+	break;
+      }
+      stream.writeAttribute(xml_tags[XML_drawmode].tag, modes);
     
       stream.writeTextElement(xml_tags[XML_name].tag,
 			      curves[i].getName ());
@@ -295,8 +314,8 @@ MainWindow::parseIz (QXmlStreamReader &stream)
 
 
 bool
-MainWindow::parseCurve (int idx, bool pv, bool lv, int mode,
-			QXmlStreamReader &stream)
+MainWindow::parseCurve (int idx, bool pv, bool lv, int cpxmode,
+			int drawmode, QXmlStreamReader &stream)
 {
   bool rc = true;
   bool run = true;
@@ -365,7 +384,8 @@ MainWindow::parseCurve (int idx, bool pv, bool lv, int mode,
 			 colour);
   curve.setPointsVisible (pv);
   curve.setPointLabelsVisible (lv);
-  curve.setCpx (mode);
+  curve.setCpx (cpxmode);
+  curve.setDrawMode ((QSurface3DSeries::DrawFlags)drawmode);
   curves.insert (idx, curve);
   return rc;
 }
@@ -391,25 +411,44 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	  bool lv  =
 	    attrs.value (xml_tags[XML_labelsvisible].tag)
 	    == xml_tags[XML_true].tag;
-	  int mode = CPX_REAL;
+	  int cpxmode = CPX_REAL;
 	  {
-	    QString modes = (attrs.value (xml_tags[XML_mode].tag)).toString ();
+	    QString modes =
+	      (attrs.value (xml_tags[XML_cpxmode].tag)).toString ();
 	    switch(xmlhash.value (modes)) {
 	    case XML_real:
-	      mode = CPX_REAL;
+	      cpxmode = CPX_REAL;
 	      break;
 	    case XML_imag:
-	      mode = CPX_IMAG;
+	      cpxmode = CPX_IMAG;
 	      break;
 	    case XML_mag:
-	      mode = CPX_MAG;
+	      cpxmode = CPX_MAG;
 	      break;
 	    case XML_phase:
-	      mode = CPX_PHASE;
+	      cpxmode = CPX_PHASE;
 	      break;
 	    }
 	  }
-	  parseCurve (idx, pv, lv, mode, stream);
+	  int drawmode = (int)QSurface3DSeries::DrawSurface;
+	  {
+	    QString modes =
+	      (attrs.value (xml_tags[XML_cpxmode].tag)).toString ();
+	    if (!modes.isEmpty ()) {
+	      switch(xmlhash.value (modes)) {
+	      case XML_surface:
+		drawmode = (int)QSurface3DSeries::DrawSurface;
+		break;
+	      case XML_wireframe:
+		drawmode = (int)QSurface3DSeries::DrawWireframe;
+		break;
+	      case XML_wiresurface:
+		drawmode = (int)QSurface3DSeries::DrawSurfaceAndWireframe;
+		break;
+	      }
+	    }
+	  }
+	  parseCurve (idx, pv, lv, drawmode, cpxmode, stream);
 	}
 	break;
       }

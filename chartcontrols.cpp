@@ -47,23 +47,26 @@ ChartControls::curveSettings ()
 
   int row = 0;
 
+#if 0
   /********* surface mode ********/
   
   QLabel lblm ("Surface mode");
   layout->addWidget (&lblm, row, 0);
   
   QComboBox *smodebox = new QComboBox ();
-  themebox->addItem ("Surface",    QSurface3DSeries::DrawSurface);
-  themebox->addItem ("Wire Frame", QSurface3DSeries::DrawWireframe);
-  themebox->addItem ("Suface + Wire Frame",
+  smodebox->addItem ("Surface",    QSurface3DSeries::DrawSurface);
+  smodebox->addItem ("Wire Frame", QSurface3DSeries::DrawWireframe);
+  smodebox->addItem ("Suface + Wire Frame",
 		     QSurface3DSeries::DrawSurfaceAndWireframe);
-  QSurface3DSeries::DrawFlags sel = chartData->getDrawMode ();
-  int loc = smodebox.>findData (QVariant (sel));
-  smodeox->setCurrentIndex (loc);
+  QSurface3DSeries::DrawFlags selm = chartData->getDrawMode ();
+  int loc = smodebox->findData (QVariant (selm));
+  smodebox->setCurrentIndex (loc);
 
   layout->addWidget (smodebox, row, 1);
 
   row++;
+
+#endif
 
   /******* theme ******/
   

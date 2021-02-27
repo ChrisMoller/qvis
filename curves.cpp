@@ -16,6 +16,12 @@
  ***/
 
 #include <QtWidgets>
+#include <QtDataVisualization/Q3DSurface>
+#include <QtDataVisualization/QSurfaceDataProxy>
+#include <QtDataVisualization/QHeightMapSurfaceDataProxy>
+#include <QtDataVisualization/QSurface3DSeries>
+
+using namespace QtDataVisualization;
 
 #include "curves.h"
 
@@ -89,6 +95,7 @@ Curve::Curve (QString &rname, QString &rlabel,
   pointsVisible = false;
   pointLabelsVisible = false;
   cpx    = CPX_REAL;
+  drawMode = QSurface3DSeries::DrawSurface;
 }
 
 /********* curves *********/
@@ -224,3 +231,15 @@ Curve::setPointLabelsVisible (bool state)
   pointLabelsVisible = state;
 }
 
+
+void
+Curve::setDrawMode (QSurface3DSeries::DrawFlags rdrawmode)
+{
+  drawMode = rdrawmode;
+}
+
+QSurface3DSeries::DrawFlags
+Curve::getDrawMode ()
+{
+  return drawMode;
+}
