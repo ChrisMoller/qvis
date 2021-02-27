@@ -435,7 +435,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	  int drawmode = (int)QSurface3DSeries::DrawSurface;
 	  {
 	    QString modes =
-	      (attrs.value (xml_tags[XML_cpxmode].tag)).toString ();
+	      (attrs.value (xml_tags[XML_drawmode].tag)).toString ();
 	    if (!modes.isEmpty ()) {
 	      switch(xmlhash.value (modes)) {
 	      case XML_surface:
@@ -450,7 +450,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	      }
 	    }
 	  }
-	  parseCurve (idx, pv, lv, drawmode, cpxmode, stream);
+	  parseCurve (idx, pv, lv, cpxmode, drawmode, stream);
 	}
 	break;
       }
