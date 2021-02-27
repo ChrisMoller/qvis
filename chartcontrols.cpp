@@ -57,9 +57,9 @@ ChartControls::curveSettings ()
   themebox->addItem ("Wire Frame", QSurface3DSeries::DrawWireframe);
   themebox->addItem ("Suface + Wire Frame",
 		     QSurface3DSeries::DrawSurfaceAndWireframe);
-  QSurface3DSeries::DrawFlags sel = chartData->getDrawMode ();
-  int loc = smodebox.>findData (QVariant (sel));
-  smodeox->setCurrentIndex (loc);
+  QSurface3DSeries::DrawFlags selm = chartData->getDrawMode ();
+  int loc = smodebox->findData (QVariant (selm));
+  smodebox->setCurrentIndex (loc);
 
   layout->addWidget (smodebox, row, 1);
 
