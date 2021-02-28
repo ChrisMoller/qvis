@@ -414,7 +414,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	    attrs.value (xml_tags[XML_labelsvisible].tag)
 	    == xml_tags[XML_true].tag;
 	  bool spline =
-	    (attrs.value (xml_tags[XML_spline].tag)).toint ()
+	    attrs.value (xml_tags[XML_spline].tag)
 	    == xml_tags[XML_true].tag;
 	  int cpxmode = CPX_REAL;
 	  {
@@ -554,7 +554,7 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	    int theme = themeref.isEmpty ()
 	      ? QChart::ChartThemeLight : themeref.toInt ();
 	    incr  = ((attrs.value (xml_tags[XML_incr].tag))).toInt ();
-	    parseChart (((0 == polar.compare (xml_tags[XML_true].tag)),
+	    parseChart ((0 == polar.compare (xml_tags[XML_true].tag)),
 			theme, stream);
 	  }
 	}

@@ -57,7 +57,7 @@ class Index
 class ChartData
 {
  public:
-  ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
+  ChartData (QString &rtitle, bool rpolar, int rtheme,
 	     Index *rix, Index *riz, QList<int> &rselected);
   ChartData ();
 

@@ -124,11 +124,10 @@ ChartData::ChartData ()
   theme = QChart::ChartThemeQt;
 }
 
-ChartData::ChartData (QString &rtitle, bool rspline, bool rpolar, int rtheme,
+ChartData::ChartData (QString &rtitle, bool rpolar, int rtheme,
 	   Index *rix, Index *riz, QList<int> &rselected)
 {
   title  = rtitle;
-  spline = rspline;
   polar  = rpolar;
   ix     = rix;
   iz     = riz;
