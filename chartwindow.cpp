@@ -477,8 +477,8 @@ ChartWindow::drawChart ()
       camera = scene->activeCamera ();
       camera->setZoomLevel (125.0f);
 
-      camera->setXRotation (0.0f);
-      camera->setYRotation (0.0f);
+      camera->setXRotation ((float)INITIAL_X_ROTATION);
+      camera->setYRotation ((float)INITIAL_Y_ROTATION);
 
       QWidget *container = QWidget::createWindowContainer(graph);
       container->setMinimumSize(640, 512);
@@ -665,7 +665,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   QSlider *hslider = new QSlider (Qt::Horizontal);
   hslider->setMinimum (-1000);
   hslider->setMaximum (1000);
-  hslider->setValue(0);
+  hslider->setValue(1000.0 * INITIAL_X_ROTATION / 180.0);
   connect (hslider, &QAbstractSlider::valueChanged, this,
 	   [=](int value) {
 	     double scale = ((double)value) / 1000;
@@ -681,7 +681,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   QSlider *vslider = new QSlider (Qt::Vertical);
   vslider->setMinimum (-1000);
   vslider->setMaximum (1000);
-  vslider->setValue(0);
+  vslider->setValue(1000.0 * INITIAL_Y_ROTATION / 180.0);
   connect (vslider, &QAbstractSlider::valueChanged, this,
 	   [=](int value) {
 	     double scale = ((double)value) / 1000;

@@ -38,6 +38,9 @@ using namespace QtDataVisualization;
 #include "mainwindow.h"
 #include "chartcontrols.h"
 
+#define INITIAL_X_ROTATION 30.0
+#define INITIAL_Y_ROTATION 30.0
+
 class ChartControls;
 class MainWindow;
 class ChartWindow;
