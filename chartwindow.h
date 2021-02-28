@@ -101,6 +101,7 @@ public slots:
   //  void handleExpression ();
   
 private:
+  void closeEvent (QCloseEvent *event);
   QList<QAbstractSeries *>series_list;
   QList<QSurfaceDataArray *>surface_list;
   QFont titlefont;

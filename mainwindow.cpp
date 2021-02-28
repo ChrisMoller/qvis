@@ -227,14 +227,21 @@ MainWindow::fileChanged(const QString &path)
 void
 MainWindow::openVis()
 {
+  fprintf (stderr, "openvis\n");
   QFileDialog dialog (this, QString ("Open Vis file"));
   dialog.setNameFilter(tr("Vis (*.vis)"));
   dialog.setWindowModality(Qt::WindowModal);
   dialog.setAcceptMode(QFileDialog::AcceptOpen);
   if (dialog.exec() == QDialog::Accepted) {
+#if 1
+    QString tf = dialog.selectedFiles().first();
+    if (!tf.isEmpty ())
+      visCurFile = tf;
+#else
     visCurFile = visCurFile.isNull () 
       ? dialog.selectedFiles().first()
       : QString ("");
+#endif
     readVis (visCurFile);
   }
 }
@@ -1162,3 +1169,14 @@ MainWindow::~MainWindow()
   delete aplLineFilter;
 }
 
+QTabWidget *
+MainWindow::getTabs ()
+{
+  return tabs;
+}
+
+QList<ChartData*>
+MainWindow:: getCharts ()
+{
+  return charts;
+}

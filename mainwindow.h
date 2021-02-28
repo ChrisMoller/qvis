@@ -128,6 +128,7 @@ public:
   Curve		 getCurve (int i);
   int 		 getChartCount ();
   ChartData	*getChart (int i);
+  QList<ChartData*> getCharts ();
   void		 initXmlHash ();
   void 		 setTabTitle (int ix, QString &title);
   QList<Param>	 getParams ();
@@ -139,6 +140,7 @@ public:
   void		 eraseParams ();
   void		 updateAll ();
   void 		 setCurves (int which);
+  QTabWidget	*getTabs ();
 									  
 public slots:
 

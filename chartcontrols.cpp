@@ -434,19 +434,6 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   row++;
   col = 0;
 
-#if 0
-  do_polar = new QCheckBox ("Polar");
-  if (chartData && chartData->getPolar ())
-    do_polar->setCheckState (Qt::Checked);
-  layout->addWidget (do_polar, row, col++);
-  connect(do_polar,
-	  &QCheckBox::stateChanged,
-	  this,
-	  [=]()
-	  {chartData->setUpdate (true);
-	   mainWindow->notifySelective (false); });
-#endif
-
   QDoubleSpinBox *incrBox = new QDoubleSpinBox ();
   incrBox->setDecimals (0);
   incrBox->setRange (16.0, 128.0);
@@ -464,6 +451,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 
   setLayout (layout);
 
+  fprintf (stderr, "creating chartwindow\n");
   chartWindow = new ChartWindow (this);
   if (chartData) chartData->setWindow (chartWindow);
 }

@@ -18,6 +18,7 @@
 // https://doc.qt.io/qt-5/qtdatavisualization-index.html
 
 #include <QtWidgets>
+#include <QCloseEvent>
 #include <QtCharts/QChartView>
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QSplineSeries>
@@ -347,6 +348,7 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
     // with figuring it out
     if ((int) dm == 0) dm = QSurface3DSeries::DrawSurface;
     series->setDrawMode (dm);
+    series->setName (QString ("MMMMMMMM"));
       
     graph->addSeries (series);
     surfaces_created = true;
@@ -462,6 +464,7 @@ ChartWindow::drawChart ()
       graph->axisX()->setRange ((float)x_min, (float)x_max);
       graph->axisY()->setRange ((float)y_min, (float)y_max);
       graph->axisZ()->setRange ((float)z_min, (float)z_max);
+      graph->setTitle (QString ("MMMMMMMM"));
 
       /****** end of content *****/
       
@@ -645,6 +648,38 @@ ChartWindow::reDraw  ()
   }
 }
 
+void
+ChartWindow::closeEvent (QCloseEvent *event __attribute__((unused)))
+{
+  MainWindow *mw = chartControls->getMainWindow ();
+  QTabWidget *tabs = mw->getTabs ();
+  int i;
+
+  ChartData *cd = nullptr;
+  for (i = 0; i < tabs->count (); i++) {
+    QWidget *widg = tabs->widget (i);
+    if (widg == chartControls) {
+      tabs->removeTab (i);
+      cd = chartControls-> getChartData ();
+      fprintf (stderr, "cd = %p\n", cd);
+      delete cd;
+      delete chartControls;
+      break;
+    }
+  }
+  if (cd) {
+    QList<ChartData*> charts = mw->getCharts ();
+    for (i = 0; i < charts.size (); i++) {
+      fprintf (stderr, "chart %d %p\n", i, charts[i]);
+      if (cd == charts[i]) {
+	charts.removeAt (i);
+	break;
+      }
+    }
+  }
+  
+}
+
 ChartWindow::ChartWindow  (ChartControls *parent)
   : QMainWindow(parent)
 {
@@ -711,5 +746,4 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 
 ChartWindow::~ChartWindow()
 {
-
 }
