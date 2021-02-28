@@ -68,7 +68,6 @@ class ChartData
   void		setSelected (int idx, int state);
   QString	getTitle ();
   bool		getSpline ();
-  bool		getPolar ();
   Index		*getXIndex ();
   Index		*getZIndex ();
   QChart::ChartTheme getTheme ();
@@ -82,6 +81,8 @@ class ChartData
   QString 	getBGFile ();
   void          setBGFile (QString &fn);
   void 	 	clearBGFile ();
+  void		setPolar (bool rpolar);  
+  bool		getPolar ();  
 
  private:
   QSurface3DSeries::DrawFlags mode;

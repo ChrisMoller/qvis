@@ -176,7 +176,7 @@ MainWindow::writeVis (QString &fileName)
       ChartData     *cd = cc->getChartData ();
       
       stream.writeStartElement(xml_tags[XML_chart].tag);
-      bool polar =  cc->getPolar ();
+      bool polar =  cd->getPolar ();
       stream.writeAttribute(xml_tags[XML_polar].tag,
 			    QString (polar
 				     ? xml_tags[XML_true].tag

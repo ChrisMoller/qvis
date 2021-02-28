@@ -47,28 +47,26 @@ ChartControls::curveSettings ()
 
   int row = 0;
 
-#if 0
-  /********* surface mode ********/
+
+  /******* poalr ******/
   
-  QLabel lblm ("Surface mode");
-  layout->addWidget (&lblm, row, 0);
-  
-  QComboBox *smodebox = new QComboBox ();
-  smodebox->addItem ("Surface",    QSurface3DSeries::DrawSurface);
-  smodebox->addItem ("Wire Frame", QSurface3DSeries::DrawWireframe);
-  smodebox->addItem ("Suface + Wire Frame",
-		     QSurface3DSeries::DrawSurfaceAndWireframe);
-  QSurface3DSeries::DrawFlags selm = chartData->getDrawMode ();
-  int loc = smodebox->findData (QVariant (selm));
-  smodebox->setCurrentIndex (loc);
+  QLabel lblp ("Polar");
+  layout->addWidget (&lblp, row, 0);
 
-  layout->addWidget (smodebox, row, 1);
-
-  row++;
-
-#endif
+  QCheckBox *polarBox = new QCheckBox ();
+  polarBox->setCheckState (chartData->getPolar ()
+			   ? Qt::Checked : Qt::Unchecked);
+  layout->addWidget (polarBox, row, 1);
+  connect (polarBox,
+	   QOverload<int>::of(&QCheckBox::stateChanged),
+	   [=](int state)
+	   {chartData->setPolar (state == Qt::Checked);
+	    mainWindow->updateAll ();
+	    mainWindow->notifySelective (true); });
 
   /******* theme ******/
+
+  row++;
   
   QLabel lbl ("Theme");
   layout->addWidget (&lbl, row, 0);
@@ -270,7 +268,6 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   QGridLayout *layout = new QGridLayout ();
   theme = QChart::ChartThemeLight;
   useState = false;
-  polar = false;
   
   int row = 0;
   int col = 0;
@@ -469,18 +466,6 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 
   chartWindow = new ChartWindow (this);
   if (chartData) chartData->setWindow (chartWindow);
-}
-
-void
-ChartControls::setPolar (bool rpolar)
-{
-  polar = rpolar;
-}
-
-bool
-ChartControls::getPolar ()
-{
-  return polar;
 }
 
 ChartControls::~ChartControls()

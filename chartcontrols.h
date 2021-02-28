@@ -57,8 +57,6 @@ public:
   void           setChartData (ChartData *cd);
   MainWindow    *getMainWindow ();
   ChartWindow	*getChartWindow ();
-  void		 setPolar (bool rpolar);  
-  bool		 getPolar ();  
 
  private:
   int		  tabIndex;

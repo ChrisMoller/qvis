@@ -192,12 +192,6 @@ ChartData::getSpline () {
   return spline;
 }
 
-bool
-ChartData::getPolar ()
-{
-  return polar;
-}
-
 Index *
 ChartData::getXIndex ()
 {
@@ -245,4 +239,16 @@ bool
 ChartData::needsUpdate ()
 {
   return do_update;
+}
+
+void
+ChartData::setPolar (bool rpolar)
+{
+  polar = rpolar;
+}
+
+bool
+ChartData::getPolar ()
+{
+  return polar;
 }
