@@ -39,7 +39,9 @@ public:
   QComboBox 	 *curves_combo;
   //  void 		 enterChart (ChartWindow *cw); 
   QLineEdit	 *chart_title;
+#if 0
   QCheckBox 	 *do_spline;
+#endif
   QCheckBox 	 *do_polar;
   QLineEdit 	 *x_var_name;
   QLineEdit	 *x_label;

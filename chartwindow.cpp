@@ -116,12 +116,12 @@ ChartWindow::handle_vector (qreal &y_max,
 			    APL_value res,
 			    QVector<double> &xvals,
 			    QVector<double> &zvals __attribute__((unused)),
-			    bool spline,
 			    Curve *curve)
 {
   QString flbl      = curve->getName ();
   QColor  fcolour   = curve->getColour ();
   Qt::PenStyle fpen = curve->getPen ();
+  bool spline	    = curve->getSpline ();
   uint64_t count    = get_element_count (res);
   QAbstractSeries *series = nullptr;
 
@@ -263,8 +263,6 @@ ChartWindow::setContent (qreal &x_max, qreal &x_min,
   QString errString;
   char loc[256];
   
-  bool spline = (Qt::Checked == chartControls->do_spline->checkState ());
-
   chartControls->getMainWindow ()->setParams ();
 
   ix = chartControls->getChartData ()->getXIndex ();
@@ -305,7 +303,7 @@ ChartWindow::setContent (qreal &x_max, qreal &x_min,
 	}
 	else if (get_rank (res) == 1) {
 	  QAbstractSeries *series =
-	    handle_vector (y_max, y_min, res, xvals, zvals, spline, &curve);
+	    handle_vector (y_max, y_min, res, xvals, zvals, &curve);
 	  series_list.append (series);
 	}
 	QString cmd =

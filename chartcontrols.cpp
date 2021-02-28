@@ -465,7 +465,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   
   row++;
   col = 0;
-  
+
+#if 0
   do_spline = new QCheckBox ("Spline");
   if (chartData && chartData->getSpline ())
     do_spline->setCheckState (Qt::Checked);
@@ -476,6 +477,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	  [=]()
 	  {chartData->setUpdate (true);
 	   mainWindow->notifySelective (false); });
+#endif
   
   do_polar = new QCheckBox ("Polar");
   if (chartData && chartData->getPolar ())

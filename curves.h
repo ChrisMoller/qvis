@@ -80,8 +80,11 @@ class Curve
   void    	setCpx (int rcpx);
   QSurface3DSeries::DrawFlags getDrawMode ();
   void		setDrawMode (QSurface3DSeries::DrawFlags rdrawmode);
+  bool 		getSpline ();
+  void    	setSpline (bool rspline);
 
  private:
+  bool    spline;
   QSurface3DSeries::DrawFlags drawMode;
   QString name;			// key 
   QString label;		// y-axis key

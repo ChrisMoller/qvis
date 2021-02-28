@@ -96,6 +96,7 @@ Curve::Curve (QString &rname, QString &rlabel,
   pointLabelsVisible = false;
   cpx    = CPX_REAL;
   drawMode = QSurface3DSeries::DrawSurface;
+  spline = true;
 }
 
 /********* curves *********/
@@ -148,6 +149,12 @@ Curve::getCpx ()
   return cpx;
 }
 
+bool
+Curve::getSpline ()
+{
+  return spline;
+}
+
 QColor
 Curve::getColour ()
 {
@@ -170,6 +177,12 @@ void
 Curve::setCpx (int rcpx)
 {
   cpx = rcpx;
+}
+
+void
+Curve::setSpline (bool rspline)
+{
+  spline = rspline;
 }
 
 void

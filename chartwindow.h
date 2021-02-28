@@ -108,7 +108,6 @@ private:
 				  APL_value res,
 				  QVector<double> &xvals,
 				  QVector<double> &zvals,
-				  bool spline,
 				  Curve *curve);
   QSurfaceDataArray *handle_surface (qreal &x_max, qreal &x_min,
 				     qreal &y_max, qreal &y_min,

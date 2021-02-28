@@ -17,7 +17,7 @@
 /***
   <qvis>
     <curves>
-      <curve idx="." pv="." lv="." cpxmode="." drawmode='.'>
+      <curve idx="." pv="." lv="." cpxmode="." drawmode='.' spline=".">
         <name>.</name>
         <label>.</label>
         <function>.</function>
@@ -26,7 +26,7 @@
       </curve>
     </curves>
     <charts>
-      <chart spline="." polar="." incr='.' theme=".'>
+      <chart polar="." incr='.' theme=".'>
         <title>.</title>
         <ix>
           <name>.</name>
@@ -100,6 +100,10 @@ MainWindow::writeVis (QString &fileName)
 			    curves[i].getPointLabelsVisible ()
 			    ? xml_tags[XML_true].tag
 			    : xml_tags[XML_false].tag);
+      stream.writeAttribute(xml_tags[XML_spline].tag,
+			    QString (curves[i].getSpline ()
+				     ? xml_tags[XML_true].tag
+				     : xml_tags[XML_false].tag));
       QString modes = xml_tags[XML_real].tag;
       switch (curves[i].getCpx ()) {
       case CPX_REAL:	// do nothing, already set
@@ -172,11 +176,6 @@ MainWindow::writeVis (QString &fileName)
       ChartData     *cd = cc->getChartData ();
       
       stream.writeStartElement(xml_tags[XML_chart].tag);
-      bool spline =  (Qt::Checked == cc->do_spline->checkState());
-      stream.writeAttribute(xml_tags[XML_spline].tag,
-			    QString (spline
-				     ? xml_tags[XML_true].tag
-				     : xml_tags[XML_false].tag));
       bool polar =  (Qt::Checked == cc->do_polar->checkState());
       stream.writeAttribute(xml_tags[XML_polar].tag,
 			    QString (polar
@@ -316,7 +315,7 @@ MainWindow::parseIz (QXmlStreamReader &stream)
 
 
 bool
-MainWindow::parseCurve (int idx, bool pv, bool lv, int cpxmode,
+MainWindow::parseCurve (int idx, bool pv, bool lv, bool spline, int cpxmode,
 			int drawmode, QXmlStreamReader &stream)
 {
   bool rc = true;
@@ -387,6 +386,7 @@ MainWindow::parseCurve (int idx, bool pv, bool lv, int cpxmode,
   curve.setPointsVisible (pv);
   curve.setPointLabelsVisible (lv);
   curve.setCpx (cpxmode);
+  curve.setSpline (spline);
   curve.setDrawMode ((QSurface3DSeries::DrawFlags)drawmode);
   curves.insert (idx, curve);
   return rc;
@@ -412,6 +412,9 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	    == xml_tags[XML_true].tag;
 	  bool lv  =
 	    attrs.value (xml_tags[XML_labelsvisible].tag)
+	    == xml_tags[XML_true].tag;
+	  bool spline =
+	    (attrs.value (xml_tags[XML_spline].tag)).toint ()
 	    == xml_tags[XML_true].tag;
 	  int cpxmode = CPX_REAL;
 	  {
@@ -450,7 +453,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	      }
 	    }
 	  }
-	  parseCurve (idx, pv, lv, cpxmode, drawmode, stream);
+	  parseCurve (idx, pv, lv, spline, cpxmode, drawmode, stream);
 	}
 	break;
       }
@@ -469,7 +472,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 }
 
 bool
-MainWindow::parseChart (bool spline, bool polar, int theme,
+MainWindow::parseChart (bool polar, int theme,
 			QXmlStreamReader &stream)
 {
   bool rc = true;
@@ -521,7 +524,7 @@ MainWindow::parseChart (bool spline, bool polar, int theme,
     }
   }
 
-  ChartData *cd = new ChartData (title, spline, polar, theme,
+  ChartData *cd = new ChartData (title, polar, theme,
 				 ix, iz, selected);
   if (!bgimage.isEmpty ()) cd->setBGFile (bgimage);
   charts.append (cd);
@@ -545,16 +548,13 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	{
 	  QXmlStreamAttributes attrs = stream.attributes();
 	  if (!attrs.isEmpty ()) {
-	    QString spline =
-	      (attrs.value (xml_tags[XML_spline].tag)).toString ();
 	    QString polar  =
 	      ((attrs.value (xml_tags[XML_polar].tag))).toString ();
 	    QStringRef themeref = attrs.value (xml_tags[XML_theme].tag);
 	    int theme = themeref.isEmpty ()
 	      ? QChart::ChartThemeLight : themeref.toInt ();
 	    incr  = ((attrs.value (xml_tags[XML_incr].tag))).toInt ();
-	    parseChart ((0 == spline.compare (xml_tags[XML_true].tag)),
-			(0 == polar.compare (xml_tags[XML_true].tag)),
+	    parseChart (((0 == polar.compare (xml_tags[XML_true].tag)),
 			theme, stream);
 	  }
 	}

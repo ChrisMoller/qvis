@@ -158,6 +158,23 @@ MainWindow::setCurves (int which)
 	     updateAll (); notifySelective (false); });
 #endif
 
+  /********** spline ******************/
+
+  row++;
+
+  QLabel lblsp ("Spline");
+  layout->addWidget (&lblsp, row, 0);
+  
+  QCheckBox *splineCheck = new QCheckBox ();
+  bool spactive = curves[which].getSpline ();
+  if (spactive) splineCheck->setCheckState (Qt::Checked);
+  connect (splineCheck,
+	  QOverload<int>::of(&QCheckBox::stateChanged),
+	  [=](int state)
+	  {curves[which].setSpline ((state == Qt::Checked) ? true : false);
+	    updateAll (); notifySelective (false); });
+  layout->addWidget (splineCheck, row, 1);
+	      
   /************* show points *********/
   
   row++;
@@ -168,7 +185,8 @@ MainWindow::setCurves (int which)
   bool active = curves[which].getPointsVisible ();
   QCheckBox *points_check = new QCheckBox ();
   points_check->setCheckState (active ? Qt::Checked : Qt::Unchecked);
-  connect (points_check, QOverload<int>::of(&QCheckBox::stateChanged),
+  connect (points_check,
+	   QOverload<int>::of(&QCheckBox::stateChanged),
 	   [=](int state)
 	   { curves[which].setPointsVisible (state);
 	     updateAll (); notifySelective (false); });
