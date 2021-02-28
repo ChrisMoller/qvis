@@ -228,36 +228,6 @@ ChartControls::setChartData (ChartData *cd)
 }
 
 void
-ChartControls::valChanged (bool enabled __attribute__((unused)))
-{
-#if 0
-  chartWindow->curve.polar  = (Qt::Checked == do_polar->checkState());
-  chartWindow->curve.spline = (Qt::Checked == do_spline->checkState());
-  //  curve.shorttitle
-  chartWindow->curve.title			= chart_title->text ();
-  //  chartWindow->curve.function.title		= y_label->text ();
-  // chartWindow->curve.function.label		= fcn_label->text ();
-  chartWindow->curve.function.expression	= apl_expression->text ();
-  chartWindow->curve.ix.name			= x_var_name->text ();
-  chartWindow->curve.ix.title			= x_label->text ();
-  chartWindow->curve.ix.range.min		= x_var_min->value ();
-  chartWindow->curve.ix.range.max		= x_var_max->value ();
-  chartWindow->curve.iz.name			= z_var_name->text ();
-  chartWindow->curve.iz.title			= z_label->text ();
-  chartWindow->curve.iz.range.min 		= z_var_min->value ();
-  chartWindow->curve.iz.range.max 		= z_var_max->value ();
-  chartWindow->changed = true;
-  chartWindow->handleExpression ();
-#endif
-}
-
-void
-ChartControls::valChangedv ()
-{
-  valChanged (true);
-}
-
-void
 ChartControls::titleChangedv ()
 {
   QString title = chart_title->text ();
@@ -300,6 +270,7 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   QGridLayout *layout = new QGridLayout ();
   theme = QChart::ChartThemeLight;
   useState = false;
+  polar = false;
   
   int row = 0;
   int col = 0;
@@ -467,18 +438,6 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
   col = 0;
 
 #if 0
-  do_spline = new QCheckBox ("Spline");
-  if (chartData && chartData->getSpline ())
-    do_spline->setCheckState (Qt::Checked);
-  layout->addWidget (do_spline, row, col++);
-  connect(do_spline,
-	  &QCheckBox::stateChanged,
-	  this,
-	  [=]()
-	  {chartData->setUpdate (true);
-	   mainWindow->notifySelective (false); });
-#endif
-  
   do_polar = new QCheckBox ("Polar");
   if (chartData && chartData->getPolar ())
     do_polar->setCheckState (Qt::Checked);
@@ -489,8 +448,8 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	  [=]()
 	  {chartData->setUpdate (true);
 	   mainWindow->notifySelective (false); });
+#endif
 
-#if 1
   QDoubleSpinBox *incrBox = new QDoubleSpinBox ();
   incrBox->setDecimals (0);
   incrBox->setRange (16.0, 128.0);
@@ -505,31 +464,23 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 	    chartData->setUpdate (true);
 	    mainWindow->notifySelective (false);
 	  });
-#else					// buttons dont show up
-  QSpinBox *incrBox = new QSpinBox ();
-#if 0
-  incrBox->setStyleSheet("QSpinBox::up-arrow {  width: 7px;  height: 7px; }"
-                     "QSpinBox::down-arrow {  width: 10px;  height: 7px; }");
-  incrBox->setButtonSymbols (QAbstractSpinBox::UpDownArrows);
-#endif
-  incrBox->setRange (16, 128);
-  incrBox->setValue ( mainWindow->getIncr ());
-  layout->addWidget (incrBox, row, col++);
-  connect (incrBox,
-	  QOverload<int>::of(&QSpinBox::valueChanged),
-	  this,
-	  [=](int val)
-	  {
-	    mainWindow->setIncr (val);
-	    chartData->setUpdate (true);
-	    mainWindow->notifySelective (false);
-	  });
-#endif
 
   setLayout (layout);
 
   chartWindow = new ChartWindow (this);
   if (chartData) chartData->setWindow (chartWindow);
+}
+
+void
+ChartControls::setPolar (bool rpolar)
+{
+  polar = rpolar;
+}
+
+bool
+ChartControls::getPolar ()
+{
+  return polar;
 }
 
 ChartControls::~ChartControls()

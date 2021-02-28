@@ -393,7 +393,7 @@ ChartWindow::drawChart ()
   }
   else {
     if (series_list.size () > 0) {
-      bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+      bool polar  = chartControls->getPolar ();
       chartView  = new QChartView ();
       polarchart = new QPolarChart ();
       chart      = new QChart ();
@@ -612,7 +612,7 @@ ChartWindow::reDraw  ()
   }
   else {
     if (series_list.size () > 0) {
-      bool polar  = (Qt::Checked == chartControls->do_polar->checkState ());
+      bool polar  = chartControls->getPolar ();
       chartView->setChart (polar ? polarchart : chart);
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());

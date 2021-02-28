@@ -39,10 +39,6 @@ public:
   QComboBox 	 *curves_combo;
   //  void 		 enterChart (ChartWindow *cw); 
   QLineEdit	 *chart_title;
-#if 0
-  QCheckBox 	 *do_spline;
-#endif
-  QCheckBox 	 *do_polar;
   QLineEdit 	 *x_var_name;
   QLineEdit	 *x_label;
   QDoubleSpinBox *x_var_min;
@@ -60,7 +56,9 @@ public:
   ChartData 	*getChartData ();
   void           setChartData (ChartData *cd);
   MainWindow    *getMainWindow ();
-  ChartWindow	 *getChartWindow ();
+  ChartWindow	*getChartWindow ();
+  void		 setPolar (bool rpolar);  
+  bool		 getPolar ();  
 
  private:
   int		  tabIndex;
@@ -69,13 +67,12 @@ public:
   ChartData 	 *chartData;
   bool 		  useState;
   ChartWindow	 *chartWindow;
+  bool		  polar;
 #if 0
   QString	  backgroundFile;
 #endif
 
 private slots:
-  void valChanged(bool enabled);
-  void valChangedv();
   void titleChangedv ();
   void selectCurves ();
   void curveSettings ();
