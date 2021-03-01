@@ -195,8 +195,10 @@ private:
   bool 		  parseCurve (int idx, bool pv, bool lv, bool spline,
 			      int cpxmode, int drawmode,
 			      QXmlStreamReader &stream);
-  bool 		  parseCharts (QXmlStreamReader &stream);
-  bool 		  parseChart (bool polar, int theme,
+  bool 		  parseCharts (QXmlStreamReader &stream,
+			       QList<ChartData*> *newCharts);
+  bool 		  parseChart (QList<ChartData*> *newCharts,
+			      bool polar, int theme,
 			      QXmlStreamReader &stream);
   bool 		  parseParams (QXmlStreamReader &stream);
   

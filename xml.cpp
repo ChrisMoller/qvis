@@ -472,7 +472,7 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 }
 
 bool
-MainWindow::parseChart (bool polar, int theme,
+MainWindow::parseChart (QList<ChartData*> *newCharts, bool polar, int theme,
 			QXmlStreamReader &stream)
 {
   bool rc = true;
@@ -527,14 +527,15 @@ MainWindow::parseChart (bool polar, int theme,
   ChartData *cd = new ChartData (title, polar, theme,
 				 ix, iz, selected);
   if (!bgimage.isEmpty ()) cd->setBGFile (bgimage);
-  charts.append (cd);
+  newCharts->append (cd);
 
   return rc;
 }
 
 
 bool
-MainWindow::parseCharts (QXmlStreamReader &stream)
+MainWindow::parseCharts (QXmlStreamReader &stream,
+			 QList<ChartData*> *newCharts)
 {
   bool rc = false;
   bool run = true;
@@ -554,7 +555,8 @@ MainWindow::parseCharts (QXmlStreamReader &stream)
 	    int theme = themeref.isEmpty ()
 	      ? QChart::ChartThemeLight : themeref.toInt ();
 	    incr  = ((attrs.value (xml_tags[XML_incr].tag))).toInt ();
-	    parseChart ((0 == polar.compare (xml_tags[XML_true].tag)),
+	    parseChart (newCharts,
+			(0 == polar.compare (xml_tags[XML_true].tag)),
 			theme, stream);
 	  }
 	}
@@ -623,6 +625,7 @@ MainWindow::parseParams (QXmlStreamReader &stream)
 void
 MainWindow::readVis (QString &fileName)
 {
+  QList<ChartData*> newCharts;
   QFile file (fileName);
   file.open (QIODevice::ReadOnly | QIODevice::Text);
   QXmlStreamReader stream(&file);
@@ -638,7 +641,7 @@ MainWindow::readVis (QString &fileName)
 	parseCurves (stream);
 	break;
       case XML_charts:
-	parseCharts (stream);
+	parseCharts (stream, &newCharts);
 	break;
       case XML_parameters:
 	parseParams (stream);
@@ -672,7 +675,8 @@ MainWindow::readVis (QString &fileName)
 #endif
 
   
-  for (i =  0; i < charts.size (); i++) {
+  for (i =  0; i < newCharts.size (); i++) {
+#if 9
     if (tabs->count () > 0) {
       int ix = tabs->count () - 1;
       QWidget *widg = tabs->widget (ix);
@@ -681,9 +685,10 @@ MainWindow::readVis (QString &fileName)
 	tabs->removeTab (ix);
       }
     }
-    ChartControls *tab1 = new ChartControls (i, charts[i], this);
+#endif
+    ChartControls *tab1 = new ChartControls (i, newCharts[i], this);
     tab1->setUseState (true);
-    tabs->addTab (tab1, charts[i]->getTitle ());
+    tabs->addTab (tab1, newCharts[i]->getTitle ());
   }
 }
 

@@ -227,7 +227,6 @@ MainWindow::fileChanged(const QString &path)
 void
 MainWindow::openVis()
 {
-  fprintf (stderr, "openvis\n");
   QFileDialog dialog (this, QString ("Open Vis file"));
   dialog.setNameFilter(tr("Vis (*.vis)"));
   dialog.setWindowModality(Qt::WindowModal);

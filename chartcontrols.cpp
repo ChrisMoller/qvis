@@ -451,7 +451,6 @@ ChartControls::ChartControls (int index, ChartData *cd, MainWindow *parent)
 
   setLayout (layout);
 
-  fprintf (stderr, "creating chartwindow\n");
   chartWindow = new ChartWindow (this);
   if (chartData) chartData->setWindow (chartWindow);
 }
