@@ -1175,8 +1175,8 @@ MainWindow::getTabs ()
   return tabs;
 }
 
-QList<ChartData*>
+QList<ChartData*> *
 MainWindow:: getCharts ()
 {
-  return charts;
+  return &charts;
 }

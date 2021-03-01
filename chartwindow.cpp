@@ -667,16 +667,21 @@ ChartWindow::closeEvent (QCloseEvent *event __attribute__((unused)))
       break;
     }
   }
+    QList<ChartData*> *charts = mw->getCharts ();
+#if 1
+  fprintf (stderr, "before %d\n", charts->size ());
   if (cd) {
-    QList<ChartData*> charts = mw->getCharts ();
-    for (i = 0; i < charts.size (); i++) {
-      fprintf (stderr, "chart %d %p\n", i, charts[i]);
-      if (cd == charts[i]) {
-	charts.removeAt (i);
+    for (i = 0; i < charts->size (); i++) {
+      fprintf (stderr, "chart %d %p\n", i, (*charts)[i]);
+      if (cd == (*charts)[i]) {
+	charts->removeAt (i);
+	fprintf (stderr, "removing %d\n", i);
 	break;
       }
     }
   }
+  fprintf (stderr, "after %d\n", charts->size ());
+#endif
   
 }
 
