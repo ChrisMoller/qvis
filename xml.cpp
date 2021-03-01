@@ -688,6 +688,7 @@ MainWindow::readVis (QString &fileName)
 #endif
     ChartControls *tab1 = new ChartControls (i, newCharts[i], this);
     tab1->setUseState (true);
+    charts.append (newCharts[i]);
     tabs->addTab (tab1, newCharts[i]->getTitle ());
   }
 }
