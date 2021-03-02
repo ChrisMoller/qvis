@@ -573,14 +573,12 @@ static Qt::KeyboardModifiers keymod = Qt::NoModifier;
 void
 QWidget::keyPressEvent(QKeyEvent *event)
 {
-  fprintf (stderr, "key press\n");
   keymod =  event->modifiers();
 }
 
 void
 QWidget::keyReleaseEvent(QKeyEvent *event)
 {
-  fprintf (stderr, "key release\n");
   keymod =  event->modifiers();
 }
 
@@ -680,13 +678,28 @@ ChartWindow::closeEvent (QCloseEvent *event __attribute__((unused)))
   }
 }
 
+bool
+ChartWinFilter::eventFilter(QObject *obj, QEvent *event)
+{
+  static int ct = 0;
+  //  if (obj == watched) {
+    fprintf (stderr, "type %d %d\n", ct++, (int)event->type());
+    if (event->type() == QEvent::MouseButtonRelease) {
+      fprintf (stderr, "ecf\n");
+    }
+    // }
+  return QObject::eventFilter(obj, event);
+}
+
 ChartWindow::ChartWindow  (ChartControls *parent)
   : QMainWindow(parent)
 {
   chartControls = parent;
   graph = nullptr;
   camera = nullptr;
-
+  chartWinFilter = new ChartWinFilter (this, this);
+  this->installEventFilter(chartWinFilter);
+    
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);
   QVariant hh = settings.value (SETTINGS_HEIGHT);

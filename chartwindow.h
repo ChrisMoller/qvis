@@ -64,6 +64,23 @@ private:
   QChartView  *watched;
 };
 
+class ChartWinFilter : public QObject
+{
+    Q_OBJECT
+  
+public:
+  ChartWinFilter (ChartWindow *obj, ChartWindow *cw)
+  {watched = obj; chartwin = cw;}
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
+private:
+  ChartWindow *chartwin;
+  ChartWindow *watched;
+};
+
+
 class ChartWindow : public QMainWindow  //, protected QOpenGLFunctions
 {
   Q_OBJECT
@@ -101,6 +118,8 @@ public slots:
   //  void handleExpression ();
   
 private:
+  ChartWinFilter *chartWinFilter;
+  bool chartEventFilter(QObject *obj, QEvent *event);
   void closeEvent (QCloseEvent *event);
   QList<QAbstractSeries *>series_list;
   QList<QSurfaceDataArray *>surface_list;
