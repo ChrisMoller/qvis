@@ -356,6 +356,59 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
   return surfaces_created;
 }
 
+ChartFilter::ChartFilter (QChartView *obj, QChart *ct, ChartData *cd)
+{
+  watched 	= obj;
+  chart		= ct;
+  chartData 	= cd;
+}
+
+bool
+ChartFilter::eventFilter(QObject *obj, QEvent *event)
+{
+  if (obj == watched) {
+    if (event->type() == QEvent::MouseButtonPress) {
+      QMouseEvent *me = (QMouseEvent *)event;
+      if (me->button () == Qt::RightButton) {
+	QString filter = QString ("*.png");
+	QFileDialog dialog (watched,
+			    QString ("Export chart"),
+			    QString (),
+			    filter);
+	dialog.setOption (QFileDialog::DontUseNativeDialog);
+	QLayout *layout = dialog.layout ();
+	QGroupBox *gbox = new QGroupBox ();
+	QHBoxLayout *btnlayout = new QHBoxLayout ();
+	gbox->setLayout (btnlayout);
+	QDoubleSpinBox *widthBox  = new QDoubleSpinBox ();
+	QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
+	widthBox->setMinimum (32.0);
+	widthBox->setMaximum (8192.0);
+	widthBox->setDecimals (0);
+	widthBox->setStepType (QAbstractSpinBox::AdaptiveDecimalStepType);
+	heightBox->setMinimum (32.0);
+	heightBox->setMaximum (8192.0);
+	heightBox->setDecimals (0);
+	heightBox->setStepType (QAbstractSpinBox::AdaptiveDecimalStepType);
+	btnlayout->addWidget (new QLabel ("Width:"));
+	btnlayout->addWidget (widthBox);
+	btnlayout->addWidget (new QLabel ("Height:"));
+	btnlayout->addWidget (heightBox);
+	layout->addWidget (gbox);
+	dialog.setWindowModality(Qt::WindowModal);
+	dialog.setAcceptMode(QFileDialog::AcceptOpen);
+	if (dialog.exec() == QDialog::Accepted) {
+	  QString fn =  dialog.selectedFiles().first();
+	  double width  = widthBox->value ();
+	  double height = heightBox->value ();
+	  fprintf (stderr, "%g %g %s\n", width, height, toCString (fn));
+	}
+      }
+    }
+  }
+  return QObject::eventFilter(obj, event);
+}
+
 QWidget *
 ChartWindow::drawChart ()
 {
@@ -396,9 +449,14 @@ ChartWindow::drawChart ()
   else {
     if (series_list.size () > 0) {
       bool polar  = cd->getPolar ();
-      chartView  = new QChartView ();
-      polarchart = new QPolarChart ();
-      chart      = new QChart ();
+      chartView   = new QChartView ();
+      polarchart  = new QPolarChart ();
+      chart       = new QChart ();
+
+      fprintf (stderr, "creating filter for %p\n", chartView);
+      chartFilter = new ChartFilter (chartView, chart, cd);
+      chartView->installEventFilter (chartFilter);
+
       chartView->setChart (polar ? polarchart : chart);
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
@@ -678,27 +736,12 @@ ChartWindow::closeEvent (QCloseEvent *event __attribute__((unused)))
   }
 }
 
-bool
-ChartWinFilter::eventFilter(QObject *obj, QEvent *event)
-{
-  static int ct = 0;
-  //  if (obj == watched) {
-    fprintf (stderr, "type %d %d\n", ct++, (int)event->type());
-    if (event->type() == QEvent::MouseButtonRelease) {
-      fprintf (stderr, "ecf\n");
-    }
-    // }
-  return QObject::eventFilter(obj, event);
-}
-
 ChartWindow::ChartWindow  (ChartControls *parent)
   : QMainWindow(parent)
 {
   chartControls = parent;
   graph = nullptr;
   camera = nullptr;
-  chartWinFilter = new ChartWinFilter (this, this);
-  this->installEventFilter(chartWinFilter);
     
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);

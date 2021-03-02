@@ -64,20 +64,20 @@ private:
   QChartView  *watched;
 };
 
-class ChartWinFilter : public QObject
+class ChartFilter : public QObject
 {
     Q_OBJECT
   
 public:
-  ChartWinFilter (ChartWindow *obj, ChartWindow *cw)
-  {watched = obj; chartwin = cw;}
+  ChartFilter (QChartView *obj, QChart *ct, ChartData *cd);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
-  ChartWindow *chartwin;
-  ChartWindow *watched;
+  ChartData	*chartData;
+  QChart	*chart;
+  QChartView	*watched;
 };
 
 
@@ -118,7 +118,7 @@ public slots:
   //  void handleExpression ();
   
 private:
-  ChartWinFilter *chartWinFilter;
+  ChartFilter *chartFilter;
   bool chartEventFilter(QObject *obj, QEvent *event);
   void closeEvent (QCloseEvent *event);
   QList<QAbstractSeries *>series_list;
