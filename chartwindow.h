@@ -75,12 +75,14 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
-  QChart	*chart;
-  QPolarChart	*polarchart;
-  ChartWindow 	*chartwin;
-  QChartView	*watched;
+  QChart	*fchart;
+  QPolarChart	*fpolarchart;
+  ChartWindow 	*fchartwin;
+  QChartView	*fwatched;
 };
 
+
+// https://ericlavesson.blogspot.com/2013/03/c-ownership-semantics.html
 
 class ChartWindow : public QMainWindow  //, protected QOpenGLFunctions
 {
@@ -91,8 +93,7 @@ public:
   ~ChartWindow();
   QChartView	*chartView;
   QChart	*chart;
-  QPolarChart	*polarchart;
-  //  OldCurve		 curve;
+  QPolarChart	 polarchart;
   bool		 changed;
   QSettings 	 settings;
   QWidget 	*drawChart ();
@@ -106,7 +107,8 @@ public:
   bool		createSurfaceList (Q3DSurface *graph,
 				   QList<Curve> &curve_list);
   //  std::vector<OldCurve> curves;
-  void exportChart (int width, int height, QString &fn);
+  void exportChart (int width, int height, QString &fn,
+		    QChart *mchart, QPolarChart *mpolarchart);
 
 private slots:
   void imageExport();

@@ -359,21 +359,21 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
 ChartFilter::ChartFilter (QChartView *obj, QChart *ct,
 			  QPolarChart *cp, ChartWindow *cw)
 {
-  watched 	= obj;
-  chart		= ct;
-  polarchart	= cp;
-  chartwin	= cw;
+  fwatched 	= obj;
+  fchart	= ct;
+  fpolarchart	= cp;
+  fchartwin	= cw;
 }
 
 bool
 ChartFilter::eventFilter(QObject *obj, QEvent *event)
 {
-  if (obj == watched) {
+  if (obj == fwatched) {
     if (event->type() == QEvent::MouseButtonPress) {
       QMouseEvent *me = (QMouseEvent *)event;
       if (me->button () == Qt::RightButton) {
 	QString filter = QString ("*.png");
-	QFileDialog dialog (watched,
+	QFileDialog dialog (fwatched,
 			    QString ("Export chart"),
 			    QString (),
 			    filter);
@@ -405,7 +405,8 @@ ChartFilter::eventFilter(QObject *obj, QEvent *event)
 	  QString fn =  dialog.selectedFiles().first();
 	  double width  = widthBox->value ();
 	  double height = heightBox->value ();
-	  chartwin->exportChart ((int)width, (int)height, fn);
+	  fchartwin->exportChart ((int)width, (int)height, fn,
+				 fchart, fpolarchart);
 	}
       }
     }
@@ -414,25 +415,17 @@ ChartFilter::eventFilter(QObject *obj, QEvent *event)
 }
 
 void
-ChartWindow::exportChart (int width, int height, QString &fn)
+ChartWindow::exportChart (int width, int height, QString &fn,
+			  QChart *mchart, QPolarChart *mpolarchart)
 {
   QChartView *lclChartView  = new QChartView ();
-#if 0
-  QChart *chartCopy = new QChart (lclChart);
-#endif
 
+  lclChartView->setChart (mchart ?: mpolarchart);
   lclChartView->setGeometry (0, 0, width, height);
-#if 0
-  lclChartView->setChart (chartCopy);
-#else
-  lclChartView->setChart (chart ?: polarchart);
-#endif
-  
   lclChartView->setRenderHint (QPainter::Antialiasing);
 
   QPixmap p = lclChartView->grab();
   p.save(fn);
-  reDraw ();
 }
 
 QWidget *
@@ -477,9 +470,6 @@ ChartWindow::drawChart ()
       polarchart  = nullptr;
       chart       = nullptr;
 
-      chartFilter = new ChartFilter (chartView, chart, polarchart, this);
-      chartView->installEventFilter (chartFilter);
-
       if (polar) {
 	polarchart  = new QPolarChart ();
 	chartView->setChart (polarchart);
@@ -488,6 +478,9 @@ ChartWindow::drawChart ()
 	chart  = new QChart ();
 	chartView->setChart (chart);
       }
+
+      chartFilter = new ChartFilter (chartView, chart, polarchart, this);
+      chartView->installEventFilter (chartFilter);
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
       
