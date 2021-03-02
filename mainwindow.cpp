@@ -261,7 +261,7 @@ MainWindow::loadapl()
   static bool protect = false;
   static bool do_load = true;
   QString filter = QString ("*.xml *.atf");
-  QFileDialog dialog(this, QString ("Open APL file"), libpath, filter);
+  QFileDialog dialog (this, QString ("Open APL file"), libpath, filter);
   dialog.setOption (QFileDialog::DontUseNativeDialog);
   QLayout *layout = dialog.layout ();
 
@@ -285,7 +285,7 @@ MainWindow::loadapl()
     do_load = button_load->isChecked();
     protect =
       (button_protected->checkState() == Qt::Checked) ? true : false;
-    QString fn =  dialog.selectedFiles().first();
+    QString fn = dialog.selectedFiles().first();
     if (fn.endsWith (QString (".xml"),Qt::CaseInsensitive)) {
       if (do_load && protect) {
 	QMessageBox msgBox;

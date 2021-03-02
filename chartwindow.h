@@ -69,14 +69,15 @@ class ChartFilter : public QObject
     Q_OBJECT
   
 public:
-  ChartFilter (QChartView *obj, QChart *ct, ChartData *cd);
+  ChartFilter (QChartView *obj, QChart *ct, QPolarChart *cp, ChartWindow *cw);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
-  ChartData	*chartData;
   QChart	*chart;
+  QPolarChart	*polarchart;
+  ChartWindow 	*chartwin;
   QChartView	*watched;
 };
 
@@ -105,6 +106,7 @@ public:
   bool		createSurfaceList (Q3DSurface *graph,
 				   QList<Curve> &curve_list);
   //  std::vector<OldCurve> curves;
+  void exportChart (int width, int height, QString &fn);
 
 private slots:
   void imageExport();

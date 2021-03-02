@@ -356,11 +356,13 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
   return surfaces_created;
 }
 
-ChartFilter::ChartFilter (QChartView *obj, QChart *ct, ChartData *cd)
+ChartFilter::ChartFilter (QChartView *obj, QChart *ct,
+			  QPolarChart *cp, ChartWindow *cw)
 {
   watched 	= obj;
   chart		= ct;
-  chartData 	= cd;
+  polarchart	= cp;
+  chartwin	= cw;
 }
 
 bool
@@ -384,10 +386,12 @@ ChartFilter::eventFilter(QObject *obj, QEvent *event)
 	QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
 	widthBox->setMinimum (32.0);
 	widthBox->setMaximum (8192.0);
+	widthBox->setValue (320.0);
 	widthBox->setDecimals (0);
 	widthBox->setStepType (QAbstractSpinBox::AdaptiveDecimalStepType);
 	heightBox->setMinimum (32.0);
 	heightBox->setMaximum (8192.0);
+	heightBox->setValue (320.0);
 	heightBox->setDecimals (0);
 	heightBox->setStepType (QAbstractSpinBox::AdaptiveDecimalStepType);
 	btnlayout->addWidget (new QLabel ("Width:"));
@@ -401,12 +405,34 @@ ChartFilter::eventFilter(QObject *obj, QEvent *event)
 	  QString fn =  dialog.selectedFiles().first();
 	  double width  = widthBox->value ();
 	  double height = heightBox->value ();
-	  fprintf (stderr, "%g %g %s\n", width, height, toCString (fn));
+	  chartwin->exportChart ((int)width, (int)height, fn);
 	}
       }
     }
   }
   return QObject::eventFilter(obj, event);
+}
+
+void
+ChartWindow::exportChart (int width, int height, QString &fn)
+{
+  QChartView *lclChartView  = new QChartView ();
+#if 0
+  QChart *chartCopy = new QChart (lclChart);
+#endif
+
+  lclChartView->setGeometry (0, 0, width, height);
+#if 0
+  lclChartView->setChart (chartCopy);
+#else
+  lclChartView->setChart (chart ?: polarchart);
+#endif
+  
+  lclChartView->setRenderHint (QPainter::Antialiasing);
+
+  QPixmap p = lclChartView->grab();
+  p.save(fn);
+  reDraw ();
 }
 
 QWidget *
@@ -426,8 +452,6 @@ ChartWindow::drawChart ()
   Index *iz = nullptr;
   QString curve_label;
   QList<Curve> curve_list;
-
-
 
   /****  content  ****/
 
@@ -450,14 +474,20 @@ ChartWindow::drawChart ()
     if (series_list.size () > 0) {
       bool polar  = cd->getPolar ();
       chartView   = new QChartView ();
-      polarchart  = new QPolarChart ();
-      chart       = new QChart ();
+      polarchart  = nullptr;
+      chart       = nullptr;
 
-      fprintf (stderr, "creating filter for %p\n", chartView);
-      chartFilter = new ChartFilter (chartView, chart, cd);
+      chartFilter = new ChartFilter (chartView, chart, polarchart, this);
       chartView->installEventFilter (chartFilter);
 
-      chartView->setChart (polar ? polarchart : chart);
+      if (polar) {
+	polarchart  = new QPolarChart ();
+	chartView->setChart (polarchart);
+      }
+      else {
+	chart  = new QChart ();
+	chartView->setChart (chart);
+      }
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
       
