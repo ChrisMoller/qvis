@@ -420,7 +420,20 @@ ChartWindow::exportChart (int width, int height, QString &fn,
 {
   QChartView *lclChartView  = new QChartView ();
 
-  lclChartView->setChart (mchart ?: mpolarchart);
+  if (mchart) {
+    QChart *nchart = new QChart ();
+    lclChartView->setChart (nchart);
+    nchart->setTheme (mchart->theme ());
+    nchart->setDropShadowEnabled (mchart->isDropShadowEnabled ());
+    nchart->removeAllSeries();
+    QList<QAbstractSeries *> series = mchart->series ();
+    int i;
+    for (i = 0; i < series.size (); i++) 
+      nchart->addSeries (series[i]);
+    nchart->setTitle (mchart->title ());
+    nchart->createDefaultAxes ();
+  }
+  //  lclChartView->setChart (mchart ?: mpolarchart);
   lclChartView->setGeometry (0, 0, width, height);
   lclChartView->setRenderHint (QPainter::Antialiasing);
 
@@ -481,7 +494,7 @@ ChartWindow::drawChart ()
 
       chartFilter = new ChartFilter (chartView, chart, polarchart, this);
       chartView->installEventFilter (chartFilter);
-      chartView->chart ()->setDropShadowEnabled(true);
+      chartView->chart ()->setDropShadowEnabled (true);
       chartView->chart ()->setTheme (cd->getTheme ());
       
       chartView->chart ()->removeAllSeries();

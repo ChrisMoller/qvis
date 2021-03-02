@@ -93,7 +93,7 @@ public:
   ~ChartWindow();
   QChartView	*chartView;
   QChart	*chart;
-  QPolarChart	 polarchart;
+  QPolarChart	*polarchart;
   bool		 changed;
   QSettings 	 settings;
   QWidget 	*drawChart ();
