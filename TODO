@@ -13,6 +13,8 @@ https://stackoverflow.com/questions/18257281/qt-color-picker-widget:wwq
 valgrind --tool=memcheck --leak-check=full --leak-resolution=high --show-leak-kinds=all  --log-file=vgdump ./qvis
 
 
+https://www.qt.io/blog/2009/02/27/braindump-graphics-view-and-the-joys-of-off-screen-rendering
+
 all the various plotting modes
 
 maybe zoom in/out of chart by widening/narrowing min/max

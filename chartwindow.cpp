@@ -573,12 +573,14 @@ static Qt::KeyboardModifiers keymod = Qt::NoModifier;
 void
 QWidget::keyPressEvent(QKeyEvent *event)
 {
+  fprintf (stderr, "key press\n");
   keymod =  event->modifiers();
 }
 
 void
 QWidget::keyReleaseEvent(QKeyEvent *event)
 {
+  fprintf (stderr, "key release\n");
   keymod =  event->modifiers();
 }
 
@@ -683,6 +685,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 {
   chartControls = parent;
   graph = nullptr;
+  camera = nullptr;
 
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);
@@ -702,9 +705,9 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   connect (hslider, &QAbstractSlider::valueChanged, this,
 	   [=](int value) {
 	     double scale = ((double)value) / 1000;
-	     if (keymod == Qt::NoModifier) 
+	     if (camera && keymod == Qt::NoModifier) 
 	       camera->setXRotation ((float)(180 * scale));
-	     else if (keymod == Qt::ShiftModifier) {
+	     else if (camera && keymod == Qt::ShiftModifier) {
 	       QVector3D target = camera->target ();
 	       target.setX ((float)scale);
 	       camera->setTarget (target);
@@ -718,12 +721,22 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   connect (vslider, &QAbstractSlider::valueChanged, this,
 	   [=](int value) {
 	     double scale = ((double)value) / 1000;
-	     if (keymod == Qt::NoModifier) 
-	       camera->setYRotation ((float)(180 * scale));
-	     else if (keymod == Qt::ShiftModifier) {
+	     if (camera && keymod == Qt::NoModifier) {
+	       camera->setYRotation ((float)(90 * scale));
+	       fprintf (stderr, "rot = %g\n", 90.0 * scale);
+	     }
+	     else if (camera && keymod == Qt::ShiftModifier) {
 	       QVector3D target = camera->target ();
 	       target.setY ((float)scale);
 	       camera->setTarget (target);
+	     }
+	     else if (camera && keymod == Qt::ControlModifier) {
+	       double minz  = (double)camera->minZoomLevel ();
+	       double maxz  = (double)camera->maxZoomLevel ();
+	       double avg   = (minz + maxz) / 2.0;
+	       double delta = (maxz - minz) / 2.0;
+	       double zoom  = avg + scale * delta;
+	       camera->setZoomLevel ((float)zoom);
 	     }
 	   });
 
