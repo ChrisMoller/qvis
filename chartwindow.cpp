@@ -419,19 +419,73 @@ ChartWindow::exportChart (int width, int height, QString &fn,
 			  QChart *mchart, QPolarChart *mpolarchart)
 {
   QChartView *lclChartView  = new QChartView ();
+  qreal x_max = -MAXDOUBLE;
+  qreal x_min =  MAXDOUBLE;
+  qreal y_max = -MAXDOUBLE;
+  qreal y_min =  MAXDOUBLE;
 
   if (mchart) {
     QChart *nchart = new QChart ();
-    lclChartView->setChart (nchart);
+    //    lclChartView->setChart (nchart);
     nchart->setTheme (mchart->theme ());
     nchart->setDropShadowEnabled (mchart->isDropShadowEnabled ());
     nchart->removeAllSeries();
     QList<QAbstractSeries *> series = mchart->series ();
     int i;
-    for (i = 0; i < series.size (); i++) 
-      nchart->addSeries (series[i]);
+    for (i = 0; i < series.size (); i++) {
+      QAbstractSeries *tt = series[i];
+      switch (tt->type ()) {
+      case QAbstractSeries::SeriesTypeSpline:
+	{
+	  int j;
+	  QLineSeries *ss = (QLineSeries *)series[i];
+	  QSplineSeries *sseries = new QSplineSeries ();
+	  sseries->setName (ss->name ());
+	  sseries->setColor (ss->color ());
+	  sseries->setPen (ss->pen ());
+	  sseries->setPointsVisible (ss->pointsVisible ());
+	  sseries->setPointLabelsVisible (ss->pointLabelsVisible ());
+	  nchart->addSeries (sseries);
+	  for (j = 0; j < ss->count (); j++) {
+	    qreal x_val = ss->at (j).x ();
+	    qreal y_val = ss->at (j).y ();
+	    if (x_max < x_val) x_max = x_val;
+	    if (x_min > x_val) x_min = x_val;
+	    if (y_max < y_val) y_max = y_val;
+	    if (y_min > y_val) y_min = y_val;
+	    sseries->append (ss->at (j));
+	  }
+	  lclChartView->setChart (nchart);
+	}
+	break;
+      case QAbstractSeries::SeriesTypeLine:
+	{
+	  int j;
+	  QLineSeries *ss = (QLineSeries *)series[i];
+	  QLineSeries *sseries = new QSplineSeries ();
+	  sseries->setName (ss->name ());
+	  sseries->setColor (ss->color ());
+	  sseries->setPen (ss->pen ());
+	  // sseries->setPointsVisible (curve->getPointsVisible ());
+	  // sseries->setPointLabelsVisible (curve->getPointLabelsVisible ());
+	  nchart->addSeries (sseries);
+	  for (j = 0; j < ss->count (); j++)
+	    sseries->append (ss->at (j));
+	  lclChartView->setChart (nchart);
+	}
+	break;
+      default:
+	break;
+      }
+    }
     nchart->setTitle (mchart->title ());
     nchart->createDefaultAxes ();
+    qreal dx = 0.075 * (x_max - x_min);
+    qreal dy = 0.075 * (y_max - y_min);
+    nchart->axes (Qt::Vertical).first()
+      ->setRange(y_min-dy, y_max+dy);
+    nchart->axes (Qt::Horizontal).first()
+      ->setRange(x_min-dx, x_max+dx);
   }
   //  lclChartView->setChart (mchart ?: mpolarchart);
   lclChartView->setGeometry (0, 0, width, height);
