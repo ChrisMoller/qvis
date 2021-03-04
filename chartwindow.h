@@ -108,7 +108,7 @@ public:
 				   QList<Curve> &curve_list);
   //  std::vector<OldCurve> curves;
   void exportChart (int width, int height, QString &fn,
-		    QChart *mchart, QPolarChart *mpolarchart);
+		    QChart *mchart, bool isPolar);
 
 private slots:
 #if 0
