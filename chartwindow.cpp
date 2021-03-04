@@ -479,6 +479,7 @@ ChartWindow::exportChart (int width, int height, QString &fn,
       }
     }
     nchart->setTitle (mchart->title ());
+    nchart->setTitleFont (mchart->titleFont ());
     nchart->createDefaultAxes ();
     qreal dx = 0.075 * (x_max - x_min);
     qreal dy = 0.075 * (y_max - y_min);
@@ -558,6 +559,7 @@ ChartWindow::drawChart ()
       if (chart_created) {
 	chartView->setRenderHint (QPainter::Antialiasing);
 	chartView->chart ()->setTitle (chartControls->chart_title->text ());
+	chartView->chart ()->setTitleFont (cd->getFont ());
 
 	if (!polar) {
 	  QString fn = chartControls->getChartData ()->getBGFile ();
@@ -767,6 +769,7 @@ ChartWindow::reDraw  ()
       chartView->setChart (polar ? polarchart : chart);
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
+      chartView->chart ()->setTitleFont (cd->getFont ());
       chartView->chart ()->removeAllSeries();
       bool chart_created = createCurveList ();
       if (chart_created) {

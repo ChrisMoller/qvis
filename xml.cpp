@@ -28,6 +28,7 @@
     <charts>
       <chart polar="." incr='.' theme=".'>
         <title>.</title>
+        <font>.</font>
         <ix>
           <name>.</name>
           <label>.</label>
@@ -188,6 +189,9 @@ MainWindow::writeVis (QString &fileName)
 
       stream.writeTextElement(xml_tags[XML_title].tag,
 			      cc->chart_title->text ());
+
+      stream.writeTextElement(xml_tags[XML_font].tag,
+			      cd->getFont ().toString ());
       
       stream.writeStartElement(xml_tags[XML_ix].tag);
       stream.writeTextElement(xml_tags[XML_name].tag,
@@ -478,6 +482,7 @@ MainWindow::parseChart (QList<ChartData*> *newCharts, bool polar, int theme,
   bool rc = true;
   bool run = true;
   QString title;
+  QString font;
   QString bgimage;
 
   Index *ix = nullptr;
@@ -492,6 +497,9 @@ MainWindow::parseChart (QList<ChartData*> *newCharts, bool polar, int theme,
       switch (xmlhash.value (sn)) {
       case XML_title:
 	title = stream.readElementText ();
+	break;
+      case XML_font:
+	font = stream.readElementText ();
 	break;
       case XML_bgimage:
 	bgimage = stream.readElementText ();
@@ -526,6 +534,11 @@ MainWindow::parseChart (QList<ChartData*> *newCharts, bool polar, int theme,
 
   ChartData *cd = new ChartData (title, polar, theme,
 				 ix, iz, selected);
+  if (!font.isEmpty ()) {
+    QFont ft;
+    ft.fromString (font);
+    cd->setFont (ft);
+  }
   if (!bgimage.isEmpty ()) cd->setBGFile (bgimage);
   newCharts->append (cd);
 

@@ -83,6 +83,8 @@ class ChartData
   void 	 	clearBGFile ();
   void		setPolar (bool rpolar);  
   bool		getPolar ();  
+  void		setFont (QFont rfont);  
+  QFont		getFont ();  
 
  private:
   QSurface3DSeries::DrawFlags mode;
@@ -97,6 +99,7 @@ class ChartData
   bool 	       changed;
   bool 	       do_update;
   QString      backgroundFile;
+  QFont	       font;
 };
 
 #endif // CHARTDATA_H

@@ -252,3 +252,15 @@ ChartData::getPolar ()
 {
   return polar;
 }
+
+void
+ChartData::setFont (QFont rfont)
+{
+  font = rfont;
+}
+
+QFont
+ChartData::getFont ()
+{
+  return font;
+}

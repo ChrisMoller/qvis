@@ -93,6 +93,24 @@ ChartControls::curveSettings ()
   row++;
 
 
+  /****** graph font  ******/
+
+  QLabel lblf ("Font");
+  layout->addWidget (&lblf, row, 0);
+
+  QString fontfam = chartData->getFont ().family ();
+  QPushButton *fontButton = new QPushButton (fontfam);
+  layout->addWidget (fontButton, row, 1);
+  connect (fontButton,
+           &QAbstractButton::clicked,
+           [=](){ bool ok;
+             QFont newfont = QFontDialog::getFont(&ok, this);
+             chartData->setFont (newfont);
+             fontButton->setText (newfont.family ());
+	     mainWindow->updateAll ();
+	     mainWindow->notifySelective (true); });
+
+  row++;
   /****** background image  ******/
 
   
