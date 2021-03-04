@@ -621,16 +621,14 @@ ChartWindow::drawChart ()
 	chartView->chart ()->setTitleFont (cd->getFont ());
 	chartView->chart ()->legend ()->setFont (cd->getLegendFont ());
 
-	if (!polar) {
-	  QString fn = chartControls->getChartData ()->getBGFile ();
-	  if (!fn.isEmpty ()) {
-	    QImage gep (fn);
-	    gep.scaled (chartView->width (), chartView->height (),
-			Qt::KeepAspectRatioByExpanding,
-			Qt::FastTransformation);
-	    QBrush  brush (gep);
-	    chart->setBackgroundBrush (brush);
-	  }
+	QString fn = chartControls->getChartData ()->getBGFile ();
+	if (!fn.isEmpty ()) {
+	  QImage gep (fn);
+	  gep.scaled (chartView->width (), chartView->height (),
+		      Qt::KeepAspectRatioByExpanding,
+		      Qt::FastTransformation);
+	  QBrush  brush (gep);
+	  chartView->chart ()->setBackgroundBrush (brush);
 	}
 
 	chartView->chart ()->createDefaultAxes ();
@@ -755,16 +753,14 @@ ChartWindow::reDraw  ()
       chartView->chart ()->setTitle (chartControls->chart_title->text ());
       chartView->chart ()->legend ()->setFont (cd->getLegendFont ());
 
-      if (!polar) {
-	QString fn = cd->getBGFile ();
-	if (!fn.isEmpty ()) {
-	  QImage gep (fn);
-	  gep.scaled (chartView->width (), chartView->height (),
-		      Qt::KeepAspectRatioByExpanding,
-		      Qt::FastTransformation);
-	  QBrush  brush (gep);
-	  chart->setBackgroundBrush (brush);
-	}
+      QString fn = cd->getBGFile ();
+      if (!fn.isEmpty ()) {
+	QImage gep (fn);
+	gep.scaled (chartView->width (), chartView->height (),
+		    Qt::KeepAspectRatioByExpanding,
+		    Qt::FastTransformation);
+	QBrush  brush (gep);
+	chartView->chart ()->setBackgroundBrush (brush);
       }
       
       chartView->chart ()->removeAllSeries();
