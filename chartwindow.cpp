@@ -487,6 +487,7 @@ ChartWindow::exportChart (int width, int height, QString &fn,
 	break;
       }
     }
+
     nchart->setTitle (mchart->title ());
     QFont fnt = mchart->titleFont ();
     qreal ps = scale * fnt.pointSizeF ();
@@ -499,6 +500,17 @@ ChartWindow::exportChart (int width, int height, QString &fn,
       ->setRange(y_min-dy, y_max+dy);
     nchart->axes (Qt::Horizontal).first()
       ->setRange(x_min-dx, x_max+dx);
+    
+    fnt = mchart->axes (Qt::Vertical).first()->labelsFont ();
+    ps = 0.8 * scale * fnt.pointSizeF ();
+    fnt.setPointSizeF (ps);
+    nchart->axes (Qt::Vertical).first()->setLabelsFont (fnt);
+    
+    fnt = mchart->axes (Qt::Horizontal).first()->labelsFont ();
+    ps = 0.8  * scale * fnt.pointSizeF ();
+    fnt.setPointSizeF (ps);
+    nchart->axes (Qt::Horizontal).first()->setLabelsFont (fnt);
+    nchart->legend ()->font ().setPointSizeF (28.0);;
   }
   //  lclChartView->setChart (mchart ?: mpolarchart);
   lclChartView->setGeometry (0, 0, width, height);
