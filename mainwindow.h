@@ -40,11 +40,17 @@ class ChartData;
 class Index;
 
 // for settings
-#define SETTINGS_EDITOR     "Editor"
-#define SETTINGS_FONT       "Font"
-#define SETTINGS_STYLE      "Style"
-#define SETTINGS_HEIGHT     "Height"
-#define SETTINGS_WIDTH      "Width"
+#define SETTINGS_EDITOR     	"Editor"
+#define SETTINGS_FONT       	"Font"
+#define SETTINGS_STYLE      	"Style"
+#define SETTINGS_HEIGHT     	"Height"
+#define SETTINGS_WIDTH      	"Width"
+#define SETTINGS_EXPORT_WIDTH	"ExportWidth"
+#define SETTINGS_EXPORT_HEIGHT	"ExportHeight"
+#define SETTINGS_EXPORT_FN	"ExportFileName"
+
+#define EXPORT_WIDTH_DEFAULT	320.0
+#define EXPORT_HEIGHT_DEFAULT	320.0
 
 #define toCString(v)	((v).toStdString ().c_str ())
 

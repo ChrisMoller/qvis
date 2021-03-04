@@ -111,8 +111,8 @@ public:
 		    QChart *mchart, QPolarChart *mpolarchart);
 
 private slots:
-  void imageExport();
 #if 0
+  void imageExport();
   //  void settheme();
   void themeChanged(int newtheme);
   void setfont();

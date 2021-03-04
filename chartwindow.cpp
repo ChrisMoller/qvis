@@ -370,14 +370,14 @@ ChartFilter::eventFilter(QObject *obj, QEvent *event)
 {
   if (obj == fwatched) {
     if (event->type() == QEvent::MouseButtonPress) {
+      QSettings settings;
       QMouseEvent *me = (QMouseEvent *)event;
       if (me->button () == Qt::RightButton) {
-	QString filter = QString ("*.png");
-	QFileDialog dialog (fwatched,
-			    QString ("Export chart"),
-			    QString (),
-			    filter);
+	QFileDialog dialog (fwatched, QString ("Export chart"));
 	dialog.setOption (QFileDialog::DontUseNativeDialog);
+	dialog.setAcceptMode (QFileDialog::AcceptSave);
+	QString ff = settings.value (SETTINGS_EXPORT_FN).toString ();
+	if (!ff.isEmpty ()) dialog.selectFile (ff);
 	QLayout *layout = dialog.layout ();
 	QGroupBox *gbox = new QGroupBox ();
 	QHBoxLayout *btnlayout = new QHBoxLayout ();
@@ -386,12 +386,18 @@ ChartFilter::eventFilter(QObject *obj, QEvent *event)
 	QDoubleSpinBox *heightBox = new QDoubleSpinBox ();
 	widthBox->setMinimum (32.0);
 	widthBox->setMaximum (8192.0);
-	widthBox->setValue (320.0);
+	QString ww = settings.value (SETTINGS_EXPORT_WIDTH).toString ();
+	widthBox->setValue (ww.isEmpty ()
+			    ? EXPORT_WIDTH_DEFAULT
+			    : ww.toFloat ());
 	widthBox->setDecimals (0);
 	widthBox->setStepType (QAbstractSpinBox::AdaptiveDecimalStepType);
 	heightBox->setMinimum (32.0);
 	heightBox->setMaximum (8192.0);
-	heightBox->setValue (320.0);
+	QString hh = settings.value (SETTINGS_EXPORT_HEIGHT).toString ();
+	heightBox->setValue (ww.isEmpty ()
+			    ? EXPORT_HEIGHT_DEFAULT
+			    : ww.toFloat ());
 	heightBox->setDecimals (0);
 	heightBox->setStepType (QAbstractSpinBox::AdaptiveDecimalStepType);
 	btnlayout->addWidget (new QLabel ("Width:"));
@@ -425,8 +431,9 @@ ChartWindow::exportChart (int width, int height, QString &fn,
   qreal y_min =  MAXDOUBLE;
 
   if (mchart) {
+    QRectF pa = mchart->plotArea ();
+    qreal scale = 0.6 * ((qreal)height) / pa.height ();
     QChart *nchart = new QChart ();
-    //    lclChartView->setChart (nchart);
     nchart->setTheme (mchart->theme ());
     nchart->setDropShadowEnabled (mchart->isDropShadowEnabled ());
     nchart->removeAllSeries();
@@ -442,7 +449,9 @@ ChartWindow::exportChart (int width, int height, QString &fn,
 	  QSplineSeries *sseries = new QSplineSeries ();
 	  sseries->setName (ss->name ());
 	  sseries->setColor (ss->color ());
-	  sseries->setPen (ss->pen ());
+	  QPen pen = ss->pen ();
+	  pen.setWidthF (scale * ss->pen ().widthF ());
+	  sseries->setPen (pen);
 	  sseries->setPointsVisible (ss->pointsVisible ());
 	  sseries->setPointLabelsVisible (ss->pointLabelsVisible ());
 	  nchart->addSeries (sseries);
@@ -479,7 +488,10 @@ ChartWindow::exportChart (int width, int height, QString &fn,
       }
     }
     nchart->setTitle (mchart->title ());
-    nchart->setTitleFont (mchart->titleFont ());
+    QFont fnt = mchart->titleFont ();
+    qreal ps = scale * fnt.pointSizeF ();
+    fnt.setPointSizeF (ps);
+    nchart->setTitleFont (fnt);
     nchart->createDefaultAxes ();
     qreal dx = 0.075 * (x_max - x_min);
     qreal dy = 0.075 * (y_max - y_min);
@@ -493,7 +505,19 @@ ChartWindow::exportChart (int width, int height, QString &fn,
   lclChartView->setRenderHint (QPainter::Antialiasing);
 
   QPixmap p = lclChartView->grab();
-  p.save(fn);
+  if (p.save(fn)) {
+    QSettings settings;
+    settings.setValue (QString (SETTINGS_EXPORT_WIDTH),  QVariant (width));
+    settings.setValue (QString (SETTINGS_EXPORT_HEIGHT), QVariant (height));
+    settings.setValue (QString (SETTINGS_EXPORT_FN), 	 QVariant (fn));
+  }
+  else {
+    QMessageBox msgBox;
+    QString msg = QString ("Image format not supported");
+    msgBox.setText (msg);
+    msgBox.setIcon (QMessageBox::Warning);
+    msgBox.exec();
+  }
 }
 
 QWidget *
@@ -650,73 +674,8 @@ ChartWindow::drawChart ()
   return widg;
 }
 
-void
-ChartWindow::imageExport()
-{
-  QFileDialog dialog(this);
-  dialog.setFileMode(QFileDialog::AnyFile);
-  dialog.setAcceptMode(QFileDialog::AcceptSave);
-  dialog.setNameFilter(tr("Images (*.png *.xpm *.jpg)"));
-  dialog.setViewMode(QFileDialog::Detail);
-  QStringList fileNames;
-  if (dialog.exec()) {
-    fileNames = dialog.selectedFiles();
-    QString fn = fileNames.first ();
-    QPixmap p = chartView->grab();
-    p.save(fn);
-  }
-}
 
-#if 0
-void
-ChartWindow::create_menuBar ()
-{
-  QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-
-  QToolBar *fileToolBar = addToolBar(tr("File"));
-  const QIcon imageIcon =
-    QIcon::fromTheme("camera-photo", QIcon(":/images/camera-photo.png"));
-  QAction *imageAct = new QAction(imageIcon, tr("&Export image"), this);
-  //  newAct->setShortcuts(QKeySequence::New);
-  imageAct->setStatusTip(tr("Export an image"));
-  connect(imageAct, &QAction::triggered, this, &ChartWindow::imageExport);
-  fileMenu->addAction(imageAct);
-  fileToolBar->addAction(imageAct);
-
-  QMenu *settingsMenu = menuBar()->addMenu(tr("&Settings"));
-
-#if 0
-  QAction *themeAct =
-    settingsMenu->addAction(tr("&Theme"), this, &ChartWindow::settheme);
-  themeAct->setStatusTip(tr("Set theme"));
-#endif
-
-  QAction *fontAct =
-    settingsMenu->addAction(tr("&Font"), this, &ChartWindow::setfont);
-  fontAct->setStatusTip(tr("Set font"));
-}
-#endif
-
-#if 0
-          https://doc.qt.io/qt-5/qkeyevent.html
-
-Qt::NoModifier		0x00000000	No modifier key is pressed.
-
-Qt::ShiftModifier	0x02000000	A Shift key on the keyboard is pressed.
-
-Qt::ControlModifier	0x04000000	A Ctrl key on the keyboard is pressed.
-
-Qt::AltModifier		0x08000000	An Alt key on the keyboard is pressed.
-
-Qt::MetaModifier	0x10000000	A Meta key on the keyboard is pressed.
-
-Qt::KeypadModifier	0x20000000	A keypad button is pressed.
-
-Qt::GroupSwitchModifier	0x40000000	X11 only (unless activated on
-					Windows by a command line argument).
-                                        A Mode_switch key on the keyboard
-                                        is pressed.
-#endif
+// https://doc.qt.io/qt-5/qkeyevent.html
 
 static Qt::KeyboardModifiers keymod = Qt::NoModifier;
 
