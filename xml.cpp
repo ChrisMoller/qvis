@@ -29,6 +29,7 @@
       <chart polar="." incr='.' theme=".'>
         <title>.</title>
         <font>.</font>
+        <legendfont>.</legendfont>
         <ix>
           <name>.</name>
           <label>.</label>
@@ -192,6 +193,9 @@ MainWindow::writeVis (QString &fileName)
 
       stream.writeTextElement(xml_tags[XML_font].tag,
 			      cd->getFont ().toString ());
+
+      stream.writeTextElement(xml_tags[XML_legendfont].tag,
+			      cd->getLegendFont ().toString ());
       
       stream.writeStartElement(xml_tags[XML_ix].tag);
       stream.writeTextElement(xml_tags[XML_name].tag,
@@ -483,6 +487,7 @@ MainWindow::parseChart (QList<ChartData*> *newCharts, bool polar, int theme,
   bool run = true;
   QString title;
   QString font;
+  QString legendfont;
   QString bgimage;
 
   Index *ix = nullptr;
@@ -500,6 +505,9 @@ MainWindow::parseChart (QList<ChartData*> *newCharts, bool polar, int theme,
 	break;
       case XML_font:
 	font = stream.readElementText ();
+	break;
+      case XML_legendfont:
+	legendfont = stream.readElementText ();
 	break;
       case XML_bgimage:
 	bgimage = stream.readElementText ();
@@ -538,6 +546,11 @@ MainWindow::parseChart (QList<ChartData*> *newCharts, bool polar, int theme,
     QFont ft;
     ft.fromString (font);
     cd->setFont (ft);
+  }
+  if (!legendfont.isEmpty ()) {
+    QFont ft;
+    ft.fromString (legendfont);
+    cd->setLegendFont (ft);
   }
   if (!bgimage.isEmpty ()) cd->setBGFile (bgimage);
   newCharts->append (cd);

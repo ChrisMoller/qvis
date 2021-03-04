@@ -493,8 +493,12 @@ ChartWindow::exportChart (int width, int height, QString &fn,
     qreal ps = scale * fnt.pointSizeF ();
     fnt.setPointSizeF (ps);
     nchart->setTitleFont (fnt);
-    fnt.setPointSizeF (0.6 * ps);
+
+    fnt = mchart->legend ()->font ();
+    ps = scale * fnt.pointSizeF ();
+    fnt.setPointSizeF (ps);
     nchart->legend ()->setFont (fnt);
+
     nchart->createDefaultAxes ();
     qreal dx = 0.075 * (x_max - x_min);
     qreal dy = 0.075 * (y_max - y_min);
@@ -502,6 +506,12 @@ ChartWindow::exportChart (int width, int height, QString &fn,
       ->setRange(y_min-dy, y_max+dy);
     nchart->axes (Qt::Horizontal).first()
       ->setRange(x_min-dx, x_max+dx);
+    
+    QString vl = mchart->axes (Qt::Vertical).first()->titleText();
+    nchart->axes (Qt::Vertical).first()->setTitleText (vl);
+    
+    QString hl = mchart->axes (Qt::Horizontal).first()->titleText();
+    nchart->axes (Qt::Horizontal).first()->setTitleText (vl);
     
     fnt = mchart->axes (Qt::Vertical).first()->labelsFont ();
     ps = 0.8 * scale * fnt.pointSizeF ();
@@ -597,6 +607,7 @@ ChartWindow::drawChart ()
 	chartView->setRenderHint (QPainter::Antialiasing);
 	chartView->chart ()->setTitle (chartControls->chart_title->text ());
 	chartView->chart ()->setTitleFont (cd->getFont ());
+	chartView->chart ()->legend ()->setFont (cd->getLegendFont ());
 
 	if (!polar) {
 	  QString fn = chartControls->getChartData ()->getBGFile ();
@@ -742,6 +753,7 @@ ChartWindow::reDraw  ()
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
       chartView->chart ()->setTitleFont (cd->getFont ());
+      chartView->chart ()->legend ()->setFont (cd->getLegendFont ());
       chartView->chart ()->removeAllSeries();
       bool chart_created = createCurveList ();
       if (chart_created) {

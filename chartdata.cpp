@@ -264,3 +264,15 @@ ChartData::getFont ()
 {
   return font;
 }
+
+void
+ChartData::setLegendFont (QFont rfont)
+{
+  legendfont = rfont;
+}
+
+QFont
+ChartData::getLegendFont ()
+{
+  return legendfont;
+}

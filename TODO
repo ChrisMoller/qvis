@@ -35,5 +35,7 @@ auto-update on curve selection
 
 add auto-ws-load capability
 
+do perspective xform on complex domain curves
+
 write tests
 

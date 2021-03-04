@@ -85,6 +85,8 @@ class ChartData
   bool		getPolar ();  
   void		setFont (QFont rfont);  
   QFont		getFont ();  
+  void		setLegendFont (QFont rfont);  
+  QFont		getLegendFont ();  
 
  private:
   QSurface3DSeries::DrawFlags mode;
@@ -100,6 +102,7 @@ class ChartData
   bool 	       do_update;
   QString      backgroundFile;
   QFont	       font;
+  QFont	       legendfont;
 };
 
 #endif // CHARTDATA_H

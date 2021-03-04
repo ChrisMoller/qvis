@@ -95,7 +95,7 @@ ChartControls::curveSettings ()
 
   /****** graph font  ******/
 
-  QLabel lblf ("Font");
+  QLabel lblf ("Title Font");
   layout->addWidget (&lblf, row, 0);
 
   QString fontfam = chartData->getFont ().family ();
@@ -111,6 +111,26 @@ ChartControls::curveSettings ()
 	     mainWindow->notifySelective (true); });
 
   row++;
+
+  /****** legend font  ******/
+
+  QLabel lbll ("Legend Font");
+  layout->addWidget (&lbll, row, 0);
+
+  QString lfontfam = chartData->getLegendFont ().family ();
+  QPushButton *lfontButton = new QPushButton (lfontfam);
+  layout->addWidget (lfontButton, row, 1);
+  connect (lfontButton,
+           &QAbstractButton::clicked,
+           [=](){ bool ok;
+             QFont newfont = QFontDialog::getFont(&ok, this);
+             chartData->setLegendFont (newfont);
+             lfontButton->setText (newfont.family ());
+	     mainWindow->updateAll ();
+	     mainWindow->notifySelective (true); });
+
+  row++;
+  
   /****** background image  ******/
 
   
