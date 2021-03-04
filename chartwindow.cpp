@@ -488,6 +488,7 @@ ChartWindow::exportChart (int width, int height, QString &fn,
       }
     }
 
+    
     nchart->setTitle (mchart->title ());
     QFont fnt = mchart->titleFont ();
     qreal ps = scale * fnt.pointSizeF ();
@@ -522,6 +523,17 @@ ChartWindow::exportChart (int width, int height, QString &fn,
     ps = 0.8  * scale * fnt.pointSizeF ();
     fnt.setPointSizeF (ps);
     nchart->axes (Qt::Horizontal).first()->setLabelsFont (fnt);
+    {
+      QString fn = chartControls->getChartData ()->getBGFile ();
+      if (!fn.isEmpty ()) {
+	QImage gep (fn);
+	gep.scaled (lclChartView->width (), lclChartView->height (),
+		    Qt::KeepAspectRatioByExpanding,
+		    Qt::SmoothTransformation);
+	QBrush  brush (gep);
+	nchart->setBackgroundBrush (brush);
+      }
+    }
   }
   //  lclChartView->setChart (mchart ?: mpolarchart);
   lclChartView->setGeometry (0, 0, width, height);
@@ -613,25 +625,12 @@ ChartWindow::drawChart ()
 	  QString fn = chartControls->getChartData ()->getBGFile ();
 	  if (!fn.isEmpty ()) {
 	    QImage gep (fn);
-	    chartView->setRenderHint(QPainter::Antialiasing, true);
-	    int width = static_cast<int>(chart->plotArea().width());
-	    int height = static_cast<int>(chart->plotArea().height());
-	    int ViewW = static_cast<int>(chartView->width());
-	    int ViewH = static_cast<int>(chartView->height());
-
-	    gep = gep.scaled(QSize(width, height));
-
-	    QImage translated(ViewW, ViewH, QImage::Format_ARGB32);
-	    translated.fill(Qt::white);
-	    QPainter painter(&translated);
-	    QPointF TopLeft = chart->plotArea().topLeft();
-	    painter.drawImage(TopLeft, gep);
-
-	    chart->setPlotAreaBackgroundBrush(translated);
-	    chart->setPlotAreaBackgroundVisible(true);
+	    gep.scaled (chartView->width (), chartView->height (),
+			Qt::KeepAspectRatioByExpanding,
+			Qt::FastTransformation);
+	    QBrush  brush (gep);
+	    chart->setBackgroundBrush (brush);
 	  }
-	  else 
-	    chart->setPlotAreaBackgroundVisible(false);
 	}
 
 	chartView->chart ()->createDefaultAxes ();
@@ -753,7 +752,21 @@ ChartWindow::reDraw  ()
       chartView->chart ()->setDropShadowEnabled(true);
       chartView->chart ()->setTheme (cd->getTheme ());
       chartView->chart ()->setTitleFont (cd->getFont ());
+      chartView->chart ()->setTitle (chartControls->chart_title->text ());
       chartView->chart ()->legend ()->setFont (cd->getLegendFont ());
+
+      if (!polar) {
+	QString fn = cd->getBGFile ();
+	if (!fn.isEmpty ()) {
+	  QImage gep (fn);
+	  gep.scaled (chartView->width (), chartView->height (),
+		      Qt::KeepAspectRatioByExpanding,
+		      Qt::FastTransformation);
+	  QBrush  brush (gep);
+	  chart->setBackgroundBrush (brush);
+	}
+      }
+      
       chartView->chart ()->removeAllSeries();
       bool chart_created = createCurveList ();
       if (chart_created) {
