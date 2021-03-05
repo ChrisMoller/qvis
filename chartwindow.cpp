@@ -47,6 +47,42 @@ class ChartWindow;
 #include "chartwindow.h"
 #include "aplexec.h"
 
+static void
+setXrot (gsl_matrix *mtx, double ang)
+{
+  double cosx = cos (DtoR (ang));
+  double sinx = sin (DtoR (ang));
+  gsl_matrix_set (mtx, 0, 0,  1.0);
+  gsl_matrix_set (mtx, 1, 1,  cosx);
+  gsl_matrix_set (mtx, 2, 2,  cosx);
+  gsl_matrix_set (mtx, 2, 1, -sinx);
+  gsl_matrix_set (mtx, 1, 2,  sinx);
+}
+
+static void
+setYrot (gsl_matrix *mtx, double ang)
+{
+  double cosx = cos (DtoR (ang));
+  double sinx = sin (DtoR (ang));
+  gsl_matrix_set (mtx, 1, 1,  1.0);
+  gsl_matrix_set (mtx, 0, 0,  cosx);
+  gsl_matrix_set (mtx, 2, 2,  cosx);
+  gsl_matrix_set (mtx, 0, 2, -sinx);
+  gsl_matrix_set (mtx, 2, 0,  sinx);
+}
+
+static void
+setZrot (gsl_matrix *mtx, double ang)
+{
+  double cosx = cos (DtoR (ang));
+  double sinx = sin (DtoR (ang));
+  gsl_matrix_set (mtx, 2, 2,  1.0);
+  gsl_matrix_set (mtx, 0, 0,  cosx);
+  gsl_matrix_set (mtx, 1, 1,  cosx);
+  gsl_matrix_set (mtx, 1, 0, -sinx);
+  gsl_matrix_set (mtx, 0, 1,  sinx);
+}
+
 QSurfaceDataArray *
 ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
 			     qreal &y_max, qreal &y_min,
@@ -650,7 +686,7 @@ ChartWindow::drawChart ()
 	  ->setTitleText (ix_label);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText (curve_label);
-	
+
 	widg = chartView;
       }
     }
@@ -836,6 +872,14 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   chartControls = parent;
   graph = nullptr;
   camera = nullptr;
+
+  hRot = gsl_matrix_calloc (4, 4);
+  gsl_matrix_set (hRot, 3, 3,  1.0);
+  setYrot (hRot, INITIAL_Y_ROTATION);
+  
+  vRot = gsl_matrix_calloc (4, 4);
+  gsl_matrix_set (vRot, 3, 3,  1.0);
+  setYrot (vRot, INITIAL_X_ROTATION);
     
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);
@@ -862,6 +906,9 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       target.setX ((float)scale);
 	       camera->setTarget (target);
 	     }
+	     else if (!camera && keymod == Qt::NoModifier) {
+	       setYrot (hRot, 180.0 * scale);
+	     }
 	   });
 
   QSlider *vslider = new QSlider (Qt::Vertical);
@@ -887,6 +934,9 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       double delta = (maxz - minz) / 2.0;
 	       double zoom  = avg + scale * delta;
 	       camera->setZoomLevel ((float)zoom);
+	     }
+	     else if (!camera && keymod == Qt::NoModifier) {
+	       setYrot (hRot, 90.0 * scale);
 	     }
 	   });
 

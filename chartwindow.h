@@ -29,6 +29,14 @@
 #include <QtDataVisualization/QSurface3DSeries>
 #include <QOpenGLFunctions>
 
+#include <math.h>
+
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_eigen.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
+
+
 // https://doc.qt.io/qt-5/qopenglfunctions.html#details
 
 QT_CHARTS_USE_NAMESPACE
@@ -46,6 +54,8 @@ class MainWindow;
 class ChartWindow;
 class CharData;
 class Index;
+
+#define DtoR(d)  ((M_PI * (d)) / 360.0)
 
 class ChartEnter : public QObject
 {
@@ -147,11 +157,8 @@ private:
   void	eraseIndex (Index *idx);
   Q3DSurface *graph;
   Q3DCamera *camera;
-#if 0
-  void create_menuBar ();
-  QComboBox 	*themebox;
-  ChartEnter *chartEnter;
-#endif
+  gsl_matrix *hRot;
+  gsl_matrix *vRot;
 };
 
 

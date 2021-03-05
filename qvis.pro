@@ -2,7 +2,9 @@ QT += core gui widgets charts
 
 CONFIG += c++11
 
-LIBS += -L`apl --show_lib_dir` -lapl -lreadline -lQt5DataVisualization
+LIBS += -L`apl --show_lib_dir` -lapl -lreadline ` pkg-config --libs gsl` \
+        -lQt5DataVisualization
+
 #LIBS += -L/home/moller/Downloads/apl-1.8.1402/src/.libs \
 #       -lQt5DataVisualization -lapl -lreadline
 
