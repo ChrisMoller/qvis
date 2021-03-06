@@ -84,6 +84,12 @@ setZrot (gsl_matrix *mtx, double ang)
   gsl_matrix_set (mtx, 1, 0, -sinx);
   gsl_matrix_set (mtx, 0, 1,  sinx);
 }
+
+static void
+setPers (gsl_matrix *pers, double z)
+{
+  gsl_matrix_set (pers, 3, 2,  z);
+}
 #endif
 
 QSurfaceDataArray *
@@ -107,18 +113,6 @@ ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
   QSurfaceDataArray *dataArray = new QSurfaceDataArray;
   dataArray->reserve (rows);
 
-  gsl_matrix *acc;
-  if (curve->getCpx () == CPX_PROJ) {
-    acc = gsl_matrix_calloc (4, 4);
-    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
-                        1.0, hRot, vRot,
-                        0.0, acc)
-    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
-                        1.0, acc, pers,
-                        0.0, acc)
-  }
-  
-
   for (p = 0, r = 0; r < rows; r++) {
     QSurfaceDataRow *newRow = new QSurfaceDataRow (cols);
     for (c = 0; c < cols; c++, p++) {
@@ -140,25 +134,9 @@ ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
 	  yval = arg (std::complex<double>(rv, iv));
 	  break;
 	case CPX_PROJ:
-	  /***
-
-	      -1  0  0  0
-	       0  1  0  0
-	       0  0  1  0
-	       0  0  f  0
-
-	       where f = 1/d
-
-	       
-	      x = xv
-	      y = rv
-	      z = iv
-
-	      xr     x
-	      yr  =  y  *  Rx  * Ry
-	      zr     z
-	      1      1
-	   ***/
+	  {
+	    // fixme errmsg
+	  }
 	  break;
 	}
       }
@@ -181,6 +159,39 @@ ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
   }
   
   return dataArray;
+}
+
+static void
+print_mtx (const gsl_matrix * m)
+{
+  size_t r,c;
+  for (r = 0; r < 4; r++) {
+    for (c = 0; c < 4; c++)
+      fprintf (stderr, "%# 6.6g\t", gsl_matrix_get (m, r, c));
+    fprintf (stderr, "\n");
+  }
+  fprintf (stderr, "\n");
+}
+
+static void
+print_vectors (const gsl_vector * vl, const gsl_vector * vr)
+{
+  size_t c;
+  for (c = 0; c < 4; c++)
+    fprintf (stderr, "%# 4.4g\t", gsl_vector_get (vl, c));
+  fprintf (stderr, "\t");
+  for (c = 0; c < 4; c++)
+    fprintf (stderr, "%# 4.4g\t", gsl_vector_get (vr, c));
+  fprintf (stderr, "\n");
+}
+
+static void
+print_vector (const gsl_vector * v)
+{
+  size_t c;
+  for (c = 0; c < 4; c++)
+    fprintf (stderr, "%# 6.6g ", gsl_vector_get (v, c));
+  fprintf (stderr, "\n");
 }
 
 QAbstractSeries *
@@ -216,6 +227,45 @@ ChartWindow::handle_vector (qreal &y_max,
   }
 
   if (has_cpx) {
+    gsl_matrix *acc2 = nullptr;
+    gsl_vector *pt = gsl_vector_alloc (4);
+    gsl_vector *pp = gsl_vector_calloc (4);
+    if (curve->getCpx () == CPX_PROJ) {
+      gsl_matrix *acc1 = nullptr;
+
+#if 0
+      fprintf (stderr, "hRot:\n");
+      print_mtx (hRot);
+
+      fprintf (stderr, "vRot:\n");
+      print_mtx (vRot);
+#endif
+
+      acc1 = gsl_matrix_calloc (4, 4);
+      gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
+		      1.0, hRot, vRot,
+		      0.0, acc1);
+
+#if 0
+      fprintf (stderr, "acc 1:\n");
+      print_mtx (acc1);
+#endif
+
+      fprintf (stderr, "pers:\n");
+      print_mtx (pers);
+
+      acc2 = gsl_matrix_calloc (4, 4);
+      gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
+		      1.0, acc1, pers,
+		      0.0, acc2);
+
+#if 1
+      fprintf (stderr, "acc 2:\n");
+      print_mtx (acc2);
+#endif
+
+      gsl_matrix_free (acc1);
+    }
     for (uint64_t c = 0; c < count; c++) {
       switch (curve->getCpx ()) {
       case CPX_REAL:
@@ -232,8 +282,29 @@ ChartWindow::handle_vector (qreal &y_max,
 	vect[c].real (arg (vect[c]));
 	vect[c].imag (0.0);
 	break;
+      case CPX_PROJ:
+	{
+	  gsl_vector_set (pt, 0, xvals[c]);
+	  gsl_vector_set (pt, 1, vect[c].real ());
+	  gsl_vector_set (pt, 2, vect[c].imag ());
+	  gsl_vector_set (pt, 3, 1.0);
+
+	  gsl_blas_dgemv (CblasNoTrans, 1.0, acc2, pt,
+			  0.0, pp);
+
+#if 1
+	  print_vectors (pt, pp);
+#endif
+
+	  xvals[c] = gsl_vector_get (pp, 0);	// x
+	  vect[c].real (gsl_vector_get (pp, 1));	// y
+	}
+	break;
       }
     }
+    gsl_matrix_free (acc2);
+    gsl_vector_free (pt);
+    gsl_vector_free (pp);
   }
   
   {
@@ -916,12 +987,12 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   
   vRot = gsl_matrix_calloc (4, 4);
   gsl_matrix_set (vRot, 3, 3,  1.0);
-  setYrot (vRot, INITIAL_X_ROTATION);
+  setXrot (vRot, INITIAL_X_ROTATION);
   
   pers = gsl_matrix_calloc (4, 4);
   gsl_matrix_set_identity (pers);
-  gsl_matrix_set (vRot, 3, 3,  0.0);
-  gsl_matrix_set (vRot, 2, 3,  0.5);
+  gsl_matrix_set (pers, 3, 3,  0.0);
+  setPers (pers, 0.5);
 #endif
     
 #if 0
@@ -949,11 +1020,10 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       target.setX ((float)scale);
 	       camera->setTarget (target);
 	     }
-#if 1
 	     else if (!camera && keymod == Qt::NoModifier) {
 	       setYrot (hRot, 180.0 * scale);
+	       chartControls->getMainWindow ()->notifySelective (true);
 	     }
-#endif
 	   });
 
   QSlider *vslider = new QSlider (Qt::Vertical);
@@ -979,11 +1049,14 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       double zoom  = avg + scale * delta;
 	       camera->setZoomLevel ((float)zoom);
 	     }
-#if 1
+	     else if (!camera && keymod == Qt::ControlModifier) {
+	       setPers (pers, 1.0/scale);
+	       chartControls->getMainWindow ()->notifySelective (true);
+	     }
 	     else if (!camera && keymod == Qt::NoModifier) {
 	       setXrot (hRot, 90.0 * scale);
+	       chartControls->getMainWindow ()->notifySelective (true);
 	     }
-#endif
 	   });
 
   outerLayout->addWidget (hslider, 0, 0);
