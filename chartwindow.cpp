@@ -212,19 +212,48 @@ ChartWindow::handle_vector (qreal &y_max,
   int res_type = -1;
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
   bool has_cpx = false;
+  double lx_max = -MAXDOUBLE;
+  double lx_min =  MAXDOUBLE;
+  if (xvals[0] > xvals[xvals.size () - 1]) {
+    lx_max = xvals[0];
+    lx_min = xvals[xvals.size () - 1];
+  }
+  else {
+    lx_min = xvals[0];
+    lx_max = xvals[xvals.size () - 1];
+  }
+  lx_min += 2.0;
+  lx_max += 2.0;
+  double re_max = -MAXDOUBLE;
+  double re_min =  MAXDOUBLE;
+  double im_max = -MAXDOUBLE;
+  double im_min =  MAXDOUBLE;
   for (uint64_t c = 0; c < count; c++) {
     if (is_numeric (res, c)) {
       if (res_type == -1) res_type = CCT_NUMERIC;
       if (is_complex (res, c)) {
 	if (res_type == CCT_NUMERIC) res_type = CCT_COMPLEX;
-	vect[c] = std::complex<double> ((double)get_real (res, c),
-					(double)get_imag (res, c));
+	double re = (double)get_real (res, c);
+	double im = (double)get_imag (res, c);
+	if (re_max < re) re_max = re;
+	if (re_min > re) re_min = re;
+	if (im_max < im) im_max = im;
+	if (im_min > im) im_min = im;
+	vect[c] = std::complex<double> (re, im);
 	has_cpx = true;
       }
-      else
-	vect[c] = std::complex<double> ((double)get_real (res, c), 0.0);
+      else {
+	double re = (double)get_real (res, c);
+	if (re_max < re) re_max = re;
+	if (re_min > re) re_min = re;
+	vect[c] = std::complex<double> (re, 0.0);
+      }
     }
   }
+  re_min += 2.0;
+  re_max += 2.0;
+  im_min += 2.0;
+  im_max += 2.0;
 
   if (has_cpx) {
     gsl_matrix *acc2 = nullptr;
@@ -251,15 +280,26 @@ ChartWindow::handle_vector (qreal &y_max,
       print_mtx (acc1);
 #endif
 
+      gsl_matrix_set (pers, 0, 0,   2.0 / (lx_max - lx_min));
+      gsl_matrix_set (pers, 1, 1,   2.0 / (re_max - re_min));
+      gsl_matrix_set (pers, 2, 2,  -2.0 / (im_max - im_min));
+      gsl_matrix_set (pers, 3, 0,   -(lx_max + lx_min) / (lx_max - lx_min));
+      gsl_matrix_set (pers, 3, 1,   -(re_max + re_min) / (re_max - re_min));
+      gsl_matrix_set (pers, 3, 2,   -(im_max + im_min) / (im_max - im_min));
+      gsl_matrix_set (pers, 3, 3,   1.0);
+		      
+      
+#if 0
       fprintf (stderr, "pers:\n");
       print_mtx (pers);
+#endif
 
       acc2 = gsl_matrix_calloc (4, 4);
       gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
-		      1.0, acc1, pers,
+		      1.0, pers, acc1,
 		      0.0, acc2);
 
-#if 1
+#if 0
       fprintf (stderr, "acc 2:\n");
       print_mtx (acc2);
 #endif
@@ -292,12 +332,12 @@ ChartWindow::handle_vector (qreal &y_max,
 	  gsl_blas_dgemv (CblasNoTrans, 1.0, acc2, pt,
 			  0.0, pp);
 
-#if 1
+#if 0
 	  print_vectors (pt, pp);
 #endif
 
-	  xvals[c] = gsl_vector_get (pp, 0);	// x
-	  vect[c].real (gsl_vector_get (pp, 1));	// y
+	  xvals[c] = gsl_vector_get (pp, 0) * gsl_vector_get (pp, 2);	// x
+	  vect[c].real (gsl_vector_get (pp, 1) * gsl_vector_get (pp, 2)); // y
 	}
 	break;
       }
@@ -1050,7 +1090,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       camera->setZoomLevel ((float)zoom);
 	     }
 	     else if (!camera && keymod == Qt::ControlModifier) {
-	       setPers (pers, 1.0/scale);
+	       setPers (pers, scale);
 	       chartControls->getMainWindow ()->notifySelective (true);
 	     }
 	     else if (!camera && keymod == Qt::NoModifier) {
