@@ -31,10 +31,12 @@
 
 #include <math.h>
 
+#if 1
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+#endif
 
 
 // https://doc.qt.io/qt-5/qopenglfunctions.html#details
@@ -157,8 +159,11 @@ private:
   void	eraseIndex (Index *idx);
   Q3DSurface *graph;
   Q3DCamera *camera;
+#if 1
   gsl_matrix *hRot;
   gsl_matrix *vRot;
+  gsl_matrix *pers;
+#endif
 };
 
 

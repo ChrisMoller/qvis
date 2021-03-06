@@ -26,6 +26,7 @@
 #include <QtDataVisualization/QSurfaceDataProxy>
 #include <QtDataVisualization/QHeightMapSurfaceDataProxy>
 #include <QtDataVisualization/QSurface3DSeries>
+#include <Qt3DExtras/QCylinderMesh>
 #include <QOpenGLFunctions>
 #include <QPolarChart>
 #include <QMenuBar>
@@ -47,6 +48,7 @@ class ChartWindow;
 #include "chartwindow.h"
 #include "aplexec.h"
 
+#if 1
 static void
 setXrot (gsl_matrix *mtx, double ang)
 {
@@ -82,6 +84,7 @@ setZrot (gsl_matrix *mtx, double ang)
   gsl_matrix_set (mtx, 1, 0, -sinx);
   gsl_matrix_set (mtx, 0, 1,  sinx);
 }
+#endif
 
 QSurfaceDataArray *
 ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
@@ -104,6 +107,18 @@ ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
   QSurfaceDataArray *dataArray = new QSurfaceDataArray;
   dataArray->reserve (rows);
 
+  gsl_matrix *acc;
+  if (curve->getCpx () == CPX_PROJ) {
+    acc = gsl_matrix_calloc (4, 4);
+    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
+                        1.0, hRot, vRot,
+                        0.0, acc)
+    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
+                        1.0, acc, pers,
+                        0.0, acc)
+  }
+  
+
   for (p = 0, r = 0; r < rows; r++) {
     QSurfaceDataRow *newRow = new QSurfaceDataRow (cols);
     for (c = 0; c < cols; c++, p++) {
@@ -123,6 +138,27 @@ ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
 	  break;
 	case CPX_PHASE:
 	  yval = arg (std::complex<double>(rv, iv));
+	  break;
+	case CPX_PROJ:
+	  /***
+
+	      -1  0  0  0
+	       0  1  0  0
+	       0  0  1  0
+	       0  0  f  0
+
+	       where f = 1/d
+
+	       
+	      x = xv
+	      y = rv
+	      z = iv
+
+	      xr     x
+	      yr  =  y  *  Rx  * Ry
+	      zr     z
+	      1      1
+	   ***/
 	  break;
 	}
       }
@@ -873,6 +909,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   graph = nullptr;
   camera = nullptr;
 
+#if 1
   hRot = gsl_matrix_calloc (4, 4);
   gsl_matrix_set (hRot, 3, 3,  1.0);
   setYrot (hRot, INITIAL_Y_ROTATION);
@@ -880,6 +917,12 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   vRot = gsl_matrix_calloc (4, 4);
   gsl_matrix_set (vRot, 3, 3,  1.0);
   setYrot (vRot, INITIAL_X_ROTATION);
+  
+  pers = gsl_matrix_calloc (4, 4);
+  gsl_matrix_set_identity (pers);
+  gsl_matrix_set (vRot, 3, 3,  0.0);
+  gsl_matrix_set (vRot, 2, 3,  0.5);
+#endif
     
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);
@@ -906,9 +949,11 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       target.setX ((float)scale);
 	       camera->setTarget (target);
 	     }
+#if 1
 	     else if (!camera && keymod == Qt::NoModifier) {
 	       setYrot (hRot, 180.0 * scale);
 	     }
+#endif
 	   });
 
   QSlider *vslider = new QSlider (Qt::Vertical);
@@ -920,7 +965,6 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	     double scale = ((double)value) / 1000;
 	     if (camera && keymod == Qt::NoModifier) {
 	       camera->setYRotation ((float)(90 * scale));
-	       fprintf (stderr, "rot = %g\n", 90.0 * scale);
 	     }
 	     else if (camera && keymod == Qt::ShiftModifier) {
 	       QVector3D target = camera->target ();
@@ -935,9 +979,11 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       double zoom  = avg + scale * delta;
 	       camera->setZoomLevel ((float)zoom);
 	     }
+#if 1
 	     else if (!camera && keymod == Qt::NoModifier) {
-	       setYrot (hRot, 90.0 * scale);
+	       setXrot (hRot, 90.0 * scale);
 	     }
+#endif
 	   });
 
   outerLayout->addWidget (hslider, 0, 0);
