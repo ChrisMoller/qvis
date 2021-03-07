@@ -2,6 +2,7 @@ QT += core gui widgets charts
 #QT += core gui widgets charts 3dcore 3drender 3dinput
 
 CONFIG += c++11
+CONFIG += debug_and_release
 
 LIBS += -L`apl --show_lib_dir` -lapl -lreadline  \
         `pkg-config --libs gsl` -lQt5DataVisualization
@@ -47,12 +48,17 @@ include(./Qt-Color-Widgets/color_widgets.pri)
 
 unix {
    target.path = $$PREFIX/bin
-   extra.path = $$PREFIX/share/qvis
+   extra.path = $$PREFIX/share/qvis/styles
    extra.files = styles/*.qss
+   DEFINES += STYLES="$$extra.path"
 }
 
 !isEmpty(target.path): INSTALLS += target extra
 
 DEFINES += PREFIX=$$PREFIX
+
+#CONFIG(debug) {
+#  DEFINES += DEBUG
+#}
 
 message("prefix = " + $$PREFIX)

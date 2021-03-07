@@ -48,7 +48,6 @@ class ChartWindow;
 #include "chartwindow.h"
 #include "aplexec.h"
 
-#if 0
 static void
 setXrot (gsl_matrix *mtx, double ang)
 {
@@ -73,6 +72,7 @@ setYrot (gsl_matrix *mtx, double ang)
   gsl_matrix_set (mtx, 2, 0,  sinx);
 }
 
+#if 0
 static void
 setZrot (gsl_matrix *mtx, double ang)
 {
@@ -1030,7 +1030,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   gsl_matrix_set (vRot, 3, 3,  1.0);
   setXrot (vRot, INITIAL_X_ROTATION);
   
-  compositeXform; = gsl_matrix_calloc (4, 4);
+  compositeXform = gsl_matrix_calloc (4, 4);
     
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);

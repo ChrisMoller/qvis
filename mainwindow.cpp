@@ -477,7 +477,14 @@ MainWindow::setGlobalStyle ()
     style_combo->addItem (keys[i], QString (""));
   }
 
-  QDir dir ("./styles", "*.qss", QDir::IgnoreCase,
+#define xstr(s) str(s)
+#define str(s) #s
+#ifdef QT_NO_DEBUG
+  QString styleDir (xstr (STYLES));
+#else
+  QString styleDir ("./styles");
+#endif
+  QDir dir (styleDir, "*.qss", QDir::IgnoreCase,
 	    QDir::Files | QDir::NoDotAndDotDot);
   if (dir.count () > 0) {
     int j = i;
