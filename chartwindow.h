@@ -162,7 +162,7 @@ private:
 #if 1
   gsl_matrix *hRot;
   gsl_matrix *vRot;
-  gsl_matrix *pers;
+  gsl_matrix *compositeXform;
 #endif
 };
 

@@ -48,7 +48,7 @@ class ChartWindow;
 #include "chartwindow.h"
 #include "aplexec.h"
 
-#if 1
+#if 0
 static void
 setXrot (gsl_matrix *mtx, double ang)
 {
@@ -161,6 +161,7 @@ ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
   return dataArray;
 }
 
+#if 0
 static void
 print_mtx (const gsl_matrix * m)
 {
@@ -193,6 +194,7 @@ print_vector (const gsl_vector * v)
     fprintf (stderr, "%# 6.6g ", gsl_vector_get (v, c));
   fprintf (stderr, "\n");
 }
+#endif
 
 QAbstractSeries *
 ChartWindow::handle_vector (qreal &y_max,
@@ -222,8 +224,6 @@ ChartWindow::handle_vector (qreal &y_max,
     lx_min = xvals[0];
     lx_max = xvals[xvals.size () - 1];
   }
-  lx_min += 2.0;
-  lx_max += 2.0;
   double re_max = -MAXDOUBLE;
   double re_min =  MAXDOUBLE;
   double im_max = -MAXDOUBLE;
@@ -250,15 +250,17 @@ ChartWindow::handle_vector (qreal &y_max,
       }
     }
   }
-  re_min += 2.0;
-  re_max += 2.0;
-  im_min += 2.0;
-  im_max += 2.0;
+  lx_min += 8.0;
+  lx_max += 8.0;
+  re_min += 8.0;
+  re_max += 8.0;
+  im_min += 8.0;
+  im_max += 8.0;
 
   if (has_cpx) {
-    gsl_matrix *acc2 = nullptr;
     gsl_vector *pt = gsl_vector_alloc (4);
     gsl_vector *pp = gsl_vector_calloc (4);
+    gsl_matrix *pers = gsl_matrix_calloc (4, 4);
     if (curve->getCpx () == CPX_PROJ) {
       gsl_matrix *acc1 = nullptr;
 
@@ -294,14 +296,14 @@ ChartWindow::handle_vector (qreal &y_max,
       print_mtx (pers);
 #endif
 
-      acc2 = gsl_matrix_calloc (4, 4);
+      compositeXform = gsl_matrix_calloc (4, 4);
       gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
 		      1.0, pers, acc1,
-		      0.0, acc2);
+		      0.0, compositeXform);
 
 #if 0
       fprintf (stderr, "acc 2:\n");
-      print_mtx (acc2);
+      print_mtx (compositeXform);
 #endif
 
       gsl_matrix_free (acc1);
@@ -329,7 +331,7 @@ ChartWindow::handle_vector (qreal &y_max,
 	  gsl_vector_set (pt, 2, vect[c].imag ());
 	  gsl_vector_set (pt, 3, 1.0);
 
-	  gsl_blas_dgemv (CblasNoTrans, 1.0, acc2, pt,
+	  gsl_blas_dgemv (CblasNoTrans, 1.0, compositeXform, pt,
 			  0.0, pp);
 
 #if 0
@@ -342,9 +344,9 @@ ChartWindow::handle_vector (qreal &y_max,
 	break;
       }
     }
-    gsl_matrix_free (acc2);
     gsl_vector_free (pt);
     gsl_vector_free (pp);
+    gsl_matrix_free (pers);
   }
   
   {
@@ -1020,7 +1022,6 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   graph = nullptr;
   camera = nullptr;
 
-#if 1
   hRot = gsl_matrix_calloc (4, 4);
   gsl_matrix_set (hRot, 3, 3,  1.0);
   setYrot (hRot, INITIAL_Y_ROTATION);
@@ -1029,11 +1030,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   gsl_matrix_set (vRot, 3, 3,  1.0);
   setXrot (vRot, INITIAL_X_ROTATION);
   
-  pers = gsl_matrix_calloc (4, 4);
-  gsl_matrix_set_identity (pers);
-  gsl_matrix_set (pers, 3, 3,  0.0);
-  setPers (pers, 0.5);
-#endif
+  compositeXform; = gsl_matrix_calloc (4, 4);
     
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);
@@ -1090,7 +1087,6 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       camera->setZoomLevel ((float)zoom);
 	     }
 	     else if (!camera && keymod == Qt::ControlModifier) {
-	       setPers (pers, scale);
 	       chartControls->getMainWindow ()->notifySelective (true);
 	     }
 	     else if (!camera && keymod == Qt::NoModifier) {
