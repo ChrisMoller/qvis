@@ -132,6 +132,7 @@ public:
 		    QChart *mchart, bool isPolar);
   gsl_matrix *	getCX ();
   Extents *getExtents ();
+  Extents *getRex ();
 
 private slots:
 #if 0
@@ -172,6 +173,7 @@ private:
   gsl_matrix *vRot;
   gsl_matrix *compositeXform;
   Extents extents;
+  Extents rex;
 };
 
 

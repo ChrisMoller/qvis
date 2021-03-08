@@ -191,6 +191,8 @@ print_vectors (const gsl_vector * vl, const gsl_vector * vr)
   fprintf (stderr, "\n");
 }
 
+// https://computergraphics.stackexchange.com/questions/6254/how-to-derive-a-perspective-projection-matrix-from-its-components
+
 QAbstractSeries *
 ChartWindow::handle_vector (APL_value res,
 			    QVector<double> &xvals,
@@ -208,13 +210,17 @@ ChartWindow::handle_vector (APL_value res,
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
   bool has_cpx = false;
 
-  Extents rex;
-  if (xvals[0] > xvals[xvals.size () - 1])
+  //  Extents rex;
+  rex.clear ();
+  if (xvals[0] > xvals[xvals.size () - 1]) {
     rex.setX ( xvals[xvals.size () - 1],  xvals[0]);
-  else 
+    extents.setX ( xvals[xvals.size () - 1],  xvals[0]);
+  }
+  else {
     rex.setX (xvals[0], xvals[xvals.size () - 1]);
+    extents.setX (xvals[0], xvals[xvals.size () - 1]);
+  }
   for (uint64_t c = 0; c < count; c++) {
-    extents.setX (xvals[c]);
     if (is_numeric (res, c)) {
       if (res_type == -1) res_type = CCT_NUMERIC;
       if (is_complex (res, c)) {
@@ -270,6 +276,7 @@ ChartWindow::handle_vector (APL_value res,
       gsl_matrix_set (pers, 3, 1,   -rex.sumY () / rex.deltaY ());
       gsl_matrix_set (pers, 3, 2,   -rex.sumZ () / rex.deltaZ ());
       gsl_matrix_set (pers, 3, 3,   1.0);
+      //      gsl_matrix_set_identity (pers);
 		      
       
 #if 0
@@ -281,6 +288,7 @@ ChartWindow::handle_vector (APL_value res,
       gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
 		      1.0, pers, acc1,
 		      0.0, compositeXform);
+      //      gsl_matrix_set_identity (compositeXform);
 
 #if 0
       fprintf (stderr, "acc 2:\n");
@@ -315,12 +323,13 @@ ChartWindow::handle_vector (APL_value res,
 	  gsl_blas_dgemv (CblasTrans, 1.0, compositeXform, pt,
 			  0.0, pp);
 
-#if 0
+#if 1
+	  fprintf (stderr, "before after\n");
 	  print_vectors (pt, pp);
 #endif
 
-	  xvals[c] = gsl_vector_get (pp, 0) * gsl_vector_get (pp, 2);	// x
-	  vect[c].real (gsl_vector_get (pp, 1) * gsl_vector_get (pp, 2)); // y
+	  xvals[c] = gsl_vector_get (pp, 0);	// x
+	  vect[c].real (gsl_vector_get (pp, 1)); // y
 	}
 	break;
       }
@@ -738,43 +747,67 @@ ChartWindow::getExtents ()
   return &extents;
 }
 
+Extents *
+ChartWindow::getRex ()
+{
+  return &rex;
+}
+
 void
 VChartView::drawForeground (QPainter *painter, const QRectF &rect)
 {
   if (cw->getCX ()) {
+    print_mtx (cw->getCX ());
     fprintf (stderr, "world [%g %g] [%g %g]\n",
-	     cw->getExtents ()->minX (),
-	     cw->getExtents ()->maxX (),
-	     cw->getExtents ()->minY (),
-	     cw->getExtents ()->maxY ());
-    double ww = (double)this->width ();
-    double hh = (double)this->height ();
+	     cw->getRex ()->minX (),
+	     cw->getRex ()->maxX (),
+	     cw->getRex ()->minY (),
+	     cw->getRex ()->maxY ());
+    QRectF pa = cw->chart->plotArea ();
+    double ox = pa.x ();
+    double oy = pa.y ();
+    double ww = pa.width ();
+    double hh = pa.height ();
 
 #define SCALE_X(x) \
-    (ww * ((cw->getExtents ()->offsetX (x)) / cw->getExtents ()->deltaX ()))
+    ( ox + (ww * ((cw->getExtents ()->offsetX (x)) \
+		  / cw->getExtents ()->deltaX ())))
 
 #define SCALE_Y(y) \
-    (hh * ((cw->getExtents ()->offsetY (y)) / cw->getExtents ()->deltaY ()))
+    (oy + (hh * ((cw->getExtents ()->offsetY (y)) \
+		 / cw->getExtents ()->deltaY ())))
 	     
     gsl_vector *w0 = gsl_vector_calloc (4);
     gsl_vector *w1 = gsl_vector_calloc (4);
     gsl_vector *p0 = gsl_vector_calloc (4);
     gsl_vector *p1 = gsl_vector_calloc (4);
 
-    gsl_vector_set (w0, 0, cw->getExtents ()->minX ());
+    //    gsl_vector_set (w0, 0, cw->getExtents ()->minX ());
+    gsl_vector_set (w0, 0, cw->getRex ()->minX ());
     gsl_vector_set (w0, 1, 0.0);
     gsl_vector_set (w0, 2, 0.0);
     gsl_vector_set (w0, 3, 1.0);
     gsl_blas_dgemv (CblasTrans, 1.0, cw->getCX (), w0,
 		    0.0, p0);
 
-    gsl_vector_set (w1, 0, cw->getExtents ()->maxX ());
+    //gsl_vector_set (w1, 0, cw->getExtents ()->maxX ());
+    gsl_vector_set (w1, 0, cw->getRex ()->maxX ());
     gsl_vector_set (w1, 1, 0.0);
     gsl_vector_set (w1, 2, 0.0);
     gsl_vector_set (w1, 3, 1.0);
     gsl_blas_dgemv (CblasTrans, 1.0, cw->getCX (), w1,
 		    0.0, p1);
-    
+
+    fprintf (stderr, "p0 from [%g %g] to [%g %g]\n",
+	     gsl_vector_get (w0, 0),
+	     gsl_vector_get (w0, 1),
+	     gsl_vector_get (p0, 0),
+	     gsl_vector_get (p0, 1));
+    fprintf (stderr, "p1 from [%g %g] to [%g %g]\n",
+	     gsl_vector_get (w1, 0),
+	     gsl_vector_get (w1, 1),
+	     gsl_vector_get (p1, 0),
+	     gsl_vector_get (p1, 1));
     QPointF v0 (SCALE_X (gsl_vector_get (p0, 0)),
 		SCALE_Y (gsl_vector_get (p0, 1)));
     QPointF v1 (SCALE_X (gsl_vector_get (p1, 0)),
@@ -786,6 +819,10 @@ VChartView::drawForeground (QPainter *painter, const QRectF &rect)
 	     SCALE_X (gsl_vector_get (p1, 0)), 
 	     SCALE_Y (gsl_vector_get (p1, 1)));
 	     
+    gsl_vector_free (w0);
+    gsl_vector_free (w1);
+    gsl_vector_free (p0);
+    gsl_vector_free (p1);
   }
 }
 
