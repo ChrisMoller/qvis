@@ -153,7 +153,11 @@ ChartWindow::handle_surface (APL_value res,
   return dataArray;
 }
 
-#if 0
+static void print_mtx (const gsl_matrix * m) __attribute__((unused));
+static void print_vector (const gsl_vector * v) __attribute__((unused));
+static void print_vectors (const gsl_vector * vl,
+			   const gsl_vector * vr) __attribute__((unused));
+
 static void
 print_mtx (const gsl_matrix * m)
 {
@@ -163,6 +167,15 @@ print_mtx (const gsl_matrix * m)
       fprintf (stderr, "%# 6.6g\t", gsl_matrix_get (m, r, c));
     fprintf (stderr, "\n");
   }
+  fprintf (stderr, "\n");
+}
+
+static void
+print_vector (const gsl_vector * v)
+{
+  size_t c;
+  for (c = 0; c < 4; c++)
+    fprintf (stderr, "%# 6.6g ", gsl_vector_get (v, c));
   fprintf (stderr, "\n");
 }
 
@@ -177,16 +190,6 @@ print_vectors (const gsl_vector * vl, const gsl_vector * vr)
     fprintf (stderr, "%# 4.4g\t", gsl_vector_get (vr, c));
   fprintf (stderr, "\n");
 }
-
-static void
-print_vector (const gsl_vector * v)
-{
-  size_t c;
-  for (c = 0; c < 4; c++)
-    fprintf (stderr, "%# 6.6g ", gsl_vector_get (v, c));
-  fprintf (stderr, "\n");
-}
-#endif
 
 QAbstractSeries *
 ChartWindow::handle_vector (APL_value res,
@@ -211,12 +214,15 @@ ChartWindow::handle_vector (APL_value res,
   else 
     rex.setX (xvals[0], xvals[xvals.size () - 1]);
   for (uint64_t c = 0; c < count; c++) {
+    extents.setX (xvals[c]);
     if (is_numeric (res, c)) {
       if (res_type == -1) res_type = CCT_NUMERIC;
       if (is_complex (res, c)) {
 	if (res_type == CCT_NUMERIC) res_type = CCT_COMPLEX;
 	double re = (double)get_real (res, c);
 	double im = (double)get_imag (res, c);
+	extents.setY (re);
+	extents.setZ (im);
 	rex.setY (re);
 	rex.setZ (im);
 	vect[c] = std::complex<double> (re, im);
@@ -224,19 +230,13 @@ ChartWindow::handle_vector (APL_value res,
       }
       else {
 	double re = (double)get_real (res, c);
+	extents.setY (re);
+	extents.setZ (0.0);
 	rex.setY (re);
 	vect[c] = std::complex<double> (re, 0.0);
       }
     }
   }
-#if 0
-  lx_min += 8.0;
-  lx_max += 8.0;
-  re_min += 8.0;
-  re_max += 8.0;
-  im_min += 8.0;
-  im_max += 8.0;
-#endif
 
   if (has_cpx) {
     gsl_vector *pt = gsl_vector_alloc (4);
@@ -312,7 +312,7 @@ ChartWindow::handle_vector (APL_value res,
 	  gsl_vector_set (pt, 2, vect[c].imag ());
 	  gsl_vector_set (pt, 3, 1.0);
 
-	  gsl_blas_dgemv (CblasNoTrans, 1.0, compositeXform, pt,
+	  gsl_blas_dgemv (CblasTrans, 1.0, compositeXform, pt,
 			  0.0, pp);
 
 #if 0
@@ -358,10 +358,10 @@ ChartWindow::handle_vector (APL_value res,
     
     int i;
     for (i = 0; i < (int)count; i++) {
+      qreal x_val = (qreal)xvals[i];
       qreal y_val = (qreal)vect[i].real ();
-      extents.setY (y_val);
-      if (sseries) sseries->append ((qreal)xvals[i], y_val);
-      else pseries->append ((qreal)xvals[i], y_val);
+      if (sseries) sseries->append (x_val, y_val);
+      else pseries->append (x_val, y_val);
     }
   }
 
@@ -742,16 +742,50 @@ void
 VChartView::drawForeground (QPainter *painter, const QRectF &rect)
 {
   if (cw->getCX ()) {
-    fprintf (stderr, "extents [%g %g] [%g %g] [%g %g]\n",
+    fprintf (stderr, "world [%g %g] [%g %g]\n",
 	     cw->getExtents ()->minX (),
 	     cw->getExtents ()->maxX (),
 	     cw->getExtents ()->minY (),
-	     cw->getExtents ()->maxY (),
-	     cw->getExtents ()->minZ (),
-	     cw->getExtents ()->maxZ ());
-    QPointF p1(rect.x (), rect.y ());
-    QPointF p2(rect.width (), rect.height ());
-    painter->drawLine (p1, p2);
+	     cw->getExtents ()->maxY ());
+    double ww = (double)this->width ();
+    double hh = (double)this->height ();
+
+#define SCALE_X(x) \
+    (ww * ((cw->getExtents ()->offsetX (x)) / cw->getExtents ()->deltaX ()))
+
+#define SCALE_Y(y) \
+    (hh * ((cw->getExtents ()->offsetY (y)) / cw->getExtents ()->deltaY ()))
+	     
+    gsl_vector *w0 = gsl_vector_calloc (4);
+    gsl_vector *w1 = gsl_vector_calloc (4);
+    gsl_vector *p0 = gsl_vector_calloc (4);
+    gsl_vector *p1 = gsl_vector_calloc (4);
+
+    gsl_vector_set (w0, 0, cw->getExtents ()->minX ());
+    gsl_vector_set (w0, 1, 0.0);
+    gsl_vector_set (w0, 2, 0.0);
+    gsl_vector_set (w0, 3, 1.0);
+    gsl_blas_dgemv (CblasTrans, 1.0, cw->getCX (), w0,
+		    0.0, p0);
+
+    gsl_vector_set (w1, 0, cw->getExtents ()->maxX ());
+    gsl_vector_set (w1, 1, 0.0);
+    gsl_vector_set (w1, 2, 0.0);
+    gsl_vector_set (w1, 3, 1.0);
+    gsl_blas_dgemv (CblasTrans, 1.0, cw->getCX (), w1,
+		    0.0, p1);
+    
+    QPointF v0 (SCALE_X (gsl_vector_get (p0, 0)),
+		SCALE_Y (gsl_vector_get (p0, 1)));
+    QPointF v1 (SCALE_X (gsl_vector_get (p1, 0)),
+		SCALE_Y (gsl_vector_get (p1, 1)));
+    painter->drawLine (v0, v1);
+    fprintf (stderr, "drawing [%g %g] [%g %g]\n",
+	     SCALE_X (gsl_vector_get (p0, 0)), 
+	     SCALE_Y (gsl_vector_get (p0, 1)),
+	     SCALE_X (gsl_vector_get (p1, 0)), 
+	     SCALE_Y (gsl_vector_get (p1, 1)));
+	     
   }
 }
 

@@ -5,7 +5,6 @@
 
 Extents::Extents ()
 {
-  fprintf (stderr, "extents cons\n");
   x_max = -MAXDOUBLE;
   x_min =  MAXDOUBLE;
   y_max = -MAXDOUBLE;
@@ -17,7 +16,6 @@ Extents::Extents ()
 void
 Extents::clear ()
 {
-  fprintf (stderr, "extents clr\n");
   x_max = -MAXDOUBLE;
   x_min =  MAXDOUBLE;
   y_max = -MAXDOUBLE;
@@ -137,4 +135,22 @@ double
 Extents::maxZ ()
 {
   return z_max;
+}
+
+double
+Extents::offsetX (double x)
+{
+  return x - x_min;
+}
+
+double
+Extents::offsetY (double y)
+{
+  return y - y_min;
+}
+
+double
+Extents::offsetZ (double z)
+{
+  return z - z_min;
 }

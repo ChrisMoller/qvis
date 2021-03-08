@@ -42,6 +42,9 @@ public:
   double maxY ();
   double minZ ();
   double maxZ ();
+  double offsetX (double x);
+  double offsetY (double y);
+  double offsetZ (double z);
 private:
   qreal x_max;
   qreal x_min;
