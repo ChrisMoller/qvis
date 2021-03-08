@@ -47,6 +47,7 @@ using namespace QtDataVisualization;
 #include "chartdata.h"
 #include "mainwindow.h"
 #include "chartcontrols.h"
+#include "extents.h"
 
 #define INITIAL_X_ROTATION 30.0
 #define INITIAL_Y_ROTATION 30.0
@@ -59,12 +60,24 @@ class Index;
 
 #define DtoR(d)  ((M_PI * (d)) / 360.0)
 
+class VChartView : public QChartView
+{
+  Q_OBJECT
+
+public:
+  VChartView  (ChartWindow *parent = nullptr) { cw = parent; }
+  void drawForeground (QPainter *painter, const QRectF &rect);
+
+private:
+  ChartWindow *cw;
+};
+
 class ChartEnter : public QObject
 {
     Q_OBJECT
   
 public:
-  ChartEnter (QChartView *obj, ChartWindow *cw, MainWindow *mw)
+  ChartEnter (VChartView *obj, ChartWindow *cw, MainWindow *mw)
   {watched = obj; chartwin = cw; mainwin = mw;}
 
 protected:
@@ -73,7 +86,7 @@ protected:
 private:
   MainWindow  *mainwin;
   ChartWindow *chartwin;
-  QChartView  *watched;
+  VChartView  *watched;
 };
 
 class ChartFilter : public QObject
@@ -81,7 +94,7 @@ class ChartFilter : public QObject
     Q_OBJECT
   
 public:
-  ChartFilter (QChartView *obj, QChart *ct, QPolarChart *cp, ChartWindow *cw);
+  ChartFilter (VChartView *obj, QChart *ct, QPolarChart *cp, ChartWindow *cw);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event) override;
@@ -90,9 +103,8 @@ private:
   QChart	*fchart;
   QPolarChart	*fpolarchart;
   ChartWindow 	*fchartwin;
-  QChartView	*fwatched;
+  VChartView	*fwatched;
 };
-
 
 // https://ericlavesson.blogspot.com/2013/03/c-ownership-semantics.html
 
@@ -101,19 +113,16 @@ class ChartWindow : public QMainWindow  //, protected QOpenGLFunctions
   Q_OBJECT
   
 public:
+  //void	       drawForeground (QPainter *painter, const QRectF &rect);
   ChartWindow  (ChartControls *parent = nullptr);
   ~ChartWindow();
-  QChartView	*chartView;
   QChart	*chart;
   QPolarChart	*polarchart;
   bool		 changed;
   QSettings 	 settings;
   QWidget 	*drawChart ();
   void 		 reDraw ();
-  void 		setContent (qreal &x_max, qreal &x_min,
-			    qreal &y_max, qreal &y_min,
-			    qreal &z_max, qreal &z_min,
-			    Index *&ix, Index *&iz, QString &curve_label,
+  void 		setContent (Index *&ix, Index *&iz, QString &curve_label,
 			    QList<Curve> *curve_list);
   bool		createCurveList ();
   bool		createSurfaceList (Q3DSurface *graph,
@@ -121,6 +130,8 @@ public:
   //  std::vector<OldCurve> curves;
   void exportChart (int width, int height, QString &fn,
 		    QChart *mchart, bool isPolar);
+  gsl_matrix *	getCX ();
+  Extents *getExtents ();
 
 private slots:
 #if 0
@@ -132,7 +143,10 @@ private slots:
   
 public slots:
   //  void handleExpression ();
-  
+
+protected:  
+  VChartView	*chartView;
+
 private:
   ChartFilter *chartFilter;
   bool chartEventFilter(QObject *obj, QEvent *event);
@@ -142,16 +156,11 @@ private:
   QFont titlefont;
   QChart::ChartTheme theme;
   ChartControls	*chartControls;
-  QAbstractSeries *handle_vector (qreal &y_max,
-				  qreal &y_min,
-				  APL_value res,
+  QAbstractSeries *handle_vector (APL_value res,
 				  QVector<double> &xvals,
 				  QVector<double> &zvals,
 				  Curve *curve);
-  QSurfaceDataArray *handle_surface (qreal &x_max, qreal &x_min,
-				     qreal &y_max, qreal &y_min,
-				     qreal &z_max, qreal &z_min,
-				     APL_value res,
+  QSurfaceDataArray *handle_surface (APL_value res,
 				     QVector<double> &xvals,
 				     QVector<double> &zvals,
 				     Curve *curve);
@@ -159,11 +168,10 @@ private:
   void	eraseIndex (Index *idx);
   Q3DSurface *graph;
   Q3DCamera *camera;
-#if 1
   gsl_matrix *hRot;
   gsl_matrix *vRot;
   gsl_matrix *compositeXform;
-#endif
+  Extents extents;
 };
 
 

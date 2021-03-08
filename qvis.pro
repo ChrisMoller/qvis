@@ -21,6 +21,7 @@ SOURCES += \
     chartwindow.cpp \
     complexspinbox.cpp \
     curves.cpp \
+    extents.cpp \
     history.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -35,6 +36,7 @@ HEADERS += \
     chartwindow.h \
     complexspinbox.h \
     curves.h \
+    extents.h \
     history.h \
     mainwindow.h \
     xml.h \

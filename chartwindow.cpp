@@ -93,10 +93,7 @@ setPers (gsl_matrix *pers, double z)
 #endif
 
 QSurfaceDataArray *
-ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
-			     qreal &y_max, qreal &y_min,
-			     qreal &z_max, qreal &z_min,
-			     APL_value res,
+ChartWindow::handle_surface (APL_value res,
 			     QVector<double> &xvals,
 			     QVector<double> &zvals,
 			     Curve *curve)
@@ -141,22 +138,17 @@ ChartWindow::handle_surface (qreal &x_max, qreal &x_min,
 	}
       }
       else yval = (double)get_real (res, p);
-      if (y_max < yval) y_max = yval;
-      if (y_min > yval) y_min = yval;
+      extents.setY (yval);
       
       (*newRow)[c].setPosition(QVector3D (xvals[c], yval, zvals[r]));
     }
     *dataArray << newRow;
   }
 
-  if (xvals[0] < xvals[xvals.size () - 1]) {
-    x_min = xvals[0];
-    x_max = xvals[xvals.size () - 1];
-  }
-  if (zvals[0] < zvals[zvals.size () - 1]) {
-    z_min = zvals[0];
-    z_max = zvals[zvals.size () - 1];
-  }
+  if (xvals[0] < xvals[xvals.size () - 1])
+    extents.setX (xvals[0], xvals[xvals.size () - 1]);
+  if (zvals[0] < zvals[zvals.size () - 1]) 
+    extents.setZ (zvals[0], zvals[zvals.size () - 1]);
   
   return dataArray;
 }
@@ -197,9 +189,7 @@ print_vector (const gsl_vector * v)
 #endif
 
 QAbstractSeries *
-ChartWindow::handle_vector (qreal &y_max,
-			    qreal &y_min,
-			    APL_value res,
+ChartWindow::handle_vector (APL_value res,
 			    QVector<double> &xvals,
 			    QVector<double> &zvals __attribute__((unused)),
 			    Curve *curve)
@@ -214,20 +204,12 @@ ChartWindow::handle_vector (qreal &y_max,
   int res_type = -1;
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
   bool has_cpx = false;
-  double lx_max = -MAXDOUBLE;
-  double lx_min =  MAXDOUBLE;
-  if (xvals[0] > xvals[xvals.size () - 1]) {
-    lx_max = xvals[0];
-    lx_min = xvals[xvals.size () - 1];
-  }
-  else {
-    lx_min = xvals[0];
-    lx_max = xvals[xvals.size () - 1];
-  }
-  double re_max = -MAXDOUBLE;
-  double re_min =  MAXDOUBLE;
-  double im_max = -MAXDOUBLE;
-  double im_min =  MAXDOUBLE;
+
+  Extents rex;
+  if (xvals[0] > xvals[xvals.size () - 1])
+    rex.setX ( xvals[xvals.size () - 1],  xvals[0]);
+  else 
+    rex.setX (xvals[0], xvals[xvals.size () - 1]);
   for (uint64_t c = 0; c < count; c++) {
     if (is_numeric (res, c)) {
       if (res_type == -1) res_type = CCT_NUMERIC;
@@ -235,27 +217,26 @@ ChartWindow::handle_vector (qreal &y_max,
 	if (res_type == CCT_NUMERIC) res_type = CCT_COMPLEX;
 	double re = (double)get_real (res, c);
 	double im = (double)get_imag (res, c);
-	if (re_max < re) re_max = re;
-	if (re_min > re) re_min = re;
-	if (im_max < im) im_max = im;
-	if (im_min > im) im_min = im;
+	rex.setY (re);
+	rex.setZ (im);
 	vect[c] = std::complex<double> (re, im);
 	has_cpx = true;
       }
       else {
 	double re = (double)get_real (res, c);
-	if (re_max < re) re_max = re;
-	if (re_min > re) re_min = re;
+	rex.setY (re);
 	vect[c] = std::complex<double> (re, 0.0);
       }
     }
   }
+#if 0
   lx_min += 8.0;
   lx_max += 8.0;
   re_min += 8.0;
   re_max += 8.0;
   im_min += 8.0;
   im_max += 8.0;
+#endif
 
   if (has_cpx) {
     gsl_vector *pt = gsl_vector_alloc (4);
@@ -282,12 +263,12 @@ ChartWindow::handle_vector (qreal &y_max,
       print_mtx (acc1);
 #endif
 
-      gsl_matrix_set (pers, 0, 0,   2.0 / (lx_max - lx_min));
-      gsl_matrix_set (pers, 1, 1,   2.0 / (re_max - re_min));
-      gsl_matrix_set (pers, 2, 2,  -2.0 / (im_max - im_min));
-      gsl_matrix_set (pers, 3, 0,   -(lx_max + lx_min) / (lx_max - lx_min));
-      gsl_matrix_set (pers, 3, 1,   -(re_max + re_min) / (re_max - re_min));
-      gsl_matrix_set (pers, 3, 2,   -(im_max + im_min) / (im_max - im_min));
+      gsl_matrix_set (pers, 0, 0,   2.0 / rex.deltaX ());
+      gsl_matrix_set (pers, 1, 1,   2.0 / rex.deltaY ());
+      gsl_matrix_set (pers, 2, 2,  -2.0 / rex.deltaZ ());
+      gsl_matrix_set (pers, 3, 0,   -rex.sumX () / rex.deltaX ());
+      gsl_matrix_set (pers, 3, 1,   -rex.sumY () / rex.deltaY ());
+      gsl_matrix_set (pers, 3, 2,   -rex.sumZ () / rex.deltaZ ());
       gsl_matrix_set (pers, 3, 3,   1.0);
 		      
       
@@ -378,8 +359,7 @@ ChartWindow::handle_vector (qreal &y_max,
     int i;
     for (i = 0; i < (int)count; i++) {
       qreal y_val = (qreal)vect[i].real ();
-      if (y_max < y_val) y_max = y_val;
-      if (y_min > y_val) y_min = y_val;
+      extents.setY (y_val);
       if (sseries) sseries->append ((qreal)xvals[i], y_val);
       else pseries->append ((qreal)xvals[i], y_val);
     }
@@ -437,10 +417,7 @@ ChartWindow::setIndex (Index *idx, int incr, QString title)
 }
 
 void
-ChartWindow::setContent (qreal &x_max, qreal &x_min,
-			 qreal &y_max, qreal &y_min,
-			 qreal &z_max, qreal &z_min,
-			 Index *&ix, Index *&iz,
+ChartWindow::setContent (Index *&ix, Index *&iz,
 			 QString &curve_label,
 			 QList<Curve> *curve_list)
 {
@@ -461,6 +438,10 @@ ChartWindow::setContent (qreal &x_max, qreal &x_min,
   
   QList<int> sels =  chartControls->getChartData ()->getSelected ();
 
+  if (compositeXform) {
+    gsl_matrix_free (compositeXform);
+    compositeXform = nullptr;
+  }
   int i;
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
@@ -481,15 +462,12 @@ ChartWindow::setContent (qreal &x_max, qreal &x_min,
       if (res) {
 	if (get_rank (res) == 2) {
 	  QSurfaceDataArray *surface =
-	    handle_surface (x_max, x_min,
-			    y_max, y_min,
-			    z_max, z_min,
-			    res, xvals, zvals,  &curve);
+	    handle_surface (res, xvals, zvals,  &curve);
 	  surface_list.append (surface);
 	}
 	else if (get_rank (res) == 1) {
 	  QAbstractSeries *series =
-	    handle_vector (y_max, y_min, res, xvals, zvals, &curve);
+	    handle_vector (res, xvals, zvals, &curve);
 	  series_list.append (series);
 	}
 	QString cmd =
@@ -541,7 +519,7 @@ ChartWindow::createSurfaceList (Q3DSurface *graph, QList<Curve> &curve_list)
   return surfaces_created;
 }
 
-ChartFilter::ChartFilter (QChartView *obj, QChart *ct,
+ChartFilter::ChartFilter (VChartView *obj, QChart *ct,
 			  QPolarChart *cp, ChartWindow *cw)
 {
   fwatched 	= obj;
@@ -634,7 +612,7 @@ void
 ChartWindow::exportChart (int width, int height, QString &fn,
 			  QChart *mchart, bool isPolar)
 {
-  QChartView *lclChartView  = new QChartView ();
+  VChartView *lclChartView  = new VChartView (this);
   qreal x_max = -MAXDOUBLE;
   qreal x_min =  MAXDOUBLE;
   qreal y_max = -MAXDOUBLE;
@@ -748,6 +726,35 @@ ChartWindow::exportChart (int width, int height, QString &fn,
   }
 }
 
+gsl_matrix *
+ChartWindow::getCX ()
+{
+  return compositeXform;
+}
+
+Extents *
+ChartWindow::getExtents ()
+{
+  return &extents;
+}
+
+void
+VChartView::drawForeground (QPainter *painter, const QRectF &rect)
+{
+  if (cw->getCX ()) {
+    fprintf (stderr, "extents [%g %g] [%g %g] [%g %g]\n",
+	     cw->getExtents ()->minX (),
+	     cw->getExtents ()->maxX (),
+	     cw->getExtents ()->minY (),
+	     cw->getExtents ()->maxY (),
+	     cw->getExtents ()->minZ (),
+	     cw->getExtents ()->maxZ ());
+    QPointF p1(rect.x (), rect.y ());
+    QPointF p2(rect.width (), rect.height ());
+    painter->drawLine (p1, p2);
+  }
+}
+
 QWidget *
 ChartWindow::drawChart ()
 {
@@ -755,23 +762,15 @@ ChartWindow::drawChart ()
   ChartData *cd = chartControls->getChartData ();
   QString outString;
   QString errString;
-  qreal x_max = -MAXDOUBLE;
-  qreal x_min =  MAXDOUBLE;
-  qreal y_max = -MAXDOUBLE;
-  qreal y_min =  MAXDOUBLE;
-  qreal z_max = -MAXDOUBLE;
-  qreal z_min =  MAXDOUBLE;
   Index *ix = nullptr;
   Index *iz = nullptr;
   QString curve_label;
   QList<Curve> curve_list;
+  extents.clear ();
 
   /****  content  ****/
 
-  setContent (x_max, x_min,
-	      y_max, y_min,
-	      z_max, z_min,
-	      ix, iz, curve_label, &curve_list);
+  setContent (ix, iz, curve_label, &curve_list);
 
   bool chart_created = false;
   
@@ -786,7 +785,7 @@ ChartWindow::drawChart ()
   else {
     if (series_list.size () > 0) {
       bool polar  = cd->getPolar ();
-      chartView   = new QChartView ();
+      chartView   = new VChartView (this);
       polarchart  = nullptr;
       chart       = nullptr;
 
@@ -826,15 +825,19 @@ ChartWindow::drawChart ()
 
 	chartView->chart ()->createDefaultAxes ();
 
-	qreal dy = 0.075 * (y_max - y_min);
+	qreal dy = 0.075 * extents.deltaY ();
 	chartView->chart ()->axes (Qt::Vertical).first()
-	  ->setRange(y_min-dy, y_max+dy);  
+	  ->setRange (extents.minY () - dy, extents.maxY () + dy);  
   
 	QString ix_label = ix->getLabel ();
 	chartView->chart ()->axes (Qt::Horizontal).first()
 	  ->setTitleText (ix_label);
 	chartView->chart ()->axes (Qt::Vertical).first()
 	  ->setTitleText (curve_label);
+
+	QRectF rect (0.0, 0.0, 400.0, 400.0);
+	QPainter *painter = new QPainter ();
+	chartView->drawForeground (painter, rect);
 
 	widg = chartView;
       }
@@ -849,9 +852,9 @@ ChartWindow::drawChart ()
       /*bool surfacesCreated = */
       createSurfaceList (graph, curve_list);
 
-      graph->axisX()->setRange ((float)x_min, (float)x_max);
-      graph->axisY()->setRange ((float)y_min, (float)y_max);
-      graph->axisZ()->setRange ((float)z_min, (float)z_max);
+      graph->axisX()->setRange ((float)extents.minX (), (float)extents.maxX ());
+      graph->axisY()->setRange ((float)extents.minY (), (float)extents.maxY ());
+      graph->axisZ()->setRange ((float)extents.minZ (), (float)extents.maxZ ());
       graph->setTitle (QString ("MMMMMMMM"));
 
       /****** end of content *****/
@@ -908,12 +911,7 @@ QWidget::keyReleaseEvent(QKeyEvent *event)
 void
 ChartWindow::reDraw  ()
 {
-  qreal x_max = -MAXDOUBLE;
-  qreal x_min =  MAXDOUBLE;
-  qreal y_max = -MAXDOUBLE;
-  qreal y_min =  MAXDOUBLE;
-  qreal z_max = -MAXDOUBLE;
-  qreal z_min =  MAXDOUBLE;
+  extents.clear ();
   Index *ix = nullptr;
   Index *iz = nullptr;
   QString curve_label;
@@ -923,10 +921,7 @@ ChartWindow::reDraw  ()
 
   series_list.clear ();
   surface_list.clear ();
-  setContent (x_max, x_min,
-	      y_max, y_min,
-	      z_max, z_min,
-	      ix, iz, curve_label, &curve_list);
+  setContent (ix, iz, curve_label, &curve_list);
 
    if (series_list.size () > 0 && surface_list.size () > 0) {
     QMessageBox msgBox;
@@ -961,9 +956,9 @@ ChartWindow::reDraw  ()
       if (chart_created) {
 	chartView->chart ()->createDefaultAxes ();
 
-	qreal dy = 0.075 * (y_max - y_min);
+	qreal dy = 0.075 * (extents.deltaY ());
 	chartView->chart ()->axes (Qt::Vertical).first()
-	  ->setRange(y_min-dy, y_max+dy);  
+	  ->setRange (extents.minY () - dy, extents.maxY () + dy);  
   
 	QString ix_label = ix->getLabel ();
 	chartView->chart ()->axes (Qt::Horizontal).first()
@@ -978,9 +973,9 @@ ChartWindow::reDraw  ()
       for (i = 0; i < slist.size (); i++)
 	graph->removeSeries (slist[i]);
       createSurfaceList (graph, curve_list);
-      graph->axisX()->setRange ((float)x_min, (float)x_max);
-      graph->axisY()->setRange ((float)y_min, (float)y_max);
-      graph->axisZ()->setRange ((float)z_min, (float)z_max);
+      graph->axisX()->setRange ((float)extents.minX (), (float)extents.maxX ());
+      graph->axisY()->setRange ((float)extents.minY (), (float)extents.maxY ());
+      graph->axisZ()->setRange ((float)extents.minZ (), (float)extents.maxZ ());
     }
   }
 }
@@ -1030,7 +1025,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   gsl_matrix_set (vRot, 3, 3,  1.0);
   setXrot (vRot, INITIAL_X_ROTATION);
   
-  compositeXform = gsl_matrix_calloc (4, 4);
+  compositeXform = nullptr;
     
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);

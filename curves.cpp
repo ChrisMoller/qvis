@@ -81,6 +81,7 @@ Param::setName (QString &newname)
   name = newname;
 }
 
+
 Curve::Curve (QString &rname, QString &rlabel,
 	      QString &rfcn, Qt::PenStyle rpen, QColor rcolour)
 {
@@ -89,14 +90,11 @@ Curve::Curve (QString &rname, QString &rlabel,
   fcn	=  rfcn;
   pen	=  rpen;
   colour = rcolour;
-#if 0
-  font  =  parent->font ();
-#endif
   pointsVisible = false;
   pointLabelsVisible = false;
-  cpx    = CPX_REAL;
+  cpx      = CPX_REAL;
   drawMode = QSurface3DSeries::DrawSurface;
-  spline = true;
+  spline   = true;
 }
 
 /********* curves *********/
