@@ -51,6 +51,9 @@ using namespace QtDataVisualization;
 
 #define INITIAL_X_ROTATION 30.0
 #define INITIAL_Y_ROTATION 30.0
+#define INITIAL_AZIMUTH -90.0
+#define INITIAL_ELEVATION 45.0
+#define INITIAL_FOV 30.0
 
 class ChartControls;
 class MainWindow;
@@ -59,6 +62,7 @@ class CharData;
 class Index;
 
 #define DtoR(d)  ((M_PI * (d)) / 360.0)
+#define RtoD(r)  ((180.0 * (r)) / M_PI)
 
 class VChartView : public QChartView
 {
@@ -133,6 +137,7 @@ public:
   gsl_matrix *	getCX ();
   Extents *getExtents ();
   Extents *getRex ();
+  void setCoord ();
 
 private slots:
 #if 0
@@ -171,9 +176,21 @@ private:
   Q3DCamera *camera;
   gsl_matrix *hRot;
   gsl_matrix *vRot;
-  gsl_matrix *compositeXform;
+  gsl_matrix *elevationRotation;
+  gsl_matrix *azimuthRotation;
+  gsl_matrix *perspectiveXform;
   Extents extents;
   Extents rex;
+#if 1
+  double azimuth;
+  double elevation;
+#else
+  double frustrumAngle;
+  double dof;
+#endif
+  double distance;
+  gsl_matrix *createPerspectiveXform ();
+  QLabel *coords;
 };
 
 

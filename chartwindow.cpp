@@ -48,6 +48,31 @@ class ChartWindow;
 #include "chartwindow.h"
 #include "aplexec.h"
 
+// https://www.tutorialspoint.com/computer_graphics/3d_transformation.htm
+static void
+setElevation (gsl_matrix *mtx, double ang)
+{
+  double cosx = cos (DtoR (ang));
+  double sinx = sin (DtoR (ang));
+  gsl_matrix_set (mtx, 2, 2,  1.0);
+  gsl_matrix_set (mtx, 0, 0,  cosx);
+  gsl_matrix_set (mtx, 1, 1,  cosx);
+  gsl_matrix_set (mtx, 1, 0, -sinx);
+  gsl_matrix_set (mtx, 0, 1,  sinx);
+}
+
+static void
+setAzimuth (gsl_matrix *mtx, double ang)
+{
+  double cosx = cos (DtoR (ang));
+  double sinx = sin (DtoR (ang));
+  gsl_matrix_set (mtx, 1, 1,  1.0);
+  gsl_matrix_set (mtx, 0, 0,  cosx);
+  gsl_matrix_set (mtx, 2, 2,  cosx);
+  gsl_matrix_set (mtx, 0, 2, -sinx);
+  gsl_matrix_set (mtx, 2, 0,  sinx);
+}
+
 static void
 setXrot (gsl_matrix *mtx, double ang)
 {
@@ -130,11 +155,6 @@ ChartWindow::handle_surface (APL_value res,
 	case CPX_PHASE:
 	  yval = arg (std::complex<double>(rv, iv));
 	  break;
-	case CPX_PROJ:
-	  {
-	    // fixme errmsg
-	  }
-	  break;
 	}
       }
       else yval = (double)get_real (res, p);
@@ -191,7 +211,26 @@ print_vectors (const gsl_vector * vl, const gsl_vector * vr)
   fprintf (stderr, "\n");
 }
 
-// https://computergraphics.stackexchange.com/questions/6254/how-to-derive-a-perspective-projection-matrix-from-its-components
+gsl_matrix *
+ChartWindow::createPerspectiveXform ()
+{
+  gsl_matrix *pers = gsl_matrix_calloc (4, 4);
+
+#if 0
+   gsl_matrix_set (pers, 0, 0,
+		   1.0 / tan (DtoR (frustrumAngle / 2.0)));
+   gsl_matrix_set (pers, 1, 1,
+		   1.0 / tan (DtoR (frustrumAngle / 2.0)));
+   gsl_matrix_set (pers, 2, 2,
+		   ((distance + dof) * (distance - dof)) / dof);
+   gsl_matrix_set (pers, 3, 2, (distance * distance) / dof);
+   gsl_matrix_set (pers, 2, 3,   -1.0);
+
+   print_mtx (pers);
+#endif
+  
+  return pers;
+}
 
 QAbstractSeries *
 ChartWindow::handle_vector (APL_value res,
@@ -206,8 +245,11 @@ ChartWindow::handle_vector (APL_value res,
   uint64_t count    = get_element_count (res);
   QAbstractSeries *series = nullptr;
 
+  fprintf (stderr, "curve %s\n", toCString (flbl));
+
   int res_type = -1;
   std::vector<std::complex<double>> vect (count);  // fixme use qvector
+  std::vector<double> xvect (count);  // fixme use qvector
   bool has_cpx = false;
 
   //  Extents rex;
@@ -244,59 +286,31 @@ ChartWindow::handle_vector (APL_value res,
     }
   }
 
-  if (has_cpx) {
-    gsl_vector *pt = gsl_vector_alloc (4);
-    gsl_vector *pp = gsl_vector_calloc (4);
-    gsl_matrix *pers = gsl_matrix_calloc (4, 4);
-    if (curve->getCpx () == CPX_PROJ) {
-      gsl_matrix *acc1 = nullptr;
-
-#if 0
-      fprintf (stderr, "hRot:\n");
-      print_mtx (hRot);
-
-      fprintf (stderr, "vRot:\n");
-      print_mtx (vRot);
-#endif
-
-      acc1 = gsl_matrix_calloc (4, 4);
-      gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
-		      1.0, hRot, vRot,
-		      0.0, acc1);
-
-#if 0
-      fprintf (stderr, "acc 1:\n");
-      print_mtx (acc1);
-#endif
-
-      gsl_matrix_set (pers, 0, 0,   2.0 / rex.deltaX ());
-      gsl_matrix_set (pers, 1, 1,   2.0 / rex.deltaY ());
-      gsl_matrix_set (pers, 2, 2,  -2.0 / rex.deltaZ ());
-      gsl_matrix_set (pers, 3, 0,   -rex.sumX () / rex.deltaX ());
-      gsl_matrix_set (pers, 3, 1,   -rex.sumY () / rex.deltaY ());
-      gsl_matrix_set (pers, 3, 2,   -rex.sumZ () / rex.deltaZ ());
-      gsl_matrix_set (pers, 3, 3,   1.0);
-      //      gsl_matrix_set_identity (pers);
-		      
-      
-#if 0
-      fprintf (stderr, "pers:\n");
-      print_mtx (pers);
-#endif
-
-      compositeXform = gsl_matrix_calloc (4, 4);
-      gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
-		      1.0, pers, acc1,
-		      0.0, compositeXform);
-      //      gsl_matrix_set_identity (compositeXform);
-
-#if 0
-      fprintf (stderr, "acc 2:\n");
-      print_mtx (compositeXform);
-#endif
-
-      gsl_matrix_free (acc1);
+  //  if (has_cpx) {
+    if (perspectiveXform) {
+      gsl_matrix_free (perspectiveXform);
+      perspectiveXform = nullptr;
     }
+    gsl_matrix *geometricXform = nullptr;
+    gsl_vector *pt = nullptr;
+    gsl_vector *pp = nullptr;
+    gsl_vector *px = nullptr;
+
+    pt = gsl_vector_alloc (4);
+    pp = gsl_vector_calloc (4);
+    px = gsl_vector_calloc (4);
+    geometricXform = gsl_matrix_calloc (4, 4);
+    //perspectiveXform = createPerspectiveXform ();
+    gsl_blas_dgemm (CblasNoTrans, CblasNoTrans,
+		    1.0, azimuthRotation, elevationRotation,
+		    0.0, geometricXform);
+#if 0
+    fprintf (stderr, "azi:\n");
+    print_mtx (azimuthRotation);
+    fprintf (stderr, "elev:\n");
+    print_mtx (elevationRotation);
+#endif
+    
     for (uint64_t c = 0; c < count; c++) {
       switch (curve->getCpx ()) {
       case CPX_REAL:
@@ -313,31 +327,42 @@ ChartWindow::handle_vector (APL_value res,
 	vect[c].real (arg (vect[c]));
 	vect[c].imag (0.0);
 	break;
-      case CPX_PROJ:
-	{
-	  gsl_vector_set (pt, 0, xvals[c]);
-	  gsl_vector_set (pt, 1, vect[c].real ());
-	  gsl_vector_set (pt, 2, vect[c].imag ());
-	  gsl_vector_set (pt, 3, 1.0);
+      }
+      {
+	gsl_vector_set (pt, 0, xvals[c]);
+	gsl_vector_set (pt, 1, vect[c].real ());
+	gsl_vector_set (pt, 2, vect[c].imag ());
+	gsl_vector_set (pt, 3, 1.0);
 
-	  gsl_blas_dgemv (CblasTrans, 1.0, compositeXform, pt,
-			  0.0, pp);
+	gsl_blas_dgemv (CblasTrans, 1.0, geometricXform, pt,
+			0.0, pp);
+
+	//	print_vectors (pt, pp);
 
 #if 1
-	  fprintf (stderr, "before after\n");
-	  print_vectors (pt, pp);
-#endif
-
-	  xvals[c] = gsl_vector_get (pp, 0);	// x
-	  vect[c].real (gsl_vector_get (pp, 1)); // y
+	if (perspectiveXform) {
+	  gsl_blas_dgemv (CblasNoTrans, 1.0, perspectiveXform, pp,
+			  0.0, px);
+	  xvect[c] = gsl_vector_get (px, 0);	// x
+	  extents.setY (gsl_vector_get (px, 1));
+	  vect[c].real (gsl_vector_get (px, 1)); // y
+	  print_vectors (pp, px);
 	}
-	break;
+	else {
+#endif
+	  xvect[c] = gsl_vector_get (pp, 0);	// x
+	  extents.setY (gsl_vector_get (pp, 1));
+	  vect[c].real (gsl_vector_get (pp, 1)); // y
+#if 1
+	}
+#endif
       }
     }
-    gsl_vector_free (pt);
-    gsl_vector_free (pp);
-    gsl_matrix_free (pers);
-  }
+    if (pt) gsl_vector_free (pt);
+    if (pp) gsl_vector_free (pp);
+    if (px) gsl_vector_free (px);
+    if (geometricXform) gsl_matrix_free (geometricXform);
+    //}
   
   {
     // real vector vs idx, rank = 1
@@ -367,7 +392,7 @@ ChartWindow::handle_vector (APL_value res,
     
     int i;
     for (i = 0; i < (int)count; i++) {
-      qreal x_val = (qreal)xvals[i];
+      qreal x_val = (qreal)xvect[i];
       qreal y_val = (qreal)vect[i].real ();
       if (sseries) sseries->append (x_val, y_val);
       else pseries->append (x_val, y_val);
@@ -447,10 +472,6 @@ ChartWindow::setContent (Index *&ix, Index *&iz,
   
   QList<int> sels =  chartControls->getChartData ()->getSelected ();
 
-  if (compositeXform) {
-    gsl_matrix_free (compositeXform);
-    compositeXform = nullptr;
-  }
   int i;
   for (i =  0; i < sels.size (); i++) {
     Curve curve = mw->getCurve (sels[i]);
@@ -738,7 +759,7 @@ ChartWindow::exportChart (int width, int height, QString &fn,
 gsl_matrix *
 ChartWindow::getCX ()
 {
-  return compositeXform;
+  return perspectiveXform;
 }
 
 Extents *
@@ -756,74 +777,6 @@ ChartWindow::getRex ()
 void
 VChartView::drawForeground (QPainter *painter, const QRectF &rect)
 {
-  if (cw->getCX ()) {
-    print_mtx (cw->getCX ());
-    fprintf (stderr, "world [%g %g] [%g %g]\n",
-	     cw->getRex ()->minX (),
-	     cw->getRex ()->maxX (),
-	     cw->getRex ()->minY (),
-	     cw->getRex ()->maxY ());
-    QRectF pa = cw->chart->plotArea ();
-    double ox = pa.x ();
-    double oy = pa.y ();
-    double ww = pa.width ();
-    double hh = pa.height ();
-
-#define SCALE_X(x) \
-    ( ox + (ww * ((cw->getExtents ()->offsetX (x)) \
-		  / cw->getExtents ()->deltaX ())))
-
-#define SCALE_Y(y) \
-    (oy + (hh * ((cw->getExtents ()->offsetY (y)) \
-		 / cw->getExtents ()->deltaY ())))
-	     
-    gsl_vector *w0 = gsl_vector_calloc (4);
-    gsl_vector *w1 = gsl_vector_calloc (4);
-    gsl_vector *p0 = gsl_vector_calloc (4);
-    gsl_vector *p1 = gsl_vector_calloc (4);
-
-    //    gsl_vector_set (w0, 0, cw->getExtents ()->minX ());
-    gsl_vector_set (w0, 0, cw->getRex ()->minX ());
-    gsl_vector_set (w0, 1, 0.0);
-    gsl_vector_set (w0, 2, 0.0);
-    gsl_vector_set (w0, 3, 1.0);
-    gsl_blas_dgemv (CblasTrans, 1.0, cw->getCX (), w0,
-		    0.0, p0);
-
-    //gsl_vector_set (w1, 0, cw->getExtents ()->maxX ());
-    gsl_vector_set (w1, 0, cw->getRex ()->maxX ());
-    gsl_vector_set (w1, 1, 0.0);
-    gsl_vector_set (w1, 2, 0.0);
-    gsl_vector_set (w1, 3, 1.0);
-    gsl_blas_dgemv (CblasTrans, 1.0, cw->getCX (), w1,
-		    0.0, p1);
-
-    fprintf (stderr, "p0 from [%g %g] to [%g %g]\n",
-	     gsl_vector_get (w0, 0),
-	     gsl_vector_get (w0, 1),
-	     gsl_vector_get (p0, 0),
-	     gsl_vector_get (p0, 1));
-    fprintf (stderr, "p1 from [%g %g] to [%g %g]\n",
-	     gsl_vector_get (w1, 0),
-	     gsl_vector_get (w1, 1),
-	     gsl_vector_get (p1, 0),
-	     gsl_vector_get (p1, 1));
-    QPointF v0 (SCALE_X (gsl_vector_get (p0, 0)),
-		SCALE_Y (gsl_vector_get (p0, 1)));
-    QPointF v1 (SCALE_X (gsl_vector_get (p1, 0)),
-		SCALE_Y (gsl_vector_get (p1, 1)));
-    painter->drawLine (v0, v1);
-    fprintf (stderr, "drawing [%g %g] [%g %g]\n",
-	     SCALE_X (gsl_vector_get (p0, 0)), 
-	     SCALE_Y (gsl_vector_get (p0, 1)),
-	     SCALE_X (gsl_vector_get (p1, 0)), 
-	     SCALE_Y (gsl_vector_get (p1, 1)));
-	     
-    gsl_vector_free (w0);
-    gsl_vector_free (w1);
-    gsl_vector_free (p0);
-    gsl_vector_free (p1);
-  }
 }
 
 QWidget *
@@ -909,6 +862,69 @@ ChartWindow::drawChart ()
 	QRectF rect (0.0, 0.0, 400.0, 400.0);
 	QPainter *painter = new QPainter ();
 	chartView->drawForeground (painter, rect);
+
+	if (perspectiveXform) {
+	  QDialog *dialog
+	    = new QDialog (this, Qt::Window
+			   | Qt::WindowStaysOnTopHint
+			   | Qt::WindowCloseButtonHint);
+	  QGridLayout *layout = new QGridLayout;
+	  dialog->setLayout (layout);
+
+	  int row = 0;
+	  
+	  QLabel *lblazi = new QLabel ("Azimuth");
+	  layout->addWidget (lblazi, row, 0);
+
+	  QSlider *azimuthSlider = new QSlider (Qt::Horizontal);
+	  azimuthSlider->setMinimum (-180000);
+	  azimuthSlider->setMaximum (180000);
+	  azimuthSlider->setValue (1000.0 * (double)INITIAL_AZIMUTH);
+	  layout->addWidget (azimuthSlider, row, 1);
+	  connect (azimuthSlider, &QAbstractSlider::valueChanged, this,
+		   [=](int value) {
+		     azimuth = ((double)value) / 1000.0;
+		     chartControls->getMainWindow ()->notifySelective (true);
+		   });
+	  
+	  row++;
+
+	  QLabel *lblelev = new QLabel ("Elevation");
+	  layout->addWidget (lblelev, row, 0);
+
+	  QSlider *elevSlider = new QSlider (Qt::Horizontal);
+	  elevSlider->setMinimum (-90000);
+	  elevSlider->setMaximum (90000);
+	  elevSlider->setValue (1000.0 * (double)INITIAL_ELEVATION);
+	  layout->addWidget (elevSlider, row, 1);
+	  connect (elevSlider, &QAbstractSlider::valueChanged, this,
+		   [=](int value) {
+		     elevation = ((double)value) / 1000.0;
+		     chartControls->getMainWindow ()->notifySelective (true);
+		   });
+
+	  row++;
+	  
+	  QLabel *lblf = new QLabel ("FOV");
+	  layout->addWidget (lblf, row, 0);
+
+	  QSlider *fslider = new QSlider (Qt::Horizontal);
+	  fslider->setMinimum ((int)(1000.0 * DtoR (10.0)));
+	  fslider->setMaximum ((int)(1000.0 * DtoR (160.0)));
+	  fslider->setValue  ((int)(1000.9 * DtoR (INITIAL_FOV)));
+	  layout->addWidget (fslider, row, 1);
+#if 0
+	  connect (fslider, &QAbstractSlider::valueChanged, this,
+		   [=](int value) {
+		     frustrumAngle = RtoD (((double)value) / 1000.0);;
+		     chartControls->getMainWindow ()->notifySelective (true);
+		   });
+#endif
+
+	  row++;
+	  
+	  dialog->show ();
+	}
 
 	widg = chartView;
       }
@@ -1081,12 +1097,20 @@ ChartWindow::closeEvent (QCloseEvent *event __attribute__((unused)))
   }
 }
 
+void
+ChartWindow::setCoord () {
+  QString cdat = QString ("%1, %2").arg (elevation) .arg (azimuth);
+  coords->setText (cdat);
+}
+
 ChartWindow::ChartWindow  (ChartControls *parent)
   : QMainWindow(parent)
 {
   chartControls = parent;
   graph = nullptr;
   camera = nullptr;
+  azimuth   = INITIAL_AZIMUTH;
+  elevation = INITIAL_ELEVATION;
 
   hRot = gsl_matrix_calloc (4, 4);
   gsl_matrix_set (hRot, 3, 3,  1.0);
@@ -1096,7 +1120,15 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   gsl_matrix_set (vRot, 3, 3,  1.0);
   setXrot (vRot, INITIAL_X_ROTATION);
   
-  compositeXform = nullptr;
+  elevationRotation = gsl_matrix_calloc (4, 4);
+  gsl_matrix_set (elevationRotation, 3, 3,  1.0);
+  setElevation (elevationRotation, INITIAL_ELEVATION);
+  
+  azimuthRotation = gsl_matrix_calloc (4, 4);
+  gsl_matrix_set (azimuthRotation, 3, 3,  1.0);
+  setAzimuth (azimuthRotation,INITIAL_AZIMUTH);
+  
+  perspectiveXform = nullptr;
     
 #if 0
   QVariant ww = settings.value (SETTINGS_WIDTH);
@@ -1108,6 +1140,10 @@ ChartWindow::ChartWindow  (ChartControls *parent)
   QGroupBox   *outerGroupBox = new QGroupBox ();
   QGridLayout *outerLayout = new QGridLayout ();
   outerGroupBox->setLayout (outerLayout);
+
+  coords = new QLabel;
+  outerLayout->addWidget (coords, 0, 1);
+  setCoord ();
 
   QSlider *hslider = new QSlider (Qt::Horizontal);
   hslider->setMinimum (-1000);
@@ -1124,7 +1160,7 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       camera->setTarget (target);
 	     }
 	     else if (!camera && keymod == Qt::NoModifier) {
-	       setYrot (hRot, 180.0 * scale);
+	       setAzimuth (azimuthRotation, 180.0 * scale);
 	       chartControls->getMainWindow ()->notifySelective (true);
 	     }
 	   });
@@ -1153,10 +1189,21 @@ ChartWindow::ChartWindow  (ChartControls *parent)
 	       camera->setZoomLevel ((float)zoom);
 	     }
 	     else if (!camera && keymod == Qt::ControlModifier) {
+#if 1
+	       double a2 = ((double)(value + 1000)) / 500.0;
+	       //	       frustrumAngle = DtoR (20.0 + a2 * 140.0);
+#else
+	       /***
+		   20 - 160 degrees
+		   pi/9 - pi/3 radians
+	       ***/
+	       double a2 = ((double)(value + 1000)) / 2000.0;
+	       frustrumAngle = DtoR (20.0 + a2 * 140.0);
+#endif
 	       chartControls->getMainWindow ()->notifySelective (true);
 	     }
 	     else if (!camera && keymod == Qt::NoModifier) {
-	       setXrot (hRot, 90.0 * scale);
+	       setElevation (elevationRotation, 90.0 * scale);
 	       chartControls->getMainWindow ()->notifySelective (true);
 	     }
 	   });

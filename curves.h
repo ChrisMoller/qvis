@@ -35,8 +35,7 @@ enum {
   CPX_REAL,
   CPX_IMAG,
   CPX_MAG,
-  CPX_PHASE,
-  CPX_PROJ
+  CPX_PHASE
 };
 
 class Param

@@ -119,9 +119,6 @@ MainWindow::writeVis (QString &fileName)
       case CPX_PHASE:
 	modes = xml_tags[XML_phase].tag;
 	break;
-      case CPX_PROJ:
-	modes = xml_tags[XML_proj].tag;
-	break;
       }
       stream.writeAttribute(xml_tags[XML_cpxmode].tag, modes);
       
@@ -443,9 +440,6 @@ MainWindow::parseCurves (QXmlStreamReader &stream)
 	      break;
 	    case XML_phase:
 	      cpxmode = CPX_PHASE;
-	      break;
-	    case XML_proj:
-	      cpxmode = CPX_PROJ;
 	      break;
 	    }
 	  }

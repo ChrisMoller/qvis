@@ -43,7 +43,6 @@ cpxCombo (int sel)
   cpx_combo->addItem ("Imag",  QVariant((int)CPX_IMAG));
   cpx_combo->addItem ("Mag",   QVariant((int)CPX_MAG));
   cpx_combo->addItem ("Phase", QVariant((int)CPX_PHASE));
-  cpx_combo->addItem ("Projection", QVariant((int)CPX_PROJ));
 
   int found = cpx_combo->findData (QVariant (sel));
   if (found != -1)
